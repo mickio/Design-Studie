@@ -48,7 +48,7 @@ a {
   /*display: inline-block;*/
   
   font-weight: 700;
-  font-size: large;
+  font-size: 72pt;
   position: absolute;
 }
 .slider > div {
@@ -87,17 +87,54 @@ a {
 }
 /* transitions */
 .slide-start {
-  transform: translate(-100vw,1em) scale3d(2.0, 2.0, 2.0);
+  transform: translate(-100vw,1em) scale3d(.8, 0.8,.8);
 }
 .slide-end {
-  transition: transform .3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transition: transform .2s cubic-bezier(0.68, .55, 0.265, 1.55);
   transform: translate(0,0) scale3d(1,1,1);
 }
 .zoom-start {
-  transition: transform .3s ease-in;
-  transform: scale3d(5,5,5) translate(-100vw,1em);
+  transition: transform, opacity .3s ease-in;
+  transform: scale3d(1.2,1.2,1.2) translate(-.5em,-.5em);
+  opacity:0;
 }
 .zoom-end {
-  transition: transform .3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  transform: scale3d(1.1.1) rotate(10deg) translate(0,0)
+  transition: transform .2s ease-out, opacity .2s ease-in;
+  transform: scale3d(1.,1.,1) translate(0,0);
+  opacity: 1;
 }
+/* gallery styles */
+h1 {
+        color:aliceblue;
+		font-family: "Walbaumgrot";
+		font-weight: 100;
+		font-size: 60px;
+        margin: 0;
+        margin-bottom: -0.8em;
+    }
+    img {
+        margin: 2em 5px;
+        cursor: pointer;
+		box-shadow: 2px 2px 20px rgba(0,0,0,0.75)
+    }
+    .slider {
+        display: flex;
+        align-items: flex-end;
+        width: 100%;
+        overflow-x: scroll;
+        overflow-y: visible;
+    }
+    .card-content {
+        position: relative;
+        bottom: 23px;
+        width:128px;
+        height: 194px;
+        text-align: center;
+        background-color: white; 
+        padding: 10px;
+        margin:10px;
+        cursor: pointer;
+        box-shadow: 2px 2px 20px rgba(0,0,0,0.75)
+    }
+    .header {font-weight: bolder;}
+    .authors {font-variant: small-caps;font-size: small;}
