@@ -1,140 +1,308 @@
+:root {
+  --milka: #C6ADF0;
+  --blueviolet: #5015B5;
+  --orange: #E86602;
+  --green: #87B42D;
+  --brown: #2F1908;
+	--box-positionX: 50vw;
+	--box-positionY: 50vh;
+	--box-width: 0;
+	--box-height: 0;
+	--scrollX:0;
+	--scrollY:0;
+  --duration: .2s;
+}
 body {
     font-size: 15pt;
     margin: 0;
-}
-a {
-  text-decoration: none;
-  color: white;
-}
-.button {
-  position: absolute;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  bottom:0;
-  right:0;
-  cursor: pointer;
-  border-radius: 1.75em;
-  display: block;
-  padding: 1em;
-  margin: 1em;
-  background-color: red;
-  box-shadow: 2px 2px 20px rgba(100, 100, 100, 50%)
-}
-.icon {
-  /*position: absolute;
-  text-align: center;*/
-  display: block;
-  width: 0;
-  height: 0;
-  overflow: visible
+    background-color: var(--blueviolet);
 }
 .navbar {
-  position: absolute;
+  position: fixed;
   width: 100%;
+  padding:0.3em;
   display: flex;
   justify-content: space-around;
   z-index: 10
 }
-.slider{
-  scroll-snap-type: x mandatory;
-  overflow-x: scroll;
-  width: 100vw;
-  display: flex
+.navbar a {
+  text-decoration: none;
+  color: white;
 }
+/* helpers */
+.invisible {
+	opacity: 0;
+	transition: opacity .5s ease;
+}
+.visible {
+	opacity: 1;
+	transition: opacity .5s ease;
+}
+/* functional elements */
+.button {
+	position: absolute;
+	background-color: var(--milka);
+	padding: 5px 8px;
+	border: 1px solid var(--brown);
+	border-radius: 2em;
+	box-shadow: 2px 2px 20px;
+	cursor: pointer;
+	margin: 1em;
+}
+.icon {
+	font-family: 'Material Icons';
+	font-weight: normal;
+	font-style: normal;
+	font-size: 24px;
+	/* line-height: 1; */
+	letter-spacing: normal;
+	text-transform: none;
+	display: inline-block;
+	white-space: nowrap;
+	word-wrap: normal;
+	direction: ltr;
+	-moz-font-feature-settings: 'liga';
+	-moz-osx-font-smoothing: grayscale;
+}
+/* positions */
+.right {
+	right: 0
+}
+.bottom {
+	bottom: 0;
+}
+.v-centered {
+	top: 50%
+}
+.h-centered {
+	left: 50%
+}
+/* pages */
 #main > div {
-  
-  /*flex-basis: 100vw;*/
-  /*display: inline-block;*/
-  
-  font-weight: 700;
-  font-size: 72pt;
-  position: absolute;
-}
-.slider > div {
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.blue {
-  background-color: #023568;
-  min-width: 100vw;
+  position:absolute;
+  box-sizing: border-box;
+  width: 100vw;
   height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-}
-.green {
-  background-color: #86ba25;
-  min-width: 100vw;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-}
-.orange {
-  background-color: #8c011f;
-  min-width: 100vw;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
 }
 /* transitions */
 .slide-start {
   transform: translate(-100vw,1em) scale3d(.8, 0.8,.8);
 }
 .slide-end {
-  transition: transform .2s cubic-bezier(0.68, .55, 0.265, 1.55);
+  transition: transform var(--duration) cubic-bezier(0.68, .55, 0.265, 1.55);
   transform: translate(0,0) scale3d(1,1,1);
 }
+.slide-left-start {
+  transform: translateX(100vw);
+}
+.slide-left-end {
+  transition: transform var(--duration) cubic-bezier(0.68, .55, 0.265, 1);
+  transform: translateX(0);
+}
+.slide-right-start {
+  transform: translateX(-100vw);
+}
+.slide-right-end {
+  transition: transform var(--duration) cubic-bezier(0.68, .55, 0.265, 1);
+  transform: translateX(0);
+}
 .zoom-start {
-  transition: transform, opacity .3s ease-in;
-  transform: scale3d(1.2,1.2,1.2) translate(-.5em,-.5em);
+  transition: transform, opacity var(--duration) ease-in;
+  transform: scale3d(1.2,1.2,1.2) translate(-.05em,-.05em);
   opacity:0;
 }
 .zoom-end {
-  transition: transform .2s ease-out, opacity .2s ease-in;
+  transition: transform var(--duration) ease-out, opacity var(--duration) ease-in;
   transform: scale3d(1.,1.,1) translate(0,0);
   opacity: 1;
 }
 /* gallery styles */
 h1 {
-        color:aliceblue;
-		font-family: "Walbaumgrot";
-		font-weight: 100;
-		font-size: 60px;
-        margin: 0;
-        margin-bottom: -0.8em;
-    }
-    img {
-        margin: 2em 5px;
-        cursor: pointer;
-		box-shadow: 2px 2px 20px rgba(0,0,0,0.75)
-    }
-    .slider {
-        display: flex;
-        align-items: flex-end;
-        width: 100%;
-        overflow-x: scroll;
-        overflow-y: visible;
-    }
-    .card-content {
-        position: relative;
-        bottom: 23px;
-        width:128px;
-        height: 194px;
-        text-align: center;
-        background-color: white; 
-        padding: 10px;
-        margin:10px;
-        cursor: pointer;
-        box-shadow: 2px 2px 20px rgba(0,0,0,0.75)
-    }
-    .header {font-weight: bolder;}
-    .authors {font-variant: small-caps;font-size: small;}
+  color: var(--milka);
+  font-family: "Walbaumgrot";
+  font-weight: 100;
+  font-size: 60px;
+  margin: 0;
+  margin-bottom: -0.8em;
+}
+a > img {
+  margin: 2em 5px;
+  cursor: pointer;
+  box-shadow: 2px 2px 20px rgba(0,0,0,0.75)
+}
+.slider {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  overflow-x: scroll;
+  overflow-y: visible;
+}
+.slider .card-content {
+  position: relative;
+  display: inline-table;
+  bottom: 5px;
+  width:128px;
+  height: 194px;
+  text-align: center;
+  background-color: white; 
+  padding: 10px;
+  margin: 2em 5px;
+  box-shadow: 2px 2px 20px rgba(0,0,0,0.75)
+}
+/* scroll snap tabs */
+.tabs {
+	display: flex;
+	width:100vw;
+	overflow-x: scroll;
+	scroll-snap-type: x mandatory;
+}
+.tabs > * {
+	scroll-snap-align: center;
+	scroll-snap-stop: always;
+	min-width: 100vw;
+}
+/* Details styles */
+.card {
+  height: 100vh; 
+  overflow-y: scroll; 
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.card-image {
+  width: 100%;
+  position: fixed;
+}
+.card-image img {
+  width: 100%;
+  position: absolute;
+  opacity: 1;
+  transition: opacity .5s ease;
+}
+.spacer {min-height: 40%;}
+.spacer > h1 {
+  position: fixed;
+  margin-left: .5em;
+  color: var(--milka);
+}
+.spacer > div {
+  display: flex;
+  justify-content: space-around;
+  position: absolute;
+  margin-top: 3em ;
+  width: 100%
+}
+.spacer > div > span {
+  color: white;
+  font-family: 'Walbaumgrot';
+  font-weight: 700;
+  font-size: x-large;
+  cursor: pointer;
+}
+.spacer > div > span:hover {
+  color:var(--green)
+}
+.card-content.tabs {
+  position: relative;
+  flex-shrink: 0;
+  min-height: 90%;
+  background-color: white; 
+  box-shadow: 2px 2px 20px rgba(50,50,50,50%);
+  transform: rotate(180deg);
+  flex-direction: row-reverse;
+}
+.card-content.tabs > * {
+  transform: rotate(180deg);
+  height: calc(100vh - 5em);
+  overflow-y: scroll;
+  width: 100vw;
+  flex-shrink: 0;
+}
+.panel {background-color: white; padding:1em;box-sizing: border-box;}
+/* fonts */
+@font-face {
+	font-family: 'Material Icons';
+	font-style: normal;
+	font-weight: 400;
+	src: url(fonts/materialicons.woff2) format('woff2');
+}
+/* Walbaum */
+@font-face { 
+	font-family: "Walbaum"; 
+	src: url("fonts/walbaum10xlpro.ttf") format("truetype"); 
+	font-style: normal; 
+	font-weight: 400; 
+	font-display: swap; 
+}
+@font-face { 
+	font-family: "Walbaumgrot"; 
+	src: url("fonts/walbaumgrotesklight.ttf") format("truetype"); 
+	font-style: normal; 
+	font-weight: 100; 
+	font-display: swap; 
+}
+@font-face { 
+	font-family: "Walbaumgrot"; 
+	src: url("fonts/walbaumgroteskbook.ttf") format("truetype"); 
+	font-style: normal; 
+	font-weight: 400; 
+	font-display: swap; 
+}
+@font-face { 
+	font-family: "Walbaumgrot"; 
+	src: url("fonts/walbaumgroteskbookitalic.ttf") format("truetype"); 
+	font-style: italic; 
+	font-weight: 400; 
+	font-display: swap; 
+}
+@font-face { 
+	font-family: "Walbaumgrot"; 
+	src: url("fonts/walbaumgrotesktext.ttf") format("truetype"); 
+	font-style: normal; 
+	font-weight: 500; 
+	font-display: swap; 
+}
+@font-face { 
+	font-family: "Walbaumgrot"; 
+	src: url("fonts/walbaumgroteskbookbold.ttf") format("truetype"); 
+	font-style: normal; 
+	font-weight: 700; 
+}
+/* Text styles */
+.title {
+	font-family:  'Walbaumgrot';
+	font-weight: 500;
+	font-size: 18pt;
+	margin: 5px 0;
+}
+.subtitle {
+	font-family:  'Walbaumgrot';
+	font-style: italic;
+	font-weight: 500;
+	font-size: 18pt;
+	color: var(--black);
+	margin: 0;
+}
+.authors {
+	font-family:  'Walbaumgrot';
+	font-variant:small-caps;
+	font-weight: 500;
+	font-size: 12pt;
+}
+.categories {
+	font-family:  'Walbaumgrot';
+	font-variant-caps:all-small-caps;
+	font-weight: 700;
+	font-size: 12pt;
+	color: grey;
+}
+.description, .teaser {
+	font-family:  'Walbaumgrot';
+	font-size: 12pt;
+}
+.info {
+	font-family:  'Walbaumgrot';
+	color: grey;
+	font-size: 9px;
+	font-weight: 500;
+}
