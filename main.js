@@ -2,6 +2,7 @@ const apiKey=''
 const anchor = document.getElementById('main')
 
 const _ = el => document.querySelector(el)
+const __ = el => document.querySelectorAll(el)
 const div = html => {
   const d = document.createElement('div')
   d.insertAdjacentHTML('afterbegin',html)
@@ -73,10 +74,12 @@ class BookManager {
           imageLinks: bk.imageLinks
         }})
       }})
-    }).then(_ => this._observerRandomSample.notify(this.randomSample))
+    }).then(() => this._observerRandomSample.notify(this.randomSample))
   }
   
   fetchBook = async bookId => this.user.functions.getBook(bookId)
+
+  updateBook = async (bookId,book) => this.user.functions.updateBook(bookId,book)
   
   async loginApiKey(apiKey) {
     // Create an API Key credential
@@ -110,7 +113,7 @@ async function goto(pg,transition,...params) {
     },{once:true} )
 }
 
-const home = async _ =>  {
+const home = async () =>  {
   const sample = await new Promise( resolve => {
     bookManager.onFetchRandomSampleOnce = randomSample => resolve(randomSample) 
   }) 
@@ -129,7 +132,7 @@ function scrollToTab(ind) {
 }
 function scroller() {
   let lastScrollPosY = 0
-  let invisible = false
+  let invisible = true
   return () => {
     const self = _('.card')
     const isScrollingUp = self.scrollTop - lastScrollPosY > 0
@@ -149,6 +152,44 @@ function scroller() {
 }
 onScrollCard = scroller()
 
+const editBook = (bookId) => {
+  const button = _("#updateBook")
+  button.firstElementChild.remove()
+  button.insertAdjacentHTML('afterbegin','<span class="icon">save</span>')
+  __('fieldset').forEach( fset => fset.removeAttribute('disabled',''))
+  button.onclick = () => setEdit(bookId)
+}
+
+const setEdit = (bookId) => {
+  const button = _('#updateBook')
+  button.firstElementChild?.remove()
+  button.classList.remove('uploading')
+  button.classList.remove('active')
+  button.insertAdjacentHTML('afterbegin','<span class="icon">edit</span>')
+  __('fieldset').forEach( fset => fset.setAttribute('disabled',''))
+  button.onclick = () => editBook(bookId)
+}
+
+const setUpdateBook = (bookId) => {
+  const button = _('#updateBook')
+  button.classList.add('active')
+  button.onclick = () => updateBook(bookId)
+}
+
+async function updateBook(bookId) {
+  const book = {}
+  const form = _('form')
+  const button = _('#updateBook')
+  button.firstElementChild.remove()
+  button.classList.add('uploading')
+  const formData = new FormData(form)
+  for(entry of formData.entries()) {
+    if (entry[1]) book[entry[0]] = entry[1]
+  }
+  // bookManager.updateBook(bookId,book)
+  setTimeout(() => setEdit(bookId),1000).then( () => button.classList.remove('active'))
+}
+
 const details = async (bookId,books) => {
   books = books.split(/\s*,\s*/)
   const book = await bookManager.fetchBook(bookId)
@@ -157,7 +198,7 @@ const details = async (bookId,books) => {
   const previousBookId = books[pos-1]
   const img = new Image()
   img.src = book.image
-  img.addEventListener('load',_=> _('div.card-image > img').replaceWith(img))
+  img.addEventListener('load',() => _('div.card-image > img').replaceWith(img))
   return `<div class="card" onscroll="onScrollCard()">
   <div class="card-image visible">
       <img src="${book.imageLinks.thumbnail}">
@@ -178,84 +219,55 @@ const details = async (bookId,books) => {
           <p class="description">${book.description}</p>
       </div>
       <div class="panel">
-          <button #if="disabled" class="button right" style="position: fixed;" @click="edit"><span class="icon">edit</span> </button>
-          <button #if="!disabled" :disabled="!editing" class="button right" style="position: fixed;" @click="save"><span class="icon">save</span> </button>
-          <article class="content column">
-              <label>Titel</label>
-              <input :disabled  class="title" #formvalue="book.title">
-              <label>Untertitel</label>
-              <input :disabled  class="subtitle" #formvalue="book.subtitle">
-              <label>Autor(en)</label>
-              <input :disabled  class="authors" #formvalue="book.authors">
-              <label>Teaser</label>
-              <textarea :disabled class="teaser" #formvalue="book.textSnippet" rows="3"></textarea>
-              <label>Beschreibung</label>
-              <textarea :disabled class="description" #formvalue="book.description" rows="10"></textarea>
-          </article>
-          <fieldset class="info column">
+          <button id="updateBook" class="button right action" style="position: fixed;" onclick="editBook('${bookId}')"><span class="icon">edit</span> </button>
+        <form oninput="setUpdateBook('${bookId}')">
+          <fieldset class="content column" disabled>
+<label>Titel</label><input name="title" class="title" value="${book.title}" >
+<label>Untertitel</label><input name="subtitle" class="subtitle" value="${book.subtitle}" >
+<label>Autor(en)</label><input name="authors" class="authors" value="${book.authors}" >
+<label>Teaser</label><textarea name="textSnippet" class="teaser" value="${book.textSnippet}" rows="3"></textarea>
+<label>Beschreibung</label><textarea name="description" class="description" value="${book.description}" rows="10"></textarea>
+          </fieldset>
+          <fieldset class="info column"  disabled>
               <legend>Zusatzinfos</legend>
-              <label>Kategorien</label>
-              <input :disabled  class="categories" #formvalue="book.categories" list="categories">
-              <label>Verlag</label>
-              <input :disabled  #formvalue="book.publisher">
-              <label>Ver&ouml;ffentlichungsdatum</label>
-              <input :disabled  #formvalue="book.publishedDate">
-              <label>Anzahl Seiten</label>
-              <input :disabled  #formvalue="book.pageCount">
-              <label>ISBN</label>
-              <input :disabled  #formvalue="book.isbn">
+<label>Kategorien</label><input name="categories" class="categories" value="${book.categories}" list="categories">
+<label>Verlag</label><input name="publisher" class="entry" value="${book.publisher}" >
+<label>Ver&ouml;ffentlichungsdatum</label><input name="publishedDate" class="entry" value="${book.publishedDate}" >
+<label>Anzahl Seiten</label><input name="pageCount" class="entry" value="${book.pageCount}" >
+<label>ISBN</label><input name="isbn" class="entry" value="${book.isbn}" >
+<label>industryIdentifiers</label><input name="industryIdentifiers" class="entry" value="${book['industryIdentifiers']}" >
+<label>Art des Inhalts</label><input name="Art des Inhalts" class="entry" value="${book['Art des Inhalts']}" >
+<label>EAN</label><input name="EAN" class="entry" value="${book['EAN']}" >
+<label>Literarische Gattung</label><input name="Literarische Gattung" class="entry" value="${book['Literarische Gattung']}" >
+<label>Organisation(en)</label><input name="Organisation(en)" class="entry" value="${book['Organisation(en)']}" >
+<label>Person(en)</label><input name="Person(en)" class="entry" value="${book['Person(en)']}" >
+<label>Sachgruppe(n)</label><input name="Sachgruppe(n)" class="entry" value="${book['Sachgruppe(n)']}" >
+<label>Schlagwörter</label><input name="Schlagwörter" class="entry" value="${book['Schlagwörter']}" >
+<label>Sprache(n)</label><input name="Sprache(n)" class="entry" value="${book['Sprache(n)']}" >
+<label>Titel</label><input name="Titel" class="entry" value="${book['Titel']}" >
+<label>Verlag</label><input name="Verlag" class="entry" value="${book['Verlag']}" >
+<label>Zeitliche Einordnung</label><input name="Zeitliche Einordnung" class="entry" value="${book['Zeitliche Einordnung']}" >
+<label>Zielgruppe</label><input name="Zielgruppe" class="entry" value="${book['Zielgruppe']}" >
+<label>creators</label><input name="creators" class="entry" value="${book['creators']}" >
+<label>identifiers</label><input name="identifiers" class="entry" value="${book['identifiers']}" >
+<label>titles</label><input name="titles" class="entry" value="${book['titles']}" >
           </fieldset>
-          <fieldset class="info column">
-  <label>industryIdentifiers</label>
-              <input :disabled  class="entry" #formvalue="book['industryIdentifiers']">
-  <label>Art des Inhalts</label>
-              <input :disabled  class="entry" #formvalue="book['Art des Inhalts']">
-  <label>EAN</label>
-              <input :disabled  class="entry" #formvalue="book['EAN']">
-  <label>Literarische Gattung</label>
-              <input :disabled  class="entry" #formvalue="book['Literarische Gattung']">
-  <label>Organisation(en)</label>
-              <input :disabled  class="entry" #formvalue="book['Organisation(en)']">
-  <label>Person(en)</label>
-              <input :disabled  class="entry" #formvalue="book['Person(en)']">
-  <label>Sachgruppe(n)</label>
-              <input :disabled  class="entry" #formvalue="book['Sachgruppe(n)']">
-  <label>Schlagwörter</label>
-              <input :disabled  class="entry" #formvalue="book['Schlagwörter']">
-  <label>Sprache(n)</label>
-              <input :disabled  class="entry" #formvalue="book['Sprache(n)']">
-  <label>Titel</label>
-              <input :disabled  class="entry" #formvalue="book['Titel']">
-  <label>Verlag</label>
-              <input :disabled  class="entry" #formvalue="book['Verlag']">
-  <label>Zeitliche Einordnung</label>
-              <input :disabled  class="entry" #formvalue="book['Zeitliche Einordnung']">
-  <label>Zielgruppe</label>
-              <input :disabled  class="entry" #formvalue="book['Zielgruppe']">
-  <label>creators</label>
-              <input :disabled  class="entry" #formvalue="book['creators']">
-  <label>identifiers</label>
-              <input :disabled  class="entry" #formvalue="book['identifiers']">
-  <label>titles</label>
-              <input :disabled  class="entry" #formvalue="book['titles']">
-          </fieldset>
-          <fieldset class="info column">
+          <fieldset class="info column" disabled>
               <legend>Image URLs</legend>
               <div>
-                  <img class="thumbnail" :src="book.thumbnail">
+                  <img class="thumbnail" src="${book.thumbnail}">
                   <div class="column">
-                      <label>Thumbnail Image</label>
-                      <input :disabled  #formvalue="book.thumbnail">
+<label>Thumbnail Image</label><input name="Thumbnail Image" class="entry" value="${book.thumbnail}" >
                   </div>
               </div>
               <div>
-                  <img class="image" :src="book.image">
+                  <img class="image" src="${book.image}">
                   <div class="column">
-                      <label>Cover Image</label>
-                      <input :disabled  #formvalue="book.image">
+<label>Cover Image</label><input name="Cover Image" class="entry" value="${book.image}" >
                   </div>
               </div>
           </fieldset>
+        </form>
           <datalist id="categories">
               <option value="Antiquit&auml;ten & Sammlerst&uuml;cke">
               <option value="Architektur">
@@ -341,7 +353,7 @@ const search = params => '<div style="height:100%;display:flex;align-items:cente
 function nextFrame() {
 	let count = 5
 	return new Promise(resolve => {
-		const step = _ => {
+		const step = () => {
 			count-=1
 			if(count) requestAnimationFrame(step)
 			else requestAnimationFrame(resolve)
