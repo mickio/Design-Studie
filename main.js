@@ -129,7 +129,7 @@ function scrollToTab(ind) {
 }
 function scroller() {
   let lastScrollPosY = 0
-  let invisible = false
+  let invisible = true
   return () => {
     const self = _('.card')
     const isScrollingUp = self.scrollTop - lastScrollPosY > 0
@@ -157,7 +157,7 @@ const details = async (bookId,books) => {
   const previousBookId = books[pos-1]
   const img = new Image()
   img.src = book.image
-  img.addEventListener('load',_=> _('div.card-image > img').replaceWith(img))
+  img.addEventListener('load',()=> _('div.card-image > img').replaceWith(img))
   return `<div class="card" onscroll="onScrollCard()">
   <div class="card-image visible">
       <img src="${book.imageLinks.thumbnail}">

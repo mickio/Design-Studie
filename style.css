@@ -15,7 +15,7 @@
 body {
     font-size: 15pt;
     margin: 0;
-    background-color: var(--blueviolet);
+    background-color: var(--brown);
 }
 .navbar {
   position: fixed;
