@@ -1,4 +1,4 @@
-const apiKey='0fNFMpvpJoc2t7BCzvpYqkNiOKYDPEDvk9fk8SkNJUFk9Zn5v5RVYA7jecqtRrge'
+const apiKey=''
 const anchor = document.getElementById('main')
 
 const _ = el => document.querySelector(el)
