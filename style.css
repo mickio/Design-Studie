@@ -10,7 +10,7 @@
 	--box-height: 0;
 	--scrollX:0;
 	--scrollY:0;
-  --duration: .3s;
+  --duration: 3s;
 }
 body {
     font-size: 15pt;
@@ -103,10 +103,11 @@ body {
   box-sizing: border-box;
   width: 100vw;
   height: 100vh;
+  overflow: scroll
 }
 /* transitions */
 .enlarge-start {
-  transform: translate(calc(var(--box-positionX) + var(--scrollX)),calc(var(--box-positionY) + var(--scrollY)));
+  transform: translate(calc(var(--box-positionX) + var(--scrollX)),calc(var(--box-positionY) - var(--scrollY)));
   width: var(--box-width) !important;
   height: var(--box-height) !important;
   opacity: 0;

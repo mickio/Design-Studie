@@ -386,22 +386,16 @@ function nextFrame() {
 
 const setBoundingBox = clickEvent => {
     const box = clickEvent.target.getBoundingClientRect()
+    const posX = 0 //clickEvent.target.parentNode.parentNode.scrollLeft
+    const posY = 0 //_('#main > div').scrollTop
     const rootStyles = document.documentElement.style
     rootStyles.setProperty("--box-width",`${box.width}px`)
     rootStyles.setProperty("--box-height",`${box.height}px`)
     rootStyles.setProperty("--box-positionX",`${box.x}px`)
     rootStyles.setProperty("--box-positionY",`${box.y}px`)
-    console.debug(`[Transition][setBoundingBox] Set coordinates ${box.x}, ${box.y}, ${box.width}, ${box.height} for zoom transitions`)
+    rootStyles.setProperty("--scrollX", `${posX}px`)
+    rootStyles.setProperty("--scrollY", `${posY}px`)
+    console.debug(`[Transition][setBoundingBox] Set coordinates ${box.x}, ${box.y}, ${box.width}, ${box.height} for zoom transitions and ${posX} resp. ${posY}`)
 }
 
 anchor.addEventListener("click",setBoundingBox)
-
-const setScrollPositions = scrollEvent => {
-  const posX = scrollEvent.target.scrollLeft
-  const posY = scrollEvent.target.scrollTop
-  const rootStyles = document.documentElement.style
-  rootStyles.setProperty("--scrollX", `${posX}px`)
-  rootStyles.setProperty("--scrollY", `${posY}px`)
-}
-
-anchor.addEventListener('scroll',setScrollPositions)
