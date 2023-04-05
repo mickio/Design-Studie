@@ -106,7 +106,7 @@ body {
 }
 /* transitions */
 .enlarge-start {
-  transform: translate(var(--box-positionX),var(--box-positionY));
+  transform: translate(var(--box-positionX) + var(--scrollX),var(--box-positionY) + var(--scrollY));
   width: var(--box-width) !important;
   height: var(--box-height) !important;
   opacity: 0;

@@ -391,9 +391,17 @@ const setBoundingBox = clickEvent => {
     rootStyles.setProperty("--box-height",`${box.height}px`)
     rootStyles.setProperty("--box-positionX",`${box.x}px`)
     rootStyles.setProperty("--box-positionY",`${box.y}px`)
-    rootStyles.setProperty("--scrollX",`${document.documentElement.scrollLeft}px`)
-    rootStyles.setProperty("--scrollY",`${document.documentElement.scrollTop}px`)
     console.debug(`[Transition][setBoundingBox] Set coordinates ${box.x}, ${box.y}, ${box.width}, ${box.height} for zoom transitions`)
 }
 
 anchor.addEventListener("click",setBoundingBox)
+
+const scrollPositions = scrollEvent => {
+  const posX = scrollEvent.target.scrollLeft
+  const posY = scrollEvent.target.scrollTop
+  const rootStyles = document.documentElement.style
+  rootStyles.setProperty("--scrollX", `${posX}px`)
+  rootStyles.setProperty("--scrollY", `${posY}px`)
+}
+
+anchor.addEventListener('scroll',scrollPositions)
