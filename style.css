@@ -10,7 +10,7 @@
 	--box-height: 0;
 	--scrollX:0;
 	--scrollY:0;
-  --duration: .2s;
+  --duration: .3s;
 }
 body {
     font-size: 15pt;
@@ -42,12 +42,17 @@ body {
 .button {
 	position: absolute;
 	background-color: var(--milka);
-	padding: 5px 8px;
 	border: 1px solid var(--brown);
-	border-radius: 2em;
-	box-shadow: 2px 2px 20px;
+	border-radius: 50%;
+	box-shadow: 2px 2px 15px rgba(128, 128, 128, 0.637);
 	cursor: pointer;
 	margin: 1em;
+	width: 2em;
+	height: 2em;
+	overflow: visible;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 .icon {
 	font-family: 'Material Icons';
@@ -63,6 +68,21 @@ body {
 	direction: ltr;
 	-moz-font-feature-settings: 'liga';
 	-moz-osx-font-smoothing: grayscale;
+}
+.uploading {
+	background-color: var(--brown);
+	background-image: url(preparing.gif);
+	background-position: center;
+	background-size: contain;
+}
+.active {
+	background-color: var(--blueviolet) !important;
+	color: white;
+}
+.action {
+	background-color: var(--orange);
+	width: 3em;
+	height: 3em;
 }
 /* positions */
 .right {
@@ -115,6 +135,14 @@ body {
   transition: transform var(--duration) ease-out, opacity var(--duration) ease-in;
   transform: scale3d(1.,1.,1) translate(0,0);
   opacity: 1;
+}
+.ease-start {
+  transition: opacity var(--duration) ease-out;
+  opacity: 1;
+}
+.ease-end {
+  transition: opacity var(--duration) ease-in;
+  opacity: 0;
 }
 /* gallery styles */
 h1 {
@@ -219,6 +247,51 @@ a > img {
   flex-shrink: 0;
 }
 .panel {background-color: white; padding:1em;box-sizing: border-box;}
+
+/* Form tab */
+textarea {
+	margin: 0 5px 5px 5px;
+}
+input, textarea {
+	margin: 0 5px;
+	border: 1px solid var(--green);
+	padding:5px;
+}
+input:focus {
+	box-shadow: inset 0 0 2px 2px var(--green);
+	outline: none;
+	border-color: var(--orange);
+}
+input:disabled, textarea:disabled  {
+	border: none;
+}
+label {
+	color: var(--green);
+	font-variant-caps: all-petite-caps;
+	margin: 5px 5px 0 5px;
+}
+fieldset {
+	margin: 5px;
+	padding: 0 0 5px 0;
+	border:none
+}
+legend{
+	font-size: x-small;
+}
+fieldset img {
+	float: left;
+	padding:5px
+}
+.column {
+	display: flex;
+	flex-direction: column;
+}
+.thumbnail,.image {
+	height: 45px;
+	width: 32px;
+	object-fit: cover;
+	object-position: top;
+}
 /* fonts */
 @font-face {
 	font-family: 'Material Icons';
