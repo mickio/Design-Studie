@@ -105,6 +105,19 @@ body {
   height: 100vh;
 }
 /* transitions */
+.enlarge-start {
+  transform: translate(var(--box-positionX),var(--box-positionY));
+  width: var(--box-width) !important;
+  height: var(--box-height) !important;
+  opacity: 0;
+}
+.enlarge-end {
+  transition: all var(--duration) ease-in;
+  transform: translate(0,0);
+  width: 100vw;
+  height: 100vh;
+  opacity: 1;
+}
 .slide-start {
   transform: translate(-100vw,1em) scale3d(.8, 0.8,.8);
 }

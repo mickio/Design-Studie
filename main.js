@@ -1,4 +1,4 @@
-const apiKey='0fNFMpvpJoc2t7BCzvpYqkNiOKYDPEDvk9fk8SkNJUFk9Zn5v5RVYA7jecqtRrge'
+const apiKey=''
 const anchor = document.getElementById('main')
 
 const _ = el => document.querySelector(el)
@@ -105,7 +105,7 @@ class BookManager {
   
 }
 
-//const bookManager = new BookManager(apiKey)
+const bookManager = new BookManager(apiKey)
 
 async function goto(pg,transition,...params) {
   const tpl = await pg(...params) 
@@ -127,7 +127,7 @@ const home = async () =>  {
   }) 
   return sample.map( cat => {
     let category = `<div><h1>${cat.category}</h1><div class="slider">`
-    category+=cat.books.map( bk => bk.imageLinks?.thumbnail ? `<a href="javascript:goto(details,'zoom','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><img src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:goto(details,'zoom','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
+    category+=cat.books.map( bk => bk.imageLinks?.thumbnail ? `<a href="javascript:goto(details,'enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><img src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:goto(details,'zoom','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
     category+="</div></div>"
     return category
     }).join('')
@@ -367,9 +367,10 @@ const details = async (bookId,books) => {
 `
 } 
 
-const categories = params => '<div><div style="height:100%;display:flex;align-items:center;justify-content:center;color: white;font-size: 72px"><p>Kategorien</p></div>' 
-const search = params => '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size: 72px"><p>Suche</p></div></div>' 
+const categories = params => '<div style="height:100%;display:flex;align-items:center;justify-content:center;color: white;font-size: 72px; background-color:var(--green)"><p>Kategorien</p></div>' 
+const search = params => '<div style="background-color: var(--blueviolet);height:100%"><div style="height:100%;display:flex;align-items:center;justify-content:center;font-size: 72px; color: var(--orange)"><p>Suche</p></div><div onclick="goto(image,\'enlarge\')" class="button v-centered"><span class="icon">east</span></div></div>' 
 
+const image = () => '<div style="background-color:var(--milka);height: 100%;display:flex;align-items:center;justify-content:center;font-size: 72px; color: var(--orange)"><p>Details</p></div>'
 function nextFrame() {
 	let count = 5
 	return new Promise(resolve => {
@@ -383,3 +384,16 @@ function nextFrame() {
 	});
 }
 
+const setBoundingBox = clickEvent => {
+    const box = clickEvent.target.getBoundingClientRect()
+    const rootStyles = document.documentElement.style
+    rootStyles.setProperty("--box-width",`${box.width}px`)
+    rootStyles.setProperty("--box-height",`${box.height}px`)
+    rootStyles.setProperty("--box-positionX",`${box.x}px`)
+    rootStyles.setProperty("--box-positionY",`${box.y}px`)
+    rootStyles.setProperty("--scrollX",`${document.documentElement.scrollLeft}px`)
+    rootStyles.setProperty("--scrollY",`${document.documentElement.scrollTop}px`)
+    console.debug(`[Transition][setBoundingBox] Set coordinates ${box.x}, ${box.y}, ${box.width}, ${box.height} for zoom transitions`)
+}
+
+anchor.addEventListener("click",setBoundingBox)
