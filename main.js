@@ -396,7 +396,7 @@ const setBoundingBox = clickEvent => {
 
 anchor.addEventListener("click",setBoundingBox)
 
-const scrollPositions = scrollEvent => {
+const setScrollPositions = scrollEvent => {
   const posX = scrollEvent.target.scrollLeft
   const posY = scrollEvent.target.scrollTop
   const rootStyles = document.documentElement.style
@@ -404,4 +404,4 @@ const scrollPositions = scrollEvent => {
   rootStyles.setProperty("--scrollY", `${posY}px`)
 }
 
-anchor.addEventListener('scroll',scrollPositions)
+anchor.addEventListener('scroll',setScrollPositions)
