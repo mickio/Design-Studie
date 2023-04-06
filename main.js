@@ -122,7 +122,7 @@ async function goto(pg,transition,...params) {
 }
 
 const home = async () =>  {
-  const sample = await new Promise( resolve => {
+    const sample = await new Promise( resolve => {
     bookManager.onFetchRandomSampleOnce = randomSample => resolve(randomSample) 
   }) 
   return sample.map( cat => {
@@ -138,10 +138,13 @@ function scrollToTab(ind) {
   const scrollStop = - ind * scroller.clientWidth // Minus wg scroll Balken oben...
   scroller.scrollTo({left:scrollStop,behavior:'smooth'})
 }
+
 function scroller() {
   let lastScrollPosY = 0
   let invisible = true
+  let wait = false
   return () => {
+    if (wait) return 
     const self = _('.card')
     const isScrollingUp = self.scrollTop - lastScrollPosY > 0
     const showArrows = () => {
@@ -167,6 +170,8 @@ function scroller() {
         _('.card-image').classList.replace('invisible','visible')
         self.scrollTo({top:0,behavior: 'smooth'})
     }
+    wait = true
+    setTimeout(() => wait = false,100)
     lastScrollPosY = self.scrollTop
   }
 }
@@ -245,7 +250,7 @@ const details = async (bookId,books) => {
 <label>Titel</label><input name="title" class="title" value="${book.title}" >
 <label>Untertitel</label><input name="subtitle" class="subtitle" value="${book.subtitle}" >
 <label>Autor(en)</label><input name="authors" class="authors" value="${book.authors}" >
-<label>Teaser</label><textarea name="textSnippet" class="teaser" value="${book.textSnippet}" rows="3"></textarea>
+<label>Teaser</label><textarea name="teaser" class="teaser" value="${book.teaser}" rows="3"></textarea>
 <label>Beschreibung</label><textarea name="description" class="description" value="${book.description}" rows="10"></textarea>
           </fieldset>
           <fieldset class="info column"  disabled>
