@@ -1,4 +1,4 @@
-const apiKey=''
+const apiKey='0fNFMpvpJoc2t7BCzvpYqkNiOKYDPEDvk9fk8SkNJUFk9Zn5v5RVYA7jecqtRrge'
 const anchor = document.getElementById('main')
 
 const _ = el => document.querySelector(el)
@@ -110,12 +110,15 @@ const bookManager = new BookManager(apiKey)
 async function goto(pg,transition,...params) {
   const tpl = await pg(...params) 
   const page = div(tpl)
-  page.classList.add(transition+"-start")
+  const prevPage = anchor.firstElementChild
+  page.classList.add(transition+"-enter-start")
+  prevPage.classList.add(transition+"-leave-start")
   anchor.appendChild(page)
   await nextFrame()
-  page.classList.replace(transition+"-start",transition+"-end")
+  page.classList.replace(transition+"-enter-start",transition+"-enter-end")
+  prevPage.classList.replace(transition+"-leave-start",transition+"-leave-end")
   anchor.addEventListener('transitionend',()=>{
-    anchor.lastElementChild.classList.remove(transition+'-end')
+    anchor.lastElementChild.classList.remove(transition+'-enter-end')
     console.log("removed all transition classes")
     anchor.firstElementChild.remove()
     },{once:true} )
@@ -145,14 +148,14 @@ function scroller() {
     const self = _('.card')
     const isScrollingUp = self.scrollTop - lastScrollPosY > 0
     const showArrows = () => {
-      const arrows = __('.v-centered.ease-end')
+      const arrows = __('.v-centered.ease-enter-end')
       for (arrow of arrows) { 
-        arrow.classList.replace('ease-end','ease-start') 
+        arrow.classList.replace('ease-enter-end','ease-enter-start') 
       };
       setTimeout(() => { 
         for (arrow of arrows) { 
-          arrow.classList.replace('ease-start','ease-end') 
-        }},3000) 
+          arrow.classList.replace('ease-enter-start','ease-enter-end') 
+        }},1000) 
     }
     if (isScrollingUp && invisible) {
         invisible = false
@@ -361,8 +364,8 @@ const details = async (bookId,books) => {
   </div>
   
   <div onclick="goto(home,'zoom')" class="button "><span class="icon">north</span></div>
-  ${previousBookId ? '<div onclick="goto(details,\'slide-left\',\''+previousBookId+'\',\''+books+'\')" class="button v-centered ease-end" ><span class="icon">arrow_back_ios</span></div>' : ''}
-  ${nextBookId ? '<div onclick="goto(details,\'slide-right\',\''+nextBookId+'\',\''+books+'\')" class="button right v-centered ease-end" ><span class="icon">arrow_forward_ios</span></div>' : ''}
+  ${previousBookId ? '<div onclick="goto(details,\'slide-left\',\''+previousBookId+'\',\''+books+'\')" class="button v-centered ease-enter-end" ><span class="icon">arrow_back_ios</span></div>' : ''}
+  ${nextBookId ? '<div onclick="goto(details,\'slide-right\',\''+nextBookId+'\',\''+books+'\')" class="button right v-centered ease-enter-end" ><span class="icon">arrow_forward_ios</span></div>' : ''}
 </div>
 `
 } 
@@ -371,6 +374,7 @@ const categories = params => '<div style="height:100%;display:flex;align-items:c
 const search = params => '<div style="background-color: var(--blueviolet);height:100%"><div style="height:100%;display:flex;align-items:center;justify-content:center;font-size: 72px; color: var(--orange)"><p>Suche</p></div><div onclick="goto(image,\'enlarge\')" class="button v-centered"><span class="icon">east</span></div></div>' 
 
 const image = () => '<div style="background-color:var(--milka);height: 100%;display:flex;align-items:center;justify-content:center;font-size: 72px; color: var(--orange)"><p>Details</p></div>'
+
 function nextFrame() {
 	let count = 5
 	return new Promise(resolve => {

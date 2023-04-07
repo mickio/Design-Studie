@@ -10,7 +10,7 @@
 	--box-height: 0;
 	--scrollX:0;
 	--scrollY:0;
-  --duration: 3s;
+  --duration: .3s;
 }
 body {
     font-size: 15pt;
@@ -106,55 +106,64 @@ body {
   overflow: scroll
 }
 /* transitions */
-.enlarge-start {
+.enlarge-enter-start {
   transform: translate(calc(var(--box-positionX) + var(--scrollX)),calc(var(--box-positionY) - var(--scrollY)));
   width: var(--box-width) !important;
   height: var(--box-height) !important;
   opacity: 0;
 }
-.enlarge-end {
+.enlarge-enter-end {
   transition: all var(--duration) ease-in;
   transform: translate(0,0);
   width: 100vw;
   height: 100vh;
   opacity: 1;
 }
-.slide-start {
-  transform: translate(-100vw,1em) scale3d(.8, 0.8,.8);
+.slide-leave-start {
+	opacity: 1;
 }
-.slide-end {
-  transition: transform var(--duration) cubic-bezier(0.68, .55, 0.265, 1.55);
+.slide-leave-end {
+	opacity: 0;
+	transition: opacity var(--duration) cubic-bezier(0.68, .955, 0.265, 1.55);
+}
+.slide-enter-start {
+  transform: translate(-100vw) scale3d(.9, 0.9,.9);
+}
+.slide-enter-end {
+  transition: transform var(--duration) cubic-bezier(0.68, .955, 0.265, 1.55);
   transform: translate(0,0) scale3d(1,1,1);
 }
-.slide-left-start {
-  transform: translateX(100vw);
+.slide-left-enter-start,.slide-right-leave-end {
+	transition: transform var(--duration) cubic-bezier(0.68, .55, 0.265, 1);
+	transform: translateX(100vw);
 }
-.slide-left-end {
+.slide-left-enter-end,.slide-right-leave-start {
   transition: transform var(--duration) cubic-bezier(0.68, .55, 0.265, 1);
   transform: translateX(0);
 }
-.slide-right-start {
-  transform: translateX(-100vw);
+.slide-right-enter-start,.slide-left-leave-end {
+	transition: transform var(--duration) cubic-bezier(0.68, .55, 0.265, 1);
+	transform: translateX(-100vw);
 }
-.slide-right-end {
+.slide-right-enter-end,.slide-left-leave-start {
   transition: transform var(--duration) cubic-bezier(0.68, .55, 0.265, 1);
   transform: translateX(0);
 }
-.zoom-start {
+.zoom-enter-start {
   transition: transform, opacity var(--duration) ease-in;
   transform: scale3d(1.2,1.2,1.2) translate(-.05em,-.05em);
   opacity:0;
 }
-.zoom-end {
+.zoom-enter-end {
   transition: transform var(--duration) ease-out, opacity var(--duration) ease-in;
   transform: scale3d(1.,1.,1) translate(0,0);
   opacity: 1;
 }
-.ease-start {
+.ease-enter-start {
   transition: opacity var(--duration) ease-out;
   opacity: 1;
 }
-.ease-end {
+.ease-enter-end {
   transition: opacity var(--duration) ease-in;
   opacity: 0;
 }
