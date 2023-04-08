@@ -105,7 +105,7 @@ class BookManager {
   
 }
 
-const bookManager = new BookManager(apiKey)
+//const bookManager = new BookManager(apiKey)
 
 async function goto(pg,transition,...params) {
   const tpl = await pg(...params) 
@@ -408,3 +408,26 @@ const setBoundingBox = clickEvent => {
 }
 
 anchor.addEventListener("click",setBoundingBox)
+
+const popUp = async () => {
+  const text = _('.tag > div > input').value
+  _('.tag > div > input').value = ''
+  _('.tag > div > input ~ a').classList.replace('visible','invisible')
+  _('#tags').insertAdjacentHTML('beforeend',`<div class="not-visible">${text}</div>`)
+  const tag =_('#tags > div:last-of-type')
+  tag.addEventListener('click',delcat)
+  await nextFrame()
+  tag.classList.replace('not-visible','pop-up')
+}
+  
+function delcat (){
+  this.classList.replace('pop-up','not-visible')
+  setTimeout(() =>this.remove(),300)
+}
+
+const inp = _('.tag > div > input')
+console.log('jetzt',inp)
+
+inp?.addEventListener('input', function () {
+  this.nextElementSibling.classList.replace('invisible','visible')
+})
