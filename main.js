@@ -1,4 +1,4 @@
-const apiKey='0fNFMpvpJoc2t7BCzvpYqkNiOKYDPEDvk9fk8SkNJUFk9Zn5v5RVYA7jecqtRrge'
+const apiKey=''
 const anchor = document.getElementById('main')
 
 const _ = el => document.querySelector(el)
@@ -56,7 +56,7 @@ class BookManager {
   set onFetchRandomSampleOnce(callback) {
     this._observerRandomSample.register(callback,'once')
   }
-  
+  /*
   constructor(apiKey){
     this.app = new Realm.App({ id: 'boox-urcjb' })
     this._observerRandomSample = new Observer()
@@ -65,8 +65,25 @@ class BookManager {
       this.user = usr;
       console.log("Successfully logged in!", usr);
     }).then(this.fetchRandomSample) 
+  */
+  constructor() {
+    this._observerRandomSample = new Observer()
+  	this.user = {functions:{
+  	  randomSample: async _ => {return {items: sample_raw.map(cat => {return {
+  		    _id:[cat.category],
+  		    boox:cat.boox.map(bk => {
+      			const x = bk._id.toHexString
+      			bk._id.toHexString = _ => x
+      			return bk
+    		  })
+      	}})
+  	  }},
+    	getBook: async _ => book,
+    	search: async t => search_data
+    }}
+    this.fetchRandomSample()
   }
-  
+
   fetchRandomSample = async () => {
     this.user.functions.randomSample().then(r => {
       this.randomSample = r.items.map(cat => { return {
@@ -105,7 +122,7 @@ class BookManager {
   
 }
 
-//const bookManager = new BookManager(apiKey)
+const bookManager = new BookManager(apiKey)
 
 async function goto(pg,transition,...params) {
   const tpl = await pg(...params) 
@@ -178,7 +195,7 @@ function scroller() {
     lastScrollPosY = self.scrollTop
   }
 }
-onScrollCard = scroller()
+const onScrollCard = scroller()
 
 const editBook = (bookId) => {
   const button = _("#updateBook")
@@ -369,8 +386,8 @@ const details = async (bookId,books) => {
   </div>
   
   <div onclick="goto(home,'zoom')" class="button "><span class="icon">north</span></div>
-  ${previousBookId ? '<div onclick="goto(details,\'slide-left\',\''+previousBookId+'\',\''+books+'\')" class="button v-centered ease-enter-end" ><span class="icon">arrow_back_ios</span></div>' : ''}
-  ${nextBookId ? '<div onclick="goto(details,\'slide-right\',\''+nextBookId+'\',\''+books+'\')" class="button right v-centered ease-enter-end" ><span class="icon">arrow_forward_ios</span></div>' : ''}
+  ${previousBookId ? '<div onclick="goto(details,\'slide-right\',\''+previousBookId+'\',\''+books+'\')" class="button v-centered ease-enter-end" ><span class="icon">arrow_back_ios</span></div>' : ''}
+  ${nextBookId ? '<div onclick="goto(details,\'slide-left\',\''+nextBookId+'\',\''+books+'\')" class="button right v-centered ease-enter-end" ><span class="icon">arrow_forward_ios</span></div>' : ''}
 </div>
 `
 } 
