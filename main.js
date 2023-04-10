@@ -79,7 +79,15 @@ class BookManager {
       	}})
   	  }},
     	getBook: async _ => book,
-    	search: async t => search_data
+    	search: async t => {return {numberOfItems: search_data.numberOfItems,result:search_data.result.map(bk=>{
+    	  return {
+    	    title:bk.title,
+    	    authors:bk.authors,
+    	    imageLinks:bk.imageLinks,
+    	    _id: {toHexString: ()=> Math.floor(1000000 * Math.random())}
+    	  }
+    	  
+    	})}}
     }}
     this.fetchRandomSample()
   }
@@ -104,7 +112,12 @@ class BookManager {
     return bk
   })
   
-  search = async term => this.user.functions.search(term)
+  search = async term => this.user.functions.search(term).then(r=>{return {numberOfItems:r.numberOfItems,result: r.result.map(bk=>{return{
+      bookId:bk._id.toHexString(),
+      title: bk.title,
+      authors: bk.authors,
+      imageLinks: bk.imageLinks
+  }})}})
 
   updateBook = async (bookId,book) => this.user.functions.updateBook(bookId,book)
   
@@ -254,7 +267,7 @@ const chooseColor = () => {
 const getColor = chooseColor()
 
 const createListPage = books => books.map( book => `<div class="card-entry">
-  <div><a href="javascript:goto(details,'zoom','book.bookId','${books.map(bk=>bk.bookId)}')">
+  <div><a href="javascript:goto(details,'zoom','${book.bookId}','${books.map(bk=>bk.bookId)}')">
     <img src="${book.imageLinks.thumbnail}">
     </a>
   </div>
@@ -389,7 +402,7 @@ const details = async (bookId,books) => {
       .then(bx => _('#related').insertAdjacentHTML('afterbegin',createListPage(bx.result)))
   })
   },500)
-  const pos = books.findIndex(bid => bid === bookId)
+  const pos = books.findIndex(bid => bid == bookId)
   const nextBookId = books[pos+1]
   const previousBookId = books[pos-1]
   const img = new Image()
@@ -469,7 +482,6 @@ function delcat (){
 }
 
 const inp = _('.tag > div > input')
-console.log('jetzt',inp)
 
 inp?.addEventListener('input', function () {
   this.nextElementSibling.classList.replace('invisible','visible')
