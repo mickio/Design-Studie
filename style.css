@@ -208,6 +208,7 @@ a > img {
 	display: flex;
 	width:100vw;
 	overflow-x: scroll;
+	align-items: flex-end;
 	scroll-snap-type: x mandatory;
 }
 .tabs > * {
@@ -272,7 +273,7 @@ a > img {
   width: 100vw;
   flex-shrink: 0;
 }
-.panel {background-color: white; padding:1em;box-sizing: border-box;}
+.panel {background-color: white; padding:0 1em;box-sizing: border-box;}
 
 /* Form tab */
 textarea {
@@ -311,6 +312,7 @@ fieldset img {
 .column {
 	display: flex;
 	flex-direction: column;
+	align-items: flex-start;
 }
 .thumbnail,.image {
 	height: 45px;
@@ -370,7 +372,7 @@ fieldset img {
 /* Text styles */
 .title {
 	font-family:  'Walbaumgrot';
-	font-weight: 500;
+	font-weight: 00;
 	font-size: 18pt;
 	margin: 5px 0;
 }
@@ -403,7 +405,34 @@ fieldset img {
 	font-family:  'Walbaumgrot';
 	color: grey;
 	font-size: 9px;
-	font-weight: 500;
+	font-weight: 500
+}
+/* list */
+#related {
+  padding: 10px;
+  box-sizing: border-box;
+}
+.card-entry {
+  display: flex;
+  border-bottom: 1px solid grey;
+}
+.card-entry > div {
+  padding: 0 10px;
+}
+.card-entry > div:first-child {
+  padding: 10px 0;
+}
+.color-blue {
+  color: var(--blueviolet)
+}
+.color-orange {
+  color: var(--orange)
+}
+.color-green {
+  color: var(--green)
+}
+.color-brown {
+  color: var(--brown)
 }
 /* studies */
 .orange {

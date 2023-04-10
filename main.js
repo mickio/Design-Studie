@@ -103,6 +103,8 @@ class BookManager {
     this._selectedBook = bk
     return bk
   })
+  
+  search = async term => this.user.functions.search(term)
 
   updateBook = async (bookId,book) => this.user.functions.updateBook(bookId,book)
   
@@ -150,7 +152,7 @@ const home = async () =>  {
     return category
     }).join('')
     console.log('appending random sample')
-    setTimeout(() => _('#main > div').replaceWith(div(html)), 1500 )
+    setTimeout(() => _('#main > div').replaceWith(div(html)), 500 )
   }
   return '<div style="height:100%;display:flex;align-items:center;justify-content:center;"><img src="preparing.gif"></div>'
 }
@@ -237,11 +239,40 @@ async function updateBook(bookId) {
   setTimeout(() => setEdit(bookId),1000).then( () => button.classList.remove('active'))
 }
 
+const chooseColor = () => {
+  let prevColor,color
+  return () => {
+    color = ['color-blue','color-green','color-orange','color-brown'][Math.floor(4*Math.random())]
+    while (color === prevColor) {
+      color = ['color-blue','color-green','color-orange','color-brown'][Math.floor(4*Math.random())]
+    }
+    prevColor = color
+    return color
+  }
+}
+
+const getColor = chooseColor()
+
+const createListPage = books => books.map( book => `<div class="card-entry">
+  <div><a href="javascript:goto(details,'zoom','book.bookId','${books.map(bk=>bk.bookId)}')">
+    <img src="${book.imageLinks.thumbnail}">
+    </a>
+  </div>
+  <div>
+    <p class="title ${getColor()}">${book.title} </p>
+    <p class="subtitle">${book.subtitle} </p>
+    <p class="authors">${book.authors} </p>
+    <p class="teaser">${book.teaser}</p>
+  </div>
+</div>
+`).join('')
+
 const details = async (bookId,books) => {
   books = books.split(/\s*,\s*/)
   setTimeout( () => {
   bookManager.fetchBook(bookId)
-  .then(book => _('div.card-content.tabs').insertAdjacentHTML('afterbegin',`      <div class="panel">
+  .then(book => {
+    _('div.card-content.tabs').insertAdjacentHTML('afterbegin',`      <div class="panel">
           <p class="title">${book.title}</p>
           <p class="subtitle">${book.subtitle}</p>
           <p class="authors">${book.authors}</p>
@@ -353,21 +384,11 @@ const details = async (bookId,books) => {
               <option value="Verkehr">
           </datalist>
       </div>
-      <div class="column">
-          <div #foreach="book in boox">
-              <div>
-                  <img :src="book.imageLinks.thumbnail">
-              </div>
-              <div>
-                  <p class="title">{{book.title}} </p>
-                  <p class="subtitle">{{book.subtitle}} </p>
-                  <p class="authors">{{book.authors}} </p>
-                  <p #html="book.teaser" class="teaser"></p>
-              </div>
-          </div>
-  
-      </div>`))
-  },1500)
+      <div id="related" class="column"></div>`)
+    bookManager.search(book.authors)
+      .then(bx => _('#related').insertAdjacentHTML('afterbegin',createListPage(bx.result)))
+  })
+  },500)
   const pos = books.findIndex(bid => bid === bookId)
   const nextBookId = books[pos+1]
   const previousBookId = books[pos-1]
