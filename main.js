@@ -239,27 +239,9 @@ async function updateBook(bookId) {
 
 const details = async (bookId,books) => {
   books = books.split(/\s*,\s*/)
-  const book = await bookManager.fetchBook(bookId)
-  const pos = books.findIndex(bid => bid === bookId)
-  const nextBookId = books[pos+1]
-  const previousBookId = books[pos-1]
-  const img = new Image()
-  img.src = book.image
-  img.addEventListener('load',() => _('div.card-image > img').replaceWith(img))
-  return `<div class="card" onscroll="onScrollCard()">
-  <div class="card-image visible">
-      <img src="${book.imageLinks.thumbnail}">
-  </div>
-  <div class="spacer invisible">
-      <h1>Metadaten</h1>
-      <div>
-          <span onclick="scrollToTab(0)">Übersicht</span>
-          <span onclick="scrollToTab(1)">Bearbeiten</span>
-          <span onclick="scrollToTab(2)">Ähnliches</span>
-      </div>
-  </div>
-  <div class="card-content tabs">
-      <div class="panel">
+  setTimeout( () => {
+  bookManager.fetchBook(bookId)
+  .then(book => _('div.card-content.tabs').insertAdjacentHTML('afterbegin',`      <div class="panel">
           <p class="title">${book.title}</p>
           <p class="subtitle">${book.subtitle}</p>
           <p class="authors">${book.authors}</p>
@@ -384,7 +366,28 @@ const details = async (bookId,books) => {
               </div>
           </div>
   
+      </div>`))
+  },1500)
+  const pos = books.findIndex(bid => bid === bookId)
+  const nextBookId = books[pos+1]
+  const previousBookId = books[pos-1]
+  const img = new Image()
+  img.src = book.image
+  img.addEventListener('load',() => _('div.card-image > img').replaceWith(img))
+  return `<div class="card" onscroll="onScrollCard()">
+  <div class="card-image visible">
+      <img src="${book.imageLinks.thumbnail}">
+  </div>
+  <div class="spacer invisible">
+      <h1>Metadaten</h1>
+      <div>
+          <span onclick="scrollToTab(0)">Übersicht</span>
+          <span onclick="scrollToTab(1)">Bearbeiten</span>
+          <span onclick="scrollToTab(2)">Ähnliches</span>
       </div>
+  </div>
+  <div class="card-content tabs">
+
   </div>
   
   <div onclick="goto(home,'zoom')" class="button "><span class="icon">north</span></div>
