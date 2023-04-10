@@ -433,14 +433,14 @@ fieldset img {
 }  
 #tags > div {
   display: inline-block;
-  height: 1.8em;
-  line-height:1.8em;
+  height: 30px;
+  line-height:30px;
   color: black;
   font-size: 12pt;
   background-color: var(--green);
-  padding: 0 .5em;
-  border-radius: .9em;
-  margin: 0 .8em 0 0;
+  padding: 0 8px;
+  border-radius: 15px;
+  margin: 0 10px;
 }
 .not-visible{
   transform: scale(0.0)
@@ -453,9 +453,9 @@ fieldset img {
 #tags > div:after {
   font-family: "Material Icons";
   content: "cancel";
-  line-height: 1.5;
+  line-height: 30px;
   vertical-align: middle;
-  padding-left: .2em
+  padding-left: 5px;
 }
 .tag a {
   text-decoration: none;

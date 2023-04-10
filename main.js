@@ -142,15 +142,17 @@ async function goto(pg,transition,...params) {
 }
 
 const home = async () =>  {
-    const sample = await new Promise( resolve => {
-    bookManager.onFetchRandomSampleOnce = randomSample => resolve(randomSample) 
-  }) 
-  return sample.map( cat => {
-    let category = `<div><h1>${cat.category}</h1><div class="slider">`
-    category+=cat.books.map( bk => bk.imageLinks?.thumbnail ? `<a href="javascript:goto(details,'enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><img src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:goto(details,'zoom','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
+    bookManager.onFetchRandomSampleOnce = randomSample => {
+       const html = randomSample.map( cat => {
+      let category = `<div><h1>${cat.category}</h1><div class="slider">`
+      category+=cat.books.map( bk => bk.imageLinks?.thumbnail ? `<a href="javascript:goto(details,'enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><img src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:goto(details,'zoom','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
     category+="</div></div>"
     return category
     }).join('')
+    console.log('appending random sample')
+    setTimeout(() => _('#main > div').replaceWith(div(html)), 1500 )
+  }
+  return '<div style="height:100%;display:flex;align-items:center;justify-content:center;"><img src="preparing.gif"></div>'
 }
 
 function scrollToTab(ind) {
