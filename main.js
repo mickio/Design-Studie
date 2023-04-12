@@ -391,7 +391,13 @@ const categories = cat => {
   .then(r=> goto(listWrapper,'zoom',r.numberOfItems,cat,createListPage(r.result)))
   return `<div style="height:100%;display:flex;align-items:center;justify-content:center"><img src="preparing.gif"></div>`
 }
-const search = params => '<div style="background-color: var(--blueviolet);height:100%"><div style="height:100%;display:flex;align-items:center;justify-content:center;font-size: 72px; color: var(--orange)"><p>Suche</p></div><div onclick="goto(image,\'enlarge\')" class="button v-centered"><span class="icon">east</span></div></div>' 
+const search = () => {
+  const term = _('.navbar input').value
+  let items
+  bookManager.search(term)
+  .then(r=> goto(listWrapper,'zoom',r.numberOfItems,term,createListPage(r.result)))
+  return '<div style="background-color: var(--blueviolet);height:100%"><div style="height:100%;display:flex;align-items:center;justify-content:center;font-size: 72px; color: var(--orange)"><p>Suche</p></div><img src="preparing.gif"><div onclick="goto(image,\'enlarge\')" class="button v-centered"><span class="icon">east</span></div></div>'
+}
 
 const image = () => '<div style="background-color:var(--milka);height: 100%;display:flex;align-items:center;justify-content:center;font-size: 72px; color: var(--orange)"><p>Details</p></div>'
 

@@ -428,7 +428,10 @@ fieldset img {
 }
 .card-entry {
   display: flex;
-  border-bottom: 1px solid grey;
+  border-top: 1px solid grey;
+}
+.card-entry img {
+  width: 128px
 }
 .card-entry > div {
   padding: 0 10px;
