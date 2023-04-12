@@ -127,13 +127,13 @@ body {
 }
 .slide-leave-end {
 	opacity: 0;
-	transition: opacity var(--duration) cubic-bezier(0.68, .955, 0.265, 1.55);
+	transition: opacity var(--duration) cubic-bezier(1, 0, 1.0, 0);
 }
 .slide-enter-start {
   transform: translate(-100vw) scale3d(.9, 0.9,.9);
 }
 .slide-enter-end {
-  transition: transform var(--duration) cubic-bezier(0.68, .955, 0.265, 1.55);
+  transition: transform var(--duration) cubic-bezier(1,0,0,1);
   transform: translate(0,0) scale3d(1,1,1);
 }
 .slide-left-enter-start,.slide-right-leave-end {
@@ -158,7 +158,7 @@ body {
   opacity:0;
 }
 .zoom-enter-end {
-  transition: transform var(--duration) ease-out, opacity var(--duration) ease-in;
+  transition: transform var(--duration) ease-out, opacity var(--duration) cubic-bezier(1, 0, 0, 1);
   transform: scale3d(1.,1.,1) translate(0,0);
   opacity: 1;
 }
@@ -179,6 +179,12 @@ h1 {
   margin: 0;
   margin-bottom: -0.8em;
 }
+h2 {
+  font-family: "Walbaumgrot";
+  font-weight: 700;
+  font-size: 24pt;
+}
+
 a > img {
   margin: 2em 5px;
   cursor: pointer;
@@ -193,15 +199,23 @@ a > img {
 }
 .slider .card-content {
   position: relative;
-  display: inline-table;
+  display: flex;
+  flex-direction: column;
+  justify-items: center;
+  align-items: center;
   bottom: 5px;
   width:128px;
   height: 194px;
   text-align: center;
-  background-color: white; 
+  background-color: rgba(178, 128, 128, 0.637);
   padding: 10px;
   margin: 2em 5px;
-  box-shadow: 2px 2px 20px rgba(0,0,0,0.75)
+  box-shadow: 2px 2px 20px rgba(0,0,0,0.75);
+  box-sizing: border-box;
+}
+div.slider a:link {
+  color: whitesmoke;
+  text-decoration: none;
 }
 /* scroll snap tabs */
 .tabs {

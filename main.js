@@ -6,6 +6,7 @@ const __ = el => document.querySelectorAll(el)
 const div = html => {
   const d = document.createElement('div')
   d.insertAdjacentHTML('afterbegin',html)
+  d.style.setProperty('background-color','white')
   return d
 }
 
@@ -82,6 +83,8 @@ class BookManager {
     	search: async t => {return {numberOfItems: search_data.numberOfItems,result:search_data.result.map(bk=>{
     	  return {
     	    title:bk.title,
+    	    subtitle:bk.subtitle,
+    	    teaser:bk.teaser,
     	    authors:bk.authors,
     	    imageLinks:bk.imageLinks,
     	    _id: {toHexString: ()=> Math.floor(1000000 * Math.random())}
@@ -115,6 +118,8 @@ class BookManager {
   search = async term => this.user.functions.search(term).then(r=>{return {numberOfItems:r.numberOfItems,result: r.result.map(bk=>{return{
       bookId:bk._id.toHexString(),
       title: bk.title,
+      subtitle:bk.subtitle,
+   teaser:bk.teaser,
       authors: bk.authors,
       imageLinks: bk.imageLinks
   }})}})
@@ -161,6 +166,7 @@ const home = async () =>  {
        const html = randomSample.map( cat => {
       let category = `<div><h1>${cat.category}</h1><div class="slider">`
       category+=cat.books.map( bk => bk.imageLinks?.thumbnail ? `<a href="javascript:goto(details,'enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><img src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:goto(details,'zoom','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
+    category+=`<div class="card-content"><a href="javascript:goto(categories,'slide','${cat.category}')"><p style="font-size:48pt" class="icon">more_horiz</p></a></div>`
     category+="</div></div>"
     return category
     }).join('')
@@ -279,6 +285,8 @@ const createListPage = books => books.map( book => `<div class="card-entry">
   </div>
 </div>
 `).join('')
+
+const listWrapper = (noi,title,str) => `<div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}`
 
 const details = async (bookId,books) => {
   books = books.split(/\s*,\s*/)
@@ -431,7 +439,12 @@ const details = async (bookId,books) => {
 `
 } 
 
-const categories = params => '<div style="height:100%;display:flex;align-items:center;justify-content:center;color: white;font-size: 72px; background-color:var(--green)"><p>Kategorien</p></div>' 
+const categories = cat => {
+  let items
+  bookManager.search(cat)
+  .then(r=> goto(listWrapper,'zoom',r.numberOfItems,cat,createListPage(r.result)))
+  return `<div style="height:100%;display:flex;align-items:center;justify-content:center"><img src="preparing.gif"></div>`
+}
 const search = params => '<div style="background-color: var(--blueviolet);height:100%"><div style="height:100%;display:flex;align-items:center;justify-content:center;font-size: 72px; color: var(--orange)"><p>Suche</p></div><div onclick="goto(image,\'enlarge\')" class="button v-centered"><span class="icon">east</span></div></div>' 
 
 const image = () => '<div style="background-color:var(--milka);height: 100%;display:flex;align-items:center;justify-content:center;font-size: 72px; color: var(--orange)"><p>Details</p></div>'
