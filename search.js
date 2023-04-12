@@ -31,10 +31,10 @@ let search_data = JSON.parse(`{
       ],
       "imageLinks": {
         "smallThumbnail": "http://books.google.com/books/content?id=-OpKswEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
-        "thumbnail": "http://books.google.com/books/content?id=-OpKswEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+        "thumbnail":"thumbnail.jpeg"
       },
-      "image": "https://portal.dnb.de/opac/mvb/cover?isbn=9783423133388",
-      "thumbnail": "http://books.google.com/books/content?id=-OpKswEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+      "image":"cover.jpeg",
+      "thumbnail":"thumbnail.jpeg",
       "Art des Inhalts": "Fiktionale Darstellung",
       "EAN": "9783423133388",
       "Literarische Gattung": "Erzählende Literatur: Hauptwerk vor 1945",
@@ -113,10 +113,10 @@ let search_data = JSON.parse(`{
       ],
       "imageLinks": {
         "smallThumbnail": "http://books.google.com/books/content?id=ra9qzgEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
-        "thumbnail": "http://books.google.com/books/content?id=ra9qzgEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+        "thumbnail":"thumbnail.jpeg"
       },
-      "image": "https://portal.dnb.de/opac/mvb/cover?isbn=9783954556519",
-      "thumbnail": "http://books.google.com/books/content?id=ra9qzgEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+      "image":"cover.jpeg",
+      "thumbnail":"thumbnail.jpeg",
       "creators": [
         [
           "Josef Conrad",
@@ -175,10 +175,10 @@ let search_data = JSON.parse(`{
       ],
       "imageLinks": {
         "smallThumbnail": "http://books.google.com/books/content?id=k2rvqAUBWDcC&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
-        "thumbnail": "http://books.google.com/books/content?id=k2rvqAUBWDcC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+        "thumbnail":"thumbnail.jpeg"
       },
-      "image": "https://portal.dnb.de/opac/mvb/cover?isbn=9783641030087",
-      "thumbnail": "http://books.google.com/books/content?id=k2rvqAUBWDcC&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+      "image":"cover.jpeg",
+      "thumbnail":"thumbnail.jpeg",
       "creators": [
         [
           "Dr. Joseph Murphy",
@@ -263,10 +263,10 @@ let search_data = JSON.parse(`{
       ],
       "imageLinks": {
         "smallThumbnail": "http://books.google.com/books/content?id=WttmAgAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
-        "thumbnail": "http://books.google.com/books/content?id=WttmAgAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+        "thumbnail":"thumbnail.jpeg"
       },
-      "image": "https://portal.dnb.de/opac/mvb/cover?isbn=9783462300413",
-      "thumbnail": "http://books.google.com/books/content?id=WttmAgAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+      "image":"cover.jpeg",
+      "thumbnail":"thumbnail.jpeg",
       "Art des Inhalts": "Fiktionale Darstellung",
       "EAN": "9783426420614",
       "Literarische Gattung": "Erzählende Literatur",
@@ -355,10 +355,10 @@ let search_data = JSON.parse(`{
       ],
       "imageLinks": {
         "smallThumbnail": "http://books.google.com/books/content?id=kYnCkqzgZqoC&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
-        "thumbnail": "http://books.google.com/books/content?id=kYnCkqzgZqoC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+        "thumbnail":"thumbnail.jpeg"
       },
-      "image": "https://portal.dnb.de/opac/mvb/cover?isbn=9783641050634",
-      "thumbnail": "http://books.google.com/books/content?id=kYnCkqzgZqoC&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+      "image":"cover.jpeg",
+      "thumbnail":"thumbnail.jpeg",
       "Titel": "Der erste Single : Jesus, der Familienfeind / Hans Conrad Zander",
       "Person(en)": "Zander, Hans Conrad (Verfasser)",
       "Verlag": "Gütersloh : E-Books der Verlagsgruppe Random House GmbH",
@@ -402,10 +402,10 @@ let search_data = JSON.parse(`{
       ],
       "imageLinks": {
         "smallThumbnail": "http://books.google.com/books/content?id=rP9tAgAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
-        "thumbnail": "http://books.google.com/books/content?id=rP9tAgAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+        "thumbnail":"thumbnail.jpeg"
       },
-      "image": "https://portal.dnb.de/opac/mvb/cover?isbn=9783644506015",
-      "thumbnail": "http://books.google.com/books/content?id=rP9tAgAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+      "image":"cover.jpeg",
+      "thumbnail":"thumbnail.jpeg",
       "Art des Inhalts": "Fiktionale Darstellung",
       "EAN": "9783644506015",
       "Literarische Gattung": "Jugendbücher ab 12 Jahre",
@@ -519,10 +519,10 @@ let search_data = JSON.parse(`{
       ],
       "imageLinks": {
         "smallThumbnail": "http://books.google.com/books/content?id=c2mYzwEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
-        "thumbnail": "http://books.google.com/books/content?id=c2mYzwEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+        "thumbnail":"thumbnail.jpeg"
       },
-      "image": "https://portal.dnb.de/opac/mvb/cover?isbn=9783100485113",
-      "thumbnail": "http://books.google.com/books/content?id=c2mYzwEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+      "image":"cover.jpeg",
+      "thumbnail":"thumbnail.jpeg",
       "Titel": [
         "Mann, Thomas: Joseph und seine Brüder",
         "Teil: 3., Joseph in Ägypten"
@@ -585,10 +585,10 @@ let search_data = JSON.parse(`{
       ],
       "imageLinks": {
         "smallThumbnail": "http://books.google.com/books/content?id=nyZ2qN4214EC&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
-        "thumbnail": "http://books.google.com/books/content?id=nyZ2qN4214EC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+        "thumbnail":"thumbnail.jpeg"
       },
-      "image": "https://portal.dnb.de/opac/mvb/cover?isbn=9783641024390",
-      "thumbnail": "http://books.google.com/books/content?id=nyZ2qN4214EC&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+      "image":"cover.jpeg",
+      "thumbnail":"thumbnail.jpeg",
       "Art des Inhalts": "Anthologie",
       "EAN": "9783630621494",
       "Literarische Gattung": "Jugendbücher ab 12 Jahre",
@@ -664,10 +664,10 @@ let search_data = JSON.parse(`{
       ],
       "imageLinks": {
         "smallThumbnail": "http://books.google.com/books/content?id=nyZ2qN4214EC&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
-        "thumbnail": "http://books.google.com/books/content?id=nyZ2qN4214EC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+        "thumbnail":"thumbnail.jpeg"
       },
-      "image": "https://portal.dnb.de/opac/mvb/cover?isbn=9783641024390",
-      "thumbnail": "http://books.google.com/books/content?id=nyZ2qN4214EC&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+      "image":"cover.jpeg",
+      "thumbnail":"thumbnail.jpeg",
       "Art des Inhalts": "Anthologie",
       "EAN": "9783641024390",
       "Literarische Gattung": "Erzählende Literatur: Gegenwartsliteratur ab 1945",
@@ -770,10 +770,10 @@ let search_data = JSON.parse(`{
       ],
       "imageLinks": {
         "smallThumbnail": "http://books.google.com/books/content?id=KsNmQgAACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
-        "thumbnail": "http://books.google.com/books/content?id=KsNmQgAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+        "thumbnail":"thumbnail.jpeg"
       },
-      "image": "https://portal.dnb.de/opac/mvb/cover?isbn=9783886809424",
-      "thumbnail": "http://books.google.com/books/content?id=KsNmQgAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+      "image":"cover.jpeg",
+      "thumbnail":"thumbnail.jpeg",
       "Titel": "Im freien Fall : vom Versagen der Märkte zur Neuordnung der Weltwirtschaft / Joseph Stiglitz. Aus dem amerikan. Engl. von Thorsten Schmidt",
       "Person(en)": "Stiglitz, Joseph E. (Verfasser)",
       "Verlag": "München : Siedler",
@@ -816,10 +816,10 @@ let search_data = JSON.parse(`{
       ],
       "imageLinks": {
         "smallThumbnail": "http://books.google.com/books/content?id=oeDXAgAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
-        "thumbnail": "http://books.google.com/books/content?id=oeDXAgAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+        "thumbnail":"thumbnail.jpeg"
       },
-      "image": "https://portal.dnb.de/opac/mvb/cover?isbn=9783746628196",
-      "thumbnail": "http://books.google.com/books/content?id=neaXpwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+      "image":"cover.jpeg",
+      "thumbnail":"thumbnail.jpeg",
       "Art des Inhalts": "Autobiografie, 1963-2011",
       "EAN": "9783746628196",
       "Literarische Gattung": [
@@ -906,8 +906,8 @@ let search_data = JSON.parse(`{
       "isbn": "9783841203007",
       "categories": [],
       "imageLinks": [],
-      "image": "https://portal.dnb.de/opac/mvb/cover?isbn=9783841203007",
-      "thumbnail": "http://books.google.com/books/content?id=ZqFrzwEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+      "image":"cover.jpeg",
+      "thumbnail":"thumbnail.jpeg",
       "Art des Inhalts": "Anthologie",
       "EAN": "9783841203007",
       "Literarische Gattung": "Krimis, Thriller, Spionage",
