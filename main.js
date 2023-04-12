@@ -1,5 +1,6 @@
 const apiKey=''
 const anchor = document.getElementById('main')
+const cats = ["Antiquit&auml;ten & Sammlerst&uuml;cke","Architektur","Belletristik","Bibel","Bildung","Biographie & Autobiographie","Business & Wirtschaft","Comics & Graphic Novels","Computer","Darstellende K&uuml;nste","Design","Drama","Familie & Beziehungen","Fremdsprachenstudium","Garten","Geschichte","Gesundheit & Fitness","Handwerk & Hobby","Haus & Heim","Haustiere","Humor","Jugendliteratur","Kinderb&uuml;cher","Kochen","Kunst","K&ouml;rper, Geist und Seele","Literaturkritik","Literatursammlungen","Lyrik","Mathematik","Medizin","Musik","Nachschlagewerke","Natur","Naturwissenschaften","Philosophie","Photographie","Politikwissenschaft","Psychologie","Recht","Reisen","Religion","Sachbucher f&uuml;r Kinder","Sachb&uuml;cher f&uuml;r junge Erwachsene","Selbsthilfe","Sozialwissenschaften","Spiel & Freizeit","Sport & Freizeit","Sprachwissenschaften","Studium","Technik & Ingenieurwesen","True Crime","Verkehr"]
 
 const _ = el => document.querySelector(el)
 const __ = el => document.querySelectorAll(el)
@@ -155,15 +156,15 @@ async function goto(pg,transition,...params) {
   page.classList.replace(transition+"-enter-start",transition+"-enter-end")
   prevPage.classList.replace(transition+"-leave-start",transition+"-leave-end")
   anchor.addEventListener('transitionend',()=>{
-    anchor.lastElementChild.classList.remove(transition+'-enter-end')
-    console.log("removed all transition classes")
-    anchor.firstElementChild.remove()
+      anchor.lastElementChild.classList.remove(transition+'-enter-end')
+      console.log("removed all transition classes")
+      anchor.firstElementChild.remove()
     },{once:true} )
 }
 
 const home = async () =>  {
     bookManager.onFetchRandomSampleOnce = randomSample => {
-       const html = randomSample.map( cat => {
+      const html = randomSample.map( cat => {
       let category = `<div><h1>${cat.category}</h1><div class="slider">`
       category+=cat.books.map( bk => bk.imageLinks?.thumbnail ? `<a href="javascript:goto(details,'enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><img src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:goto(details,'zoom','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
     category+=`<div class="card-content"><a href="javascript:goto(categories,'slide','${cat.category}')"><p style="font-size:48pt" class="icon">more_horiz</p></a></div>`
@@ -349,61 +350,6 @@ const details = async (bookId,books) => {
               </div>
           </fieldset>
         </form>
-          <datalist id="categories">
-              <option value="Antiquit&auml;ten & Sammlerst&uuml;cke">
-              <option value="Architektur">
-              <option value="Belletristik">
-              <option value="Bibel">
-              <option value="Bildung">
-              <option value="Biographie & Autobiographie">
-              <option value="Business & Wirtschaft">
-              <option value="Comics & Graphic Novels">
-              <option value="Computer">
-              <option value="Darstellende K&uuml;nste">
-              <option value="Design">
-              <option value="Drama">
-              <option value="Familie & Beziehungen">
-              <option value="Fremdsprachenstudium">
-              <option value="Garten">
-              <option value="Geschichte">
-              <option value="Gesundheit & Fitness">
-              <option value="Handwerk & Hobby">
-              <option value="Haus & Heim">
-              <option value="Haustiere">
-              <option value="Humor">
-              <option value="Jugendliteratur">
-              <option value="Kinderb&uuml;cher">
-              <option value="Kochen">
-              <option value="Kunst">
-              <option value="K&ouml;rper, Geist und Seele">
-              <option value="Literaturkritik">
-              <option value="Literatursammlungen">
-              <option value="Lyrik">
-              <option value="Mathematik">
-              <option value="Medizin">
-              <option value="Musik">
-              <option value="Nachschlagewerke">
-              <option value="Natur">
-              <option value="Naturwissenschaften">
-              <option value="Philosophie">
-              <option value="Photographie">
-              <option value="Politikwissenschaft">
-              <option value="Psychologie">
-              <option value="Recht">
-              <option value="Reisen">
-              <option value="Religion">
-              <option value="Sachbucher f&uuml;r Kinder">
-              <option value="Sachb&uuml;cher f&uuml;r junge Erwachsene">
-              <option value="Selbsthilfe">
-              <option value="Sozialwissenschaften">
-              <option value="Spiel & Freizeit">
-              <option value="Sport & Freizeit">
-              <option value="Sprachwissenschaften">
-              <option value="Studium">
-              <option value="Technik & Ingenieurwesen">
-              <option value="True Crime">
-              <option value="Verkehr">
-          </datalist>
       </div>
       <div id="related" class="column"></div>`)
     bookManager.search(book.authors)
