@@ -173,7 +173,13 @@ const home = async () =>  {
     return category
     }).join('')
     console.log('appending random sample')
-    setTimeout(() => _('#main > div').replaceWith(div(html)), 500 )
+    setTimeout(() => {
+      _('#main > div').replaceWith(div(html))
+      __('div.slider > div:last-of-type').forEach(el => el.addEventListener('click',function({target}) {
+        this.querySelector('p').remove()
+        this.classList.add('uploading')
+      }))
+    }, 500 )
   }
   return '<div style="height:100%;display:flex;align-items:center;justify-content:center;"><img src="preparing.gif"></div>'
 }
@@ -385,12 +391,11 @@ const details = async (bookId,books) => {
 `
 } 
 
-const categories = cat => {
-  let items
-  bookManager.search(cat)
-  .then(r=> goto(listWrapper,'zoom',r.numberOfItems,cat,createListPage(r.result)))
-  return `<div style="height:100%;display:flex;align-items:center;justify-content:center"><img src="preparing.gif"></div>`
+const categories = async cat => {
+  const r = await bookManager.search(cat)
+  return listWrapper(r.numberOfItems,cat,createListPage(r.result))
 }
+
 const search = async () => {
   const term = _('.navbar input').value
   const button = _('.navbar a')

@@ -97,6 +97,7 @@ body {
 	background-image: url(preparing.gif);
 	background-position: center;
 	background-size: contain;
+  background-repeat: no-repeat;
 }
 .active {
 	background-color: var(--blueviolet) !important;
