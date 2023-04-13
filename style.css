@@ -30,7 +30,6 @@ body {
 }
 .navbar a {
   text-decoration: none;
-  color: white;
 }
 /* helpers */
 .invisible {
@@ -44,8 +43,7 @@ body {
 /* functional elements */
 .button {
 	position: absolute;
-	background-color: var(--milka);
-	border: 1px solid var(--brown);
+	background-color: var(--orange);
 	border-radius: 50%;
 	box-shadow: 2px 2px 15px rgba(128, 128, 128, 0.637);
 	cursor: pointer;
@@ -262,7 +260,6 @@ div.slider a:link {
   width: 100%
 }
 .spacer > div > span {
-  color: white;
   font-family: 'Walbaumgrot';
   font-weight: 700;
   font-size: x-large;

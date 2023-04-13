@@ -164,7 +164,8 @@ async function goto(pg,transition,...params) {
 
 const home = async () =>  {
     bookManager.onFetchRandomSampleOnce = randomSample => {
-      const html = randomSample.map( cat => {
+      let html = `<div onclick="bookManager.fetchRandomSample().then(()=>goto(home,'zoom'))" class="button right bottom" style="position:fixed"><span class="icon">refresh</span></div>`
+      html += randomSample.map( cat => {
       let category = `<div><h1>${cat.category}</h1><div class="slider">`
       category+=cat.books.map( bk => bk.imageLinks?.thumbnail ? `<a href="javascript:goto(details,'enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><img src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:goto(details,'zoom','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
     category+=`<div class="card-content"><a href="javascript:goto(categories,'slide','${cat.category}')"><p style="font-size:48pt" class="icon">more_horiz</p></a></div>`
@@ -451,3 +452,5 @@ const inp = _('.tag > div > input')
 inp?.addEventListener('input', function () {
   this.nextElementSibling.classList.replace('invisible','visible')
 })
+
+goto(home,'slide')
