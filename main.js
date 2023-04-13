@@ -117,12 +117,12 @@ class BookManager {
   })
   
   search = async term => this.user.functions.search(term).then(r=>{return {numberOfItems:r.numberOfItems,result: r.result.map(bk=>{return{
-      bookId:bk._id.toHexString(),
-      title: bk.title,
-      subtitle:bk.subtitle,
-   teaser:bk.teaser,
-      authors: bk.authors,
-      imageLinks: bk.imageLinks
+    bookId:bk._id.toHexString(),
+    title: bk.title,
+    subtitle:bk.subtitle,
+    teaser:bk.teaser,
+    authors: bk.authors,
+    imageLinks: bk.imageLinks
   }})}})
 
   updateBook = async (bookId,book) => this.user.functions.updateBook(bookId,book)
@@ -145,7 +145,7 @@ class BookManager {
 
 const bookManager = new BookManager(apiKey)
 
-async function goto(pg,transition,...params) {
+const goto = async (pg,transition,...params) => {
   const tpl = await pg(...params) 
   const page = div(tpl)
   const prevPage = anchor.firstElementChild
@@ -164,7 +164,7 @@ async function goto(pg,transition,...params) {
 
 const home = async () =>  {
     bookManager.onFetchRandomSampleOnce = randomSample => {
-      let html = `<div onclick="bookManager.fetchRandomSample().then(()=>goto(home,'zoom'))" class="button right bottom" style="position:fixed"><span class="icon">refresh</span></div>`
+      let html = `<div onclick="bookManager.fetchRandomSample().then(()=>goto(home,'zoom'))" class="button right bottom"><span class="icon">refresh</span></div>`
       html += randomSample.map( cat => {
       let category = `<div><h1>${cat.category}</h1><div class="slider">`
       category+=cat.books.map( bk => bk.imageLinks?.thumbnail ? `<a href="javascript:goto(details,'enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><img src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:goto(details,'zoom','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
@@ -290,29 +290,20 @@ const createListPage = books => books.map( book => `<div class="card-entry">
 
 const listWrapper = (noi,title,str) => `<div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}`
 
-const details = async (bookId,books) => {
-  books = books.split(/\s*,\s*/)
-  setTimeout( () => {
-  bookManager.fetchBook(bookId)
-  .then(book => {
-    _('div.card-content.tabs').insertAdjacentHTML('afterbegin',`      <div class="panel">
-          <p class="title">${book.title}</p>
-          <p class="subtitle">${book.subtitle}</p>
-          <p class="authors">${book.authors}</p>
-          <p class="description">${book.description}</p>
-      </div>
-      <div class="panel">
-          <button id="updateBook" class="button right action" style="position: fixed;" onclick="editBook('${bookId}')"><span class="icon">edit</span> </button>
-        <form oninput="setUpdateBook('${bookId}')">
-          <fieldset class="content column" disabled>
+const panelOne = book => `<div class="panel"><p class="title">${book.title}</p><p class="subtitle">${book.subtitle}</p><p class="authors">${book.authors}</p><p class="description">${book.description}</p></div>`
+
+const panelTwo = (bookId,book) => `<div class="panel">
+<button id="updateBook" class="button right action" style="position: fixed;" onclick="editBook('${bookId}')"><span class="icon">edit</span> </button>
+<form oninput="setUpdateBook('${bookId}')">
+<fieldset class="content column" disabled>
 <label>Titel</label><input name="title" class="title" value="${book.title}" >
 <label>Untertitel</label><input name="subtitle" class="subtitle" value="${book.subtitle}" >
 <label>Autor(en)</label><input name="authors" class="authors" value="${book.authors}" >
 <label>Teaser</label><textarea name="teaser" class="teaser" value="${book.teaser}" rows="3"></textarea>
 <label>Beschreibung</label><textarea name="description" class="description" value="${book.description}" rows="10"></textarea>
-          </fieldset>
-          <fieldset class="info column"  disabled>
-              <legend>Zusatzinfos</legend>
+</fieldset>
+<fieldset class="info column"  disabled>
+    <legend>Zusatzinfos</legend>
 <label>Kategorien</label><input name="categories" class="categories" value="${book.categories}" list="categories">
 <label>Verlag</label><input name="publisher" class="entry" value="${book.publisher}" >
 <label>Ver&ouml;ffentlichungsdatum</label><input name="publishedDate" class="entry" value="${book.publishedDate}" >
@@ -334,25 +325,33 @@ const details = async (bookId,books) => {
 <label>creators</label><input name="creators" class="entry" value="${book['creators']}" >
 <label>identifiers</label><input name="identifiers" class="entry" value="${book['identifiers']}" >
 <label>titles</label><input name="titles" class="entry" value="${book['titles']}" >
-          </fieldset>
-          <fieldset class="info column" disabled>
-              <legend>Image URLs</legend>
-              <div>
-                  <img class="thumbnail" src="${book.thumbnail}">
-                  <div class="column">
+</fieldset>
+<fieldset class="info column" disabled>
+    <legend>Image URLs</legend>
+    <div>
+        <img class="thumbnail" src="${book.thumbnail}">
+        <div class="column">
 <label>Thumbnail Image</label><input name="Thumbnail Image" class="entry" value="${book.thumbnail}" >
-                  </div>
-              </div>
-              <div>
-                  <img class="image" src="${book.image}">
-                  <div class="column">
+        </div>
+    </div>
+    <div>
+        <img class="image" src="${book.image}">
+        <div class="column">
 <label>Cover Image</label><input name="Cover Image" class="entry" value="${book.image}" >
-                  </div>
-              </div>
-          </fieldset>
-        </form>
-      </div>
-      <div id="related" class="column"></div>`)
+        </div>
+    </div>
+</fieldset>
+</form>
+</div>
+<div id="related" class="column"></div>`
+
+const details = async (bookId,books) => {
+  books = books.split(/\s*,\s*/)
+  setTimeout( () => {
+  bookManager.fetchBook(bookId)
+  .then(book => {
+    _('div.card-content.tabs').insertAdjacentHTML('afterbegin',panelOne(book))
+    _('div.card-content.tabs').insertAdjacentHTML('beforeend',panelTwo(bookId,book))
     bookManager.search(book.authors)
       .then(bx => _('#related').insertAdjacentHTML('afterbegin',createListPage(bx.result)))
   })
@@ -392,12 +391,17 @@ const categories = cat => {
   .then(r=> goto(listWrapper,'zoom',r.numberOfItems,cat,createListPage(r.result)))
   return `<div style="height:100%;display:flex;align-items:center;justify-content:center"><img src="preparing.gif"></div>`
 }
-const search = () => {
+const search = async () => {
   const term = _('.navbar input').value
-  let items
-  bookManager.search(term)
-  .then(r=> goto(listWrapper,'zoom',r.numberOfItems,term,createListPage(r.result)))
-  return '<div style="background-color: var(--blueviolet);height:100%"><div style="height:100%;display:flex;align-items:center;justify-content:center;font-size: 72px; color: var(--orange)"><p>Suche</p></div><img src="preparing.gif"><div onclick="goto(image,\'enlarge\')" class="button v-centered"><span class="icon">east</span></div></div>'
+  const button = _('.navbar a')
+  button.classList.add('uploading')
+  button.text = ''
+  const r = await bookManager.search(term)
+  await new Promise(resolve => setTimeout(resolve,1000))
+  button.classList.remove('uploading')
+  button.text = "search"
+  _('.navbar input').value = ""
+  return listWrapper(r.numberOfItems,term,createListPage(r.result))
 }
 
 const image = () => '<div style="background-color:var(--milka);height: 100%;display:flex;align-items:center;justify-content:center;font-size: 72px; color: var(--orange)"><p>Details</p></div>'

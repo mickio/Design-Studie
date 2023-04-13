@@ -21,15 +21,36 @@ body {
     background-repeat: no-repeat;
 }
 .navbar {
-  position: fixed;
-  width: 100%;
+  position: absolute;
+  right:50%;
+  /* width: 100%; */
   padding:0.3em;
   display: flex;
   justify-content: space-around;
   z-index: 10
 }
-.navbar a {
+.navbar > div {
+  display:flex;
+  align-items: center;
+  transform: translate(50%);
+}
+.navbar > div > input {
+  height:38.8px;margin:0;
+  box-sizing: border-box;
+  border-bottom-left-radius: 17px;
+  border-top-left-radius: 17px;
+  padding: 0 10px;
+  background-color: rgba(255,255,255,.5)
+}
+.navbar > div > a {
+  height: 28.8px;
+  width: 28.8px;
   text-decoration: none;
+  background-color: var(--green);
+  padding: 5px;
+  border-bottom-right-radius: 50%;
+  border-top-right-radius: 50%;
+  color:black;
 }
 /* helpers */
 .invisible {
@@ -42,9 +63,10 @@ body {
 }
 /* functional elements */
 .button {
-	position: absolute;
+	position: fixed;
 	background-color: var(--orange);
 	border-radius: 50%;
+  border:none;
 	box-shadow: 2px 2px 15px rgba(128, 128, 128, 0.637);
 	cursor: pointer;
 	margin: 1em;
@@ -71,7 +93,7 @@ body {
 	-moz-osx-font-smoothing: grayscale;
 }
 .uploading {
-	background-color: var(--brown);
+	background-color: white;
 	background-image: url(preparing.gif);
 	background-position: center;
 	background-size: contain;
@@ -291,6 +313,7 @@ textarea {
 	margin: 0 5px 5px 5px;
 }
 input, textarea {
+  width: 100%;
 	margin: 0 5px;
 	border: 1px solid var(--green);
 	padding:5px;
