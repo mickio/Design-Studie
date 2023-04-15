@@ -147,13 +147,13 @@ const bookManager = new BookManager(apiKey)
 
 const goto = async (pg,transition,...params) => { 
   await new Promise(x => setTimeout(x,500))
-  /*if (typeof transition === 'object') {
-    ({transition,beforeTransition,afterTransition}) = transition
+  if (typeof transition === 'object') {
+    ({transition,beforeTransition,afterTransition} = transition)
   }
-  if (typeof beforeTransition === 'function') await beforeTransition()*/
+  if (typeof beforeTransition === 'function') await beforeTransition()
   const tpl = await pg(...params) 
   const page = div(tpl)
-  /*if (typeof afterTransition === 'function') await afterTransition()*/
+  if (typeof afterTransition === 'function') await afterTransition()
   const prevPage = anchor.firstElementChild
   page.classList.add(transition+"-enter-start")
   prevPage.classList.add(transition+"-leave-start")
@@ -197,7 +197,7 @@ const home = async () =>  new Promise(resolve => {
       let html = `<div onclick="refreshSample()" class="button right bottom"><span class="icon">refresh</span></div>`
       html += randomSample.map( cat => {
       let category = `<div><h1>${cat.category}</h1><div class="slider">`
-      category+=cat.books.map( bk => bk.imageLinks?.thumbnail ? `<a href="javascript:gotoDetails('enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><img src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:gotoDetails('zoom','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
+      category+=cat.books.map( bk => bk.imageLinks?.thumbnail ? `<a href="javascript:gotoDetails('enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><img width="128px" src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:gotoDetails('zoom','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
     category+=`<div class="card-content"><a href="javascript:goto(categories,'slide','${cat.category}')"><p style="font-size:48pt" class="icon">more_horiz</p></a></div>`
     category+="</div></div>"
     return category
@@ -487,4 +487,4 @@ inp?.addEventListener('input', function () {
 })
 
 let currentList
-gotoHome('zoom')
+gotoHome('enlarge')
