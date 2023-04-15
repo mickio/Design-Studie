@@ -145,9 +145,15 @@ class BookManager {
 
 const bookManager = new BookManager(apiKey)
 
-const goto = async (pg,transition,...params) => {
+const goto = async (pg,transition,...params) => { 
+  await new Promise(x => setTimeout(x,500))
+  /*if (typeof transition === 'object') {
+    ({transition,beforeTransition,afterTransition}) = transition
+  }
+  if (typeof beforeTransition === 'function') await beforeTransition()*/
   const tpl = await pg(...params) 
   const page = div(tpl)
+  /*if (typeof afterTransition === 'function') await afterTransition()*/
   const prevPage = anchor.firstElementChild
   page.classList.add(transition+"-enter-start")
   prevPage.classList.add(transition+"-leave-start")
@@ -162,27 +168,43 @@ const goto = async (pg,transition,...params) => {
     },{once:true} )
 }
 
-const home = async () =>  {
-    bookManager.onFetchRandomSampleOnce = randomSample => {
-      let html = `<div onclick="bookManager.fetchRandomSample().then(()=>goto(home,'zoom'))" class="button right bottom"><span class="icon">refresh</span></div>`
+const gotoDetails = (transition,...params) => goto(details,transition,...params)
+.then(() => {
+  _('#back').addEventListener('click',function() {
+    this.firstElementChild.remove()
+    this.classList.add('uploading')
+    goto(currentList,'zoom')
+  })
+})
+
+const refreshSample = () => {
+  bookManager.fetchRandomSample().then(()=>gotoHome('zoom'))
+  _('div.button.right.bottom span').remove()
+  _('div.button.right.bottom').classList.add('uploading')
+}
+
+const gotoHome = async transition =>  {
+  goto(home,transition)
+  __('div.slider > div:last-of-type').forEach(el => el.addEventListener('click', function({ target }) {
+      this.querySelector('p').remove()
+      this.classList.add('uploading')
+  }))
+}
+
+const home = async () =>  new Promise(resolve => {
+  currentList = home
+  bookManager.onFetchRandomSampleOnce = randomSample => {
+      let html = `<div onclick="refreshSample()" class="button right bottom"><span class="icon">refresh</span></div>`
       html += randomSample.map( cat => {
       let category = `<div><h1>${cat.category}</h1><div class="slider">`
-      category+=cat.books.map( bk => bk.imageLinks?.thumbnail ? `<a href="javascript:goto(details,'enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><img src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:goto(details,'zoom','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
+      category+=cat.books.map( bk => bk.imageLinks?.thumbnail ? `<a href="javascript:gotoDetails('enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><img src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:gotoDetails('zoom','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
     category+=`<div class="card-content"><a href="javascript:goto(categories,'slide','${cat.category}')"><p style="font-size:48pt" class="icon">more_horiz</p></a></div>`
     category+="</div></div>"
     return category
     }).join('')
-    console.log('appending random sample')
-    setTimeout(() => {
-      _('#main > div').replaceWith(div(html))
-      __('div.slider > div:last-of-type').forEach(el => el.addEventListener('click',function({target}) {
-        this.querySelector('p').remove()
-        this.classList.add('uploading')
-      }))
-    }, 500 )
-  }
-  return '<div style="height:100%;display:flex;align-items:center;justify-content:center;"><img src="preparing.gif"></div>'
-}
+    resolve(html)
+  }})
+
 
 function scrollToTab(ind) {
   const scroller = _('div.card-content')
@@ -281,7 +303,7 @@ const chooseColor = () => {
 const getColor = chooseColor()
 
 const createListPage = books => books.map( book => `<div class="card-entry">
-  <div><a href="javascript:goto(details,'zoom','${book.bookId}','${books.map(bk=>bk.bookId)}')">
+  <div><a href="javascript:gotoDetails('zoom','${book.bookId}','${books.map(bk=>bk.bookId)}')">
     <img src="${book.imageLinks.thumbnail}">
     </a>
   </div>
@@ -384,19 +406,21 @@ const details = async (bookId,books) => {
 
   </div>
   
-  <div onclick="goto(home,'zoom')" class="button "><span class="icon">north</span></div>
-  ${previousBookId ? '<div onclick="goto(details,\'slide-right\',\''+previousBookId+'\',\''+books+'\')" class="button v-centered ease-enter-end" ><span class="icon">arrow_back_ios</span></div>' : ''}
-  ${nextBookId ? '<div onclick="goto(details,\'slide-left\',\''+nextBookId+'\',\''+books+'\')" class="button right v-centered ease-enter-end" ><span class="icon">arrow_forward_ios</span></div>' : ''}
+  <div id="back" class="button "><span class="icon">north</span></div>
+  ${previousBookId ? '<div onclick="gotoDetails(\'slide-right\',\''+previousBookId+'\',\''+books+'\')" class="button v-centered ease-enter-end" ><span class="icon">arrow_back_ios</span></div>' : ''}
+  ${nextBookId ? '<div onclick="gotoDetails(\'slide-left\',\''+nextBookId+'\',\''+books+'\')" class="button right v-centered ease-enter-end" ><span class="icon">arrow_forward_ios</span></div>' : ''}
 </div>
 `
 } 
 
 const categories = async cat => {
+  currentList = () => categories(cat)
   const r = await bookManager.search(cat)
   return listWrapper(r.numberOfItems,cat,createListPage(r.result))
 }
 
 const search = async () => {
+  currentList = search
   const term = _('.navbar input').value
   const button = _('.navbar a')
   button.classList.add('uploading')
@@ -462,4 +486,5 @@ inp?.addEventListener('input', function () {
   this.nextElementSibling.classList.replace('invisible','visible')
 })
 
-goto(home,'slide')
+let currentList
+gotoHome('zoom')
