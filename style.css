@@ -499,7 +499,7 @@ fieldset img {
 .tags {
   padding: 5px
 }  
-.tags > div {
+fieldset:enabled .tags > div {
   display: inline-block;
   height: 20px;
   line-height:20px;
@@ -510,6 +510,15 @@ fieldset img {
   border-radius: 10px;
   margin: 0 10px;
 }
+fieldset:disabled .tags > div {
+  display: inline-block;
+  height: 20px;
+  line-height:20px;
+  font-size: 9pt;
+  padding: 0 5px;
+  margin: 0 10px;
+  box-shadow: none;
+}
 .not-visible{
   transform: scale(0.0)
 }
@@ -518,13 +527,14 @@ fieldset img {
   transform: scale(1.1);
   box-shadow: 2px 2px 15px var(--brown)
 }
-.tags > div:after {
+fieldset:enabled .tags > div:after {
   font-family: "Material Icons";
   content: "cancel";
   line-height: 20px;
   vertical-align: middle;
   padding-left: 3px;
 }
+
 .tag span {
   text-decoration: none;
   color: var(--green);

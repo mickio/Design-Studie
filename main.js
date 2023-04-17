@@ -512,6 +512,7 @@ const popUp = async function (val) {
   container.insertAdjacentHTML('beforeend',`<div class="not-visible">${text}</div>`)
   const tag = container.lastElementChild
   tag.addEventListener('click',function(){
+    if (_('fieldset:disabled')) return 
     this.classList.replace('pop-up','not-visible')
     setTimeout(() =>this.remove(),300)
   })
