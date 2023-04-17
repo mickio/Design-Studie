@@ -279,27 +279,31 @@ const setUpdateBook = (bookId) => {
 
 async function updateBook(bookId) {
   const book = {}
+  const oBook = bookManager.selectedBook
   const form = _('form')
   const button = _('#updateBook')
   button.firstElementChild?.remove()
   button.classList.add('uploading')
   const formData = new FormData(form)
   for(entry of formData.entries()) {
-    if (entry[1]) book[entry[0]] = entry[1]
     if (['categories','authors','Person(en)','Sachgruppe(n)','Schlagwörter','Sprache(n)'].includes(entry[0])) {
         const elems = _(`input[name^=${entry[0].slice(0,6)}]`).parentNode.nextElementSibling.children
-        if (elems.length) {
-          book[entry[0]] = []
-          for(const el of elems) {
-            book[entry[0]].push(el.textContent.trim())    
-          }
+        const a = []
+        for(const el of elems) {
+          a.push(el.textContent.trim())    
+        }
+        if (elems.length && !isEqual(oBook[entry[0]],a)) {
+          book[entry[0]] = a
         }
     }
+    else if (entry[1] && oBook[entry[0]] != entry[1]) book[entry[0]] = entry[1]
   }
   console.log(book)
   // bookManager.updateBook(bookId,book)
   setTimeout(() => setEdit(bookId),1000)
 }
+
+const isEqual = (o,p) => typeof o === 'object' ? JSON.stringify(p) === JSON.stringify(o) : o == p
 
 const chooseColor = () => {
   let prevColor,color
