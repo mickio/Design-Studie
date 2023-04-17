@@ -519,6 +519,10 @@ fieldset:disabled .tags > div {
   margin: 0 10px;
   box-shadow: none;
 }
+fieldset:disabled .tags {
+  position: relative;
+  top: -30px;
+}
 .not-visible{
   transform: scale(0.0)
 }

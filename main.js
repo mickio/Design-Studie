@@ -281,14 +281,24 @@ async function updateBook(bookId) {
   const book = {}
   const form = _('form')
   const button = _('#updateBook')
-  button.firstElementChild.remove()
+  button.firstElementChild?.remove()
   button.classList.add('uploading')
   const formData = new FormData(form)
   for(entry of formData.entries()) {
     if (entry[1]) book[entry[0]] = entry[1]
+    if (['categories','authors','Person(en)','Sachgruppe(n)','Schlagwörter','Sprache(n)'].includes(entry[0])) {
+        const elems = _(`input[name^=${entry[0].slice(0,6)}]`).parentNode.nextElementSibling.children
+        if (elems.length) {
+          book[entry[0]] = []
+          for(const el of elems) {
+            book[entry[0]].push(el.textContent.trim())    
+          }
+        }
+    }
   }
+  console.log(book)
   // bookManager.updateBook(bookId,book)
-  setTimeout(() => setEdit(bookId),1000).then( () => button.classList.remove('active'))
+  setTimeout(() => setEdit(bookId),1000)
 }
 
 const chooseColor = () => {
