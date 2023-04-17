@@ -487,26 +487,27 @@ fieldset img {
   flex-direction: column;
   align-items: start;
   justify-items: start;
+  width: 100%
 }
 .tag > div {
   position: relative;
   width: 100%;
 }
-.tag > div > input {
-  width: calc(100% - 22px);
+.tag > input {
+  width: 100%;
 }
-#tags {
+.tags {
   padding: 5px
 }  
-#tags > div {
+.tags > div {
   display: inline-block;
-  height: 30px;
-  line-height:30px;
+  height: 20px;
+  line-height:20px;
   color: black;
-  font-size: 12pt;
+  font-size: 9pt;
   background-color: var(--green);
-  padding: 0 8px;
-  border-radius: 15px;
+  padding: 0 5px;
+  border-radius: 10px;
   margin: 0 10px;
 }
 .not-visible{
@@ -517,17 +518,17 @@ fieldset img {
   transform: scale(1.1);
   box-shadow: 2px 2px 15px var(--brown)
 }
-#tags > div:after {
+.tags > div:after {
   font-family: "Material Icons";
   content: "cancel";
-  line-height: 30px;
+  line-height: 20px;
   vertical-align: middle;
-  padding-left: 5px;
+  padding-left: 3px;
 }
-.tag a {
+.tag span {
   text-decoration: none;
   color: var(--green);
   position: absolute;
-  right:10px;
-  bottom: .5em;
+  right:-10px;
+  bottom: 4px
 }

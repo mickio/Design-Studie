@@ -326,33 +326,33 @@ const panelTwo = (bookId,book) => `<div class="panel">
 <fieldset class="content column" disabled>
 <label>Titel</label><input name="title" class="title" value="${book.title}" >
 <label>Untertitel</label><input name="subtitle" class="subtitle" value="${book.subtitle}" >
-<label>Autor(en)</label><input name="authors" class="authors" value="${book.authors}" >
+<label>Autor(en)</label><div class="tag"><div><input name="authors" class="authors" value="${book.authors}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
 <label>Teaser</label><textarea name="teaser" class="teaser" value="${book.teaser}" rows="3"></textarea>
 <label>Beschreibung</label><textarea name="description" class="description" value="${book.description}" rows="10"></textarea>
 </fieldset>
 <fieldset class="info column"  disabled>
     <legend>Zusatzinfos</legend>
-<label>Kategorien</label><input name="categories" class="categories" value="${book.categories}" list="categories">
+<label>Kategorien</label><div class="tag"><div><input name="categories" class="categories" value="${book.categories}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
 <label>Verlag</label><input name="publisher" class="entry" value="${book.publisher}" >
 <label>Ver&ouml;ffentlichungsdatum</label><input name="publishedDate" class="entry" value="${book.publishedDate}" >
 <label>Anzahl Seiten</label><input name="pageCount" class="entry" value="${book.pageCount}" >
 <label>ISBN</label><input name="isbn" class="entry" value="${book.isbn}" >
-<label>industryIdentifiers</label><input name="industryIdentifiers" class="entry" value="${book['industryIdentifiers']}" >
+<label>industryIdentifiers</label><input name="industryIdentifiers" class="entry" value="${book['industryIdentifiers']}" ><span class="icon invisible">check</span><div></div>
 <label>Art des Inhalts</label><input name="Art des Inhalts" class="entry" value="${book['Art des Inhalts']}" >
 <label>EAN</label><input name="EAN" class="entry" value="${book['EAN']}" >
 <label>Literarische Gattung</label><input name="Literarische Gattung" class="entry" value="${book['Literarische Gattung']}" >
 <label>Organisation(en)</label><input name="Organisation(en)" class="entry" value="${book['Organisation(en)']}" >
-<label>Person(en)</label><input name="Person(en)" class="entry" value="${book['Person(en)']}" >
-<label>Sachgruppe(n)</label><input name="Sachgruppe(n)" class="entry" value="${book['Sachgruppe(n)']}" >
-<label>Schlagwörter</label><input name="Schlagwörter" class="entry" value="${book['Schlagwörter']}" >
-<label>Sprache(n)</label><input name="Sprache(n)" class="entry" value="${book['Sprache(n)']}" >
+<label>Person(en)</label><div class="tag"><div><input name="Person(en)" class="entry" value="${book['Person(en)']}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
+<label>Sachgruppe(n)</label><div class="tag"><div><input name="Sachgruppe(n)" class="entry" value="${book['Sachgruppe(n)']}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
+<label>Schlagwörter</label><div class="tag"><div><input name="Schlagwörter" class="entry" value="${book['Schlagwörter']}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
+<label>Sprache(n)</label><div class="tag"><div><input name="Sprache(n)" class="entry" value="${book['Sprache(n)']}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
 <label>Titel</label><input name="Titel" class="entry" value="${book['Titel']}" >
 <label>Verlag</label><input name="Verlag" class="entry" value="${book['Verlag']}" >
 <label>Zeitliche Einordnung</label><input name="Zeitliche Einordnung" class="entry" value="${book['Zeitliche Einordnung']}" >
 <label>Zielgruppe</label><input name="Zielgruppe" class="entry" value="${book['Zielgruppe']}" >
-<label>creators</label><input name="creators" class="entry" value="${book['creators']}" >
-<label>identifiers</label><input name="identifiers" class="entry" value="${book['identifiers']}" >
-<label>titles</label><input name="titles" class="entry" value="${book['titles']}" >
+<label>creators</label><input name="creators" class="entry" value="${book['creators']}" ><span class="icon invisible">check</span><div></div>
+<label>identifiers</label><input name="identifiers" class="entry" value="${book['identifiers']}" ><span class="icon invisible">check</span><div></div>
+<label>titles</label><input name="titles" class="entry" value="${book['titles']}" ><span class="icon invisible">check</span><div></div>
 </fieldset>
 <fieldset class="info column" disabled>
     <legend>Image URLs</legend>
@@ -375,22 +375,30 @@ const panelTwo = (bookId,book) => `<div class="panel">
 
 const details = async (bookId,books) => {
   books = books.split(/\s*,\s*/)
-  setTimeout( () => {
+  await new Promise (r=>setTimeout(r),500)
   bookManager.fetchBook(bookId)
   .then(book => {
     _('div.card-content.tabs').insertAdjacentHTML('afterbegin',panelOne(book))
     _('div.card-content.tabs').insertAdjacentHTML('beforeend',panelTwo(bookId,book))
     bookManager.search(book.authors)
       .then(bx => _('#related').insertAdjacentHTML('afterbegin',createListPage(bx.result)))
-  })
-  },500)
+  }).then(() => {
+    ['categories','authors','Person','Sachgruppe','Schlagw','Sprache'].forEach(name => {
+        const input = _(`input[name^=${name}]`)
+        const button = input.nextElementSibling
+        input.addEventListener('input', function() {
+          this.nextElementSibling.classList.replace('invisible', 'visible');
+        });
+        button.addEventListener('click',popUp)
+  })})
+
   const pos = books.findIndex(bid => bid == bookId)
   const nextBookId = books[pos+1]
   const previousBookId = books[pos-1]
   const img = new Image()
   img.src = book.image
   img.addEventListener('load',() => _('div.card-image > img').replaceWith(img))
-  return `<div class="card" onscroll="onScrollCard()">
+  return `<div class="card" onscroll="onScrollCard()">  
   <div class="card-image visible">
       <img src="${book.imageLinks.thumbnail}">
   </div>
@@ -464,27 +472,22 @@ const setBoundingBox = clickEvent => {
 
 anchor.addEventListener("click",setBoundingBox)
 
-const popUp = async () => {
-  const text = _('.tag > div > input').value
-  _('.tag > div > input').value = ''
-  _('.tag > div > input ~ a').classList.replace('visible','invisible')
-  _('#tags').insertAdjacentHTML('beforeend',`<div class="not-visible">${text}</div>`)
-  const tag =_('#tags > div:last-of-type')
-  tag.addEventListener('click',delcat)
+const popUp = async function () {
+  console.log(this,this.previousElementSibling,this.nextElementSibling)
+  const input = this.previousElementSibling
+  const container = this.parentNode.nextElementSibling
+  const text = input.value
+  input.value = ''
+  this.classList.replace('visible','invisible')
+  container.insertAdjacentHTML('beforeend',`<div class="not-visible">${text}</div>`)
+  const tag = container.lastElementChild
+  tag.addEventListener('click',function(){
+    this.classList.replace('pop-up','not-visible')
+    setTimeout(() =>this.remove(),300)
+  })
   await nextFrame()
   tag.classList.replace('not-visible','pop-up')
 }
-  
-function delcat (){
-  this.classList.replace('pop-up','not-visible')
-  setTimeout(() =>this.remove(),300)
-}
-
-const inp = _('.tag > div > input')
-
-inp?.addEventListener('input', function () {
-  this.nextElementSibling.classList.replace('invisible','visible')
-})
 
 let currentList
 gotoHome('enlarge')
