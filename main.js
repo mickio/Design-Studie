@@ -112,6 +112,9 @@ class BookManager {
   
   fetchBook = async bookId => this.user.functions.getBook(bookId)
   .then( bk => {
+    book['Sachgruppe(n)'] = book['Sachgruppe(n)'].split(/\s*;\s*/)
+    book['Schlagwörter'] = book['Schlagwörter'].split(/\s*;\s*/)
+    book['Sprache(n)'] = book['Sprache(n)'].split(', ')
     this._selectedBook = bk
     return bk
   })
@@ -332,7 +335,7 @@ const panelTwo = (bookId,book) => `<div class="panel">
 </fieldset>
 <fieldset class="info column"  disabled>
     <legend>Zusatzinfos</legend>
-<label>Kategorien</label><div class="tag"><div><input name="categories" class="categories" value="${book.categories}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
+<label>Kategorien</label><div class="tag"><div><input name="categories" class="categories"><span class="icon invisible">check</span></div><div class="tags"></div></div>
 <label>Verlag</label><input name="publisher" class="entry" value="${book.publisher}" >
 <label>Ver&ouml;ffentlichungsdatum</label><input name="publishedDate" class="entry" value="${book.publishedDate}" >
 <label>Anzahl Seiten</label><input name="pageCount" class="entry" value="${book.pageCount}" >
@@ -382,6 +385,24 @@ const details = async (bookId,books) => {
     _('div.card-content.tabs').insertAdjacentHTML('beforeend',panelTwo(bookId,book))
     bookManager.search(book.authors)
       .then(bx => _('#related').insertAdjacentHTML('afterbegin',createListPage(bx.result)))
+    book.authors.forEach(aut => {
+      popUp.call(_('input[name=authors] ~ span'),aut)
+    })
+    book.categories.forEach(cat => {
+      popUp.call(_('input[name=categories] ~ span'),cat)
+    });
+    book['Person(en)'].forEach(p => {
+      popUp.call(_('input[name^=Person] ~ span'),p)
+    });
+    book['Sachgruppe(n)'].forEach(p => {
+      popUp.call(_('input[name^=Sachgruppe] ~ span'),p)
+    });
+    book['Schlagwörter'].forEach(p => {
+      popUp.call(_('input[name=Schlagwörter] ~ span'),p)
+    });
+    book['Sprache(n)'].forEach(p => {
+      popUp.call(_('input[name^=Sprache] ~ span'), p)
+    });
   }).then(() => {
     ['categories','authors','Person','Sachgruppe','Schlagw','Sprache'].forEach(name => {
         const input = _(`input[name^=${name}]`)
@@ -482,10 +503,10 @@ const setBoundingBox = clickEvent => {
 anchor.addEventListener("click",setBoundingBox)
 
 /* Helper für in */
-const popUp = async function () {
+const popUp = async function (val) {
   const input = this.previousElementSibling
   const container = this.parentNode.nextElementSibling
-  const text = input.value
+  const text = val ?? input.value
   input.value = ''
   this.classList.replace('visible','invisible')
   container.insertAdjacentHTML('beforeend',`<div class="not-visible">${text}</div>`)
