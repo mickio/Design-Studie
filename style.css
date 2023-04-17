@@ -532,3 +532,12 @@ fieldset img {
   right:-10px;
   bottom: 4px
 }
+.options{
+  position: absolute;
+  background-color: white;
+  top: 40px;
+  left: 15px;
+  padding: 0 5px;
+  font-size: 12pt;
+  z-index: 10
+}

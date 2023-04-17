@@ -205,7 +205,7 @@ const home = async () =>  new Promise(resolve => {
     resolve(html)
   }})
 
-
+/* die details Ansicht... */
 function scrollToTab(ind) {
   const scroller = _('div.card-content')
   const scrollStop = - ind * scroller.clientWidth // Minus wg scroll Balken oben...
@@ -390,7 +390,14 @@ const details = async (bookId,books) => {
           this.nextElementSibling.classList.replace('invisible', 'visible');
         });
         button.addEventListener('click',popUp)
-  })})
+    })
+    _('input[name=categories]').addEventListener('input',function(){
+
+      const term = this.value
+      suggest.call(this,this.parentNode,cats,term)
+    })
+
+  })
 
   const pos = books.findIndex(bid => bid == bookId)
   const nextBookId = books[pos+1]
@@ -398,7 +405,7 @@ const details = async (bookId,books) => {
   const img = new Image()
   img.src = book.image
   img.addEventListener('load',() => _('div.card-image > img').replaceWith(img))
-  return `<div class="card" onscroll="onScrollCard()">  
+      return `<div class="card" onscroll="onScrollCard()">        
   <div class="card-image visible">
       <img src="${book.imageLinks.thumbnail}">
   </div>
@@ -421,6 +428,7 @@ const details = async (bookId,books) => {
 `
 } 
 
+/* weitere Ansichten */
 const categories = async cat => {
   currentList = () => categories(cat)
   const r = await bookManager.search(cat)
@@ -443,6 +451,7 @@ const search = async () => {
 
 const image = () => '<div style="background-color:var(--milka);height: 100%;display:flex;align-items:center;justify-content:center;font-size: 72px; color: var(--orange)"><p>Details</p></div>'
 
+/* noch mehr helpers */
 function nextFrame() {
 	let count = 5
 	return new Promise(resolve => {
@@ -472,8 +481,8 @@ const setBoundingBox = clickEvent => {
 
 anchor.addEventListener("click",setBoundingBox)
 
+/* Helper für in */
 const popUp = async function () {
-  console.log(this,this.previousElementSibling,this.nextElementSibling)
   const input = this.previousElementSibling
   const container = this.parentNode.nextElementSibling
   const text = input.value
@@ -487,6 +496,22 @@ const popUp = async function () {
   })
   await nextFrame()
   tag.classList.replace('not-visible','pop-up')
+}
+
+/* helper für suggest */
+const suggest = function(mtPoint, suggestions, term) {
+  if (term.length < 3) return
+  this.parentNode.querySelector('div.options')?.remove()
+  let html = '<div class="options">'
+  html += suggestions.filter(t => t.toLowerCase().includes(term.toLowerCase())).map(t => `<p>${t}</p>`).join('')
+  html +="</div>"
+  mtPoint.insertAdjacentHTML('afterbegin',html)
+  const inp = this
+  mtPoint.querySelectorAll('p').forEach(p =>p.addEventListener('click',function(){
+    inp.value = this.textContent.trim()
+    inp.parentNode.querySelector('div.options').remove()
+    popUp.call(inp.nextElementSibling)
+  }))
 }
 
 let currentList
