@@ -324,7 +324,6 @@ const chooseColor = () => {
     return color
   }
 }
-
 const getColor = chooseColor()
 
 const insertDataset = (name,...params) => name == 'industryIdentifiers' ? `<div class="dataset"><input value="${params[0]??''}"><input value="${params[1]??''}"><span class="icon">cancel</span></div>` : `<div class="dataset"><input value="${params[0]??''}"><input  value="${params[1]??''}"><input value="${params[2]??''}"><span class="icon">cancel</span></div>`
@@ -377,8 +376,8 @@ const panelTwo = (bookId,book) => `<div class="panel">
 <label>Titel</label><input name="title" class="title" value="${book.title}" >
 <label>Untertitel</label><input name="subtitle" class="subtitle" value="${book.subtitle}" >
 <label>Autor(en)</label><div class="tag"><div><input name="authors" class="authors" value="${book.authors}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
-<label>Teaser</label><textarea name="teaser" class="teaser" value="${book.teaser}" rows="3"></textarea>
-<label>Beschreibung</label><textarea name="description" class="description" value="${book.description}" rows="10"></textarea>
+<label>Teaser</label><textarea name="teaser" class="teaser" rows="3">${book.teaser}</textarea>
+<label>Beschreibung</label><textarea name="description" class="description" rows="10">${book.description}</textarea>
 </fieldset>
 <fieldset class="info column"  disabled>
     <legend>Zusatzinfos</legend>
@@ -583,7 +582,7 @@ const setBoundingBox = clickEvent => {
 
 anchor.addEventListener("click",setBoundingBox)
 
-/* Helper für in */
+/* Helper für input */
 const popUp = async function (val) {
   const input = this.previousElementSibling
   const container = this.parentNode.nextElementSibling

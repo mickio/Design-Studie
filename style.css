@@ -243,7 +243,6 @@ div.slider a:link {
 	display: flex;
 	width:100vw;
 	overflow-x: scroll;
-	align-items: flex-end;
 	scroll-snap-type: x mandatory;
 }
 .tabs > * {
@@ -353,16 +352,35 @@ fieldset img {
 	flex-direction: column;
 	align-items: flex-start;
 }
+.group {
+  width: 100%;
+  border: 1px solid var(--green);
+  padding: 0 5px 0 0;
+}
 .group legend {
   color: var(--green)
 }
 .group div {
   display: flex;
-  padding-bottom: 5px
+  padding-bottom: 5px;
+  justify-content: flex-end;
 }
 fieldset:disabled .group span {
   display:none
 }
+fieldset:enabled .group span {
+  cursor: pointer;
+}
+fieldset .group div:last-child {
+  width: 100%;
+}
+fieldset .group div:last-child span {
+  background-color: #87B42D;
+  color: white;
+  border-radius: 50%;
+  padding: 0 2px;
+}
+
 .thumbnail,.image {
 	height: 45px;
 	width: 32px;
