@@ -376,13 +376,13 @@ const panelTwo = (bookId,book) => `<div class="panel">
     <div>
         <img class="thumbnail" src="${book.thumbnail}">
         <div class="column">
-<label>Thumbnail Image</label><input name="Thumbnail Image" class="entry" value="${book.thumbnail}" >
+<label>Thumbnail Image</label><input name="thumbnail" class="entry" value="${book.thumbnail}" >
         </div>
     </div>
     <div>
         <img class="image" src="${book.image}">
         <div class="column">
-<label>Cover Image</label><input name="Cover Image" class="entry" value="${book.image}" >
+<label>Cover Image</label><input name="image" class="entry" value="${book.image}" >
         </div>
     </div>
 </fieldset>
