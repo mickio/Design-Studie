@@ -297,8 +297,16 @@ async function updateBook(bookId) {
         }
     }
     else if (entry[1] && oBook[entry[0]] != entry[1]) book[entry[0]] = entry[1]
-  }
-  console.log(book)
+  };
+  ['industryIdentifiers','creators','identifiers','titles'].forEach(name => {
+    const a = []
+    const elems = __(`fieldset[name=${name}] div.dataset`)
+    for (const el of elems) {
+      a.push(getDataset(el,name))
+    }
+    if(elems.length && !isEqual(oBook[name],a))  book[name] = a
+  })
+  console.log('update book',book)
   // bookManager.updateBook(bookId,book)
   setTimeout(() => setEdit(bookId),1000)
 }
@@ -319,7 +327,18 @@ const chooseColor = () => {
 
 const getColor = chooseColor()
 
-const insertDataset = (name,...params) => name == 'industryIdentifiers' ? `<div><input name="type" value="${params[0]??''}"><input name="identifier" value="${params[1]??''}"><span class="icon">cancel</span></div>` : `<div><input value="${params[0]??''}"><input  value="${params[1]??''}"><input value="${params[2]??''}"><span class="icon">cancel</span></div>`
+const insertDataset = (name,...params) => name == 'industryIdentifiers' ? `<div class="dataset"><input value="${params[0]??''}"><input value="${params[1]??''}"><span class="icon">cancel</span></div>` : `<div class="dataset"><input value="${params[0]??''}"><input  value="${params[1]??''}"><input value="${params[2]??''}"><span class="icon">cancel</span></div>`
+
+const getDataset = (dataElement,name) => {
+  const dataset = []
+  for(const inp of dataElement.querySelectorAll('input')) {
+    dataset.push(inp.value)
+  }
+  if (name === 'industryIdentifiers') {
+    return {type:dataset[0],identifier:dataset[1]}
+  }
+  return dataset
+}
 
 const insertObject = list => {
   let html = list.map( ds => insertDataset('',...ds)).join('')
