@@ -211,7 +211,7 @@ const home = async () =>  new Promise(resolve => {
 /* die details Ansicht... */
 function scrollToTab(ind) {
   const scroller = _('div.card-content')
-  const scrollStop = - ind * scroller.clientWidth // Minus wg scroll Balken oben...
+  const scrollStop = ind * scroller.clientWidth // Minus wg scroll Balken oben...
   scroller.scrollTo({left:scrollStop,behavior:'smooth'})
 }
 
@@ -351,6 +351,7 @@ const insertIdentifiersObject = list => {
   html += `<div><span class="icon">add</span></div>`
   return html
 }
+
 const createListPage = books => books.map( book => `<div class="card-entry">
   <div><a href="javascript:gotoDetails('zoom','${book.bookId}','${books.map(bk=>bk.bookId)}')">
     <img src="${book.imageLinks.thumbnail}">
