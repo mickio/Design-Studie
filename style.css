@@ -269,7 +269,7 @@ div.slider a:link {
   opacity: 1;
   transition: opacity .5s ease;
 }
-.spacer {min-height: 40%;}
+.spacer {height: 40%;position: relative}
 .spacer > h1 {
   position: fixed;
   margin-left: .5em;
@@ -277,16 +277,21 @@ div.slider a:link {
 }
 .spacer > div {
   display: flex;
-  justify-content: space-around;
-  position: absolute;
-  margin-top: 3em ;
-  width: 100%
+  justify-content: start;
+  /*position: absolute;*/
+  margin-top: calc(40vh - 55px) ;
+  padding:5px 0;
+  background-color: white;
+  width: 100%;
+  box-shadow: 2px 2px 20px rgba(50,50,50,50%);
 }
 .spacer > div > span {
   font-family: 'Walbaumgrot';
   font-weight: 700;
-  font-size: x-large;
+  font-size: normal;
   cursor: pointer;
+  padding: 10px;
+  border-bottom: 1px solid grey;
 }
 .spacer > div > span:hover {
   color:var(--green)
@@ -296,7 +301,6 @@ div.slider a:link {
   flex-shrink: 0;
   min-height: 90%;
   background-color: white; 
-  box-shadow: 2px 2px 20px rgba(50,50,50,50%);
   /*transform: rotate(180deg);
   flex-direction: row-reverse;*/
 }
