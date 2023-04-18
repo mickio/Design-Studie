@@ -164,11 +164,12 @@ const goto = async (pg,transition,...params) => {
   await nextFrame()
   page.classList.replace(transition+"-enter-start",transition+"-enter-end")
   prevPage.classList.replace(transition+"-leave-start",transition+"-leave-end")
-  anchor.addEventListener('transitionend',()=>{
+  await new Promise ( resolve => anchor.addEventListener('transitionend',()=>{
       anchor.lastElementChild.classList.remove(transition+'-enter-end')
       console.log("removed all transition classes")
       anchor.firstElementChild.remove()
-    },{once:true} )
+      resolve()
+    },{once:true} ))
 }
 
 const gotoDetails = (transition,...params) => goto(details,transition,...params)
@@ -436,7 +437,7 @@ const panelTwo = (bookId,book) => `<div class="panel">
 
 const details = async (bookId,books) => {
   books = books.split(/\s*,\s*/)
-  await new Promise (r=>setTimeout(r),500)
+  setTimeout(() =>
   bookManager.fetchBook(bookId)
   .then(book => {
     _('div.card-content.tabs').insertAdjacentHTML('afterbegin',panelOne(book))
@@ -494,7 +495,7 @@ const details = async (bookId,books) => {
       suggest.call(this,this.parentNode,cats,term)
     })
 
-  })
+  }),500)
 
   const pos = books.findIndex(bid => bid == bookId)
   const nextBookId = books[pos+1]
@@ -502,7 +503,7 @@ const details = async (bookId,books) => {
   const img = new Image()
   img.src = book.image
   img.addEventListener('load',() => _('div.card-image > img').replaceWith(img))
-      return `<div class="card" onscroll="onScrollCard()">        
+  return `<div class="card" onscroll="onScrollCard()">        
   <div class="card-image visible">
       <img src="${book.imageLinks.thumbnail}">
   </div>
