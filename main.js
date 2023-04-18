@@ -7,7 +7,7 @@ const __ = el => document.querySelectorAll(el)
 const div = html => {
   const d = document.createElement('div')
   d.insertAdjacentHTML('afterbegin',html)
-  d.style.setProperty('background-color','white')
+  // d.style.setProperty('background-color','white')
   return d
 }
 
@@ -112,9 +112,9 @@ class BookManager {
   
   fetchBook = async bookId => this.user.functions.getBook(bookId)
   .then( bk => {
-    book['Sachgruppe(n)'] = book['Sachgruppe(n)'].split(/\s*;\s*/)
-    book['Schlagwörter'] = book['Schlagwörter'].split(/\s*;\s*/)
-    book['Sprache(n)'] = book['Sprache(n)'].split(', ')
+    if (typeof book['Sachgruppe(n)'] === "string" ) book['Sachgruppe(n)'] = book['Sachgruppe(n)'].split(/\s*;\s*/)
+    if (typeof book['Schlagwörter'] === "string" ) book['Schlagwörter'] = book['Schlagwörter'].split(/\s*;\s*/)
+    if (typeof book['Sprache(n)'] === "string" ) book['Sprache(n)'] = book['Sprache(n)'].split(', ')
     this._selectedBook = bk
     return bk
   })
@@ -211,8 +211,11 @@ const home = async () =>  new Promise(resolve => {
 /* die details Ansicht... */
 function scrollToTab(ind) {
   const scroller = _('div.card-content')
+  const scrollerTitleBar = _('div.spacer div')
   const scrollStop = ind * scroller.clientWidth // Minus wg scroll Balken oben...
   scroller.scrollTo({left:scrollStop,behavior:'smooth'})
+  for ( tab of scrollerTitleBar.children) tab.classList.remove('active-tab')
+  scrollerTitleBar.children[ind].classList.add('active-tab')
 }
 
 function scroller() {
@@ -236,13 +239,15 @@ function scroller() {
     if (isScrollingUp && invisible) {
         invisible = false
         showArrows()
-        _('.spacer').classList.replace('invisible','visible')
+        _('.spacer h1').classList.replace('invisible','visible')
+        _('.spacer div').classList.replace('white','black')
         _('.card-image').classList.replace('visible','invisible')
         self.scrollTo({top:self.scrollTopMax,behavior: 'smooth'})
       } else if (!isScrollingUp && !invisible) {
         invisible = true
         showArrows()
-        _('.spacer').classList.replace('visible','invisible')
+        _('.spacer h1').classList.replace('visible','invisible')
+        _('.spacer div').classList.replace('black','white')
         _('.card-image').classList.replace('invisible','visible')
         self.scrollTo({top:0,behavior: 'smooth'})
     }
@@ -510,10 +515,10 @@ const details = async (bookId,books) => {
   <div class="card-image visible">
       <img src="${book.imageLinks.thumbnail}">
   </div>
-  <div class="spacer invisible">
-      <h1>Metadaten</h1>
-      <div>
-          <span onclick="scrollToTab(0)">Übersicht</span>
+  <div class="spacer">
+      <h1 class="invisible">Metadaten</h1>
+      <div class="white">
+          <span onclick="scrollToTab(0)" class="active-tab">Übersicht</span>
           <span onclick="scrollToTab(1)">Bearbeiten</span>
           <span onclick="scrollToTab(2)">Ähnliches</span>
       </div>

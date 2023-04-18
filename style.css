@@ -16,7 +16,8 @@ body {
     font-size: 15pt;
     margin: 0;
     height: 100vh;
-    background-image:url(buecherhaufen.jpg);
+    /* background-image:url(buecherhaufen.jpg); */
+    background-color: var(--brown);
     background-size: cover;
     background-repeat: no-repeat;
 }
@@ -279,18 +280,36 @@ div.slider a:link {
   justify-content: start;
   /*position: absolute;*/
   margin-top: calc(40vh - 55px) ;
-  padding:5px 0;
-  background-color: white;
+  padding:5px 0 0 0;
   width: 100%;
   box-shadow: 2px 2px 20px rgba(50,50,50,50%);
+}
+.black {
+  background-color: var(--brown);
+  color: white;
+  transition: color var(--duration) linear;
+}
+.white {
+  background-color: white;
+  color: var(--brown);
+  transition: var(--duration) linear color,var(--duration) linear background-color;
 }
 .spacer > div > span {
   font-family: 'Walbaumgrot';
   font-weight: 700;
   font-size: normal;
   cursor: pointer;
-  padding: 10px;
-  border-bottom: 1px solid grey;
+  padding: 0 10px;
+}
+.spacer > div > span:active {
+  border-bottom: 1px solid var(--orange);
+  color: var(--orange) !important;
+}
+.spacer > div.white > span.active-tab {
+  border-bottom: 1px solid var(--brown);
+}
+.spacer > div.black > span.active-tab {
+  border-bottom: 2px solid white;
 }
 .spacer > div > span:hover {
   color:var(--green)
