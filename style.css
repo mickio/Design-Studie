@@ -349,6 +349,15 @@ fieldset img {
 	flex-direction: column;
 	align-items: flex-start;
 }
+.group legend {
+  color: var(--green)
+}
+.group div {
+  display: flex;
+}
+fieldset:disabled .group span {
+  display:none
+}
 .thumbnail,.image {
 	height: 45px;
 	width: 32px;

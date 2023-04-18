@@ -319,6 +319,11 @@ const chooseColor = () => {
 
 const getColor = chooseColor()
 
+const insertObject = list => {
+  let html = list.map(([one,two,three]) => `<div><input value="${one}"><input  value="${two}"><input value="${three}"><span class="icon">cancel</span></div>`)
+  html += `<div><span class="icon">add</span></div>`
+  return html
+}
 const createListPage = books => books.map( book => `<div class="card-entry">
   <div><a href="javascript:gotoDetails('zoom','${book.bookId}','${books.map(bk=>bk.bookId)}')">
     <img src="${book.imageLinks.thumbnail}">
@@ -367,9 +372,12 @@ const panelTwo = (bookId,book) => `<div class="panel">
 <label>Verlag</label><input name="Verlag" class="entry" value="${book['Verlag']}" >
 <label>Zeitliche Einordnung</label><input name="Zeitliche Einordnung" class="entry" value="${book['Zeitliche Einordnung']}" >
 <label>Zielgruppe</label><input name="Zielgruppe" class="entry" value="${book['Zielgruppe']}" >
-<label>creators</label><input name="creators" class="entry" value="${book['creators']}" ><span class="icon invisible">check</span><div></div>
-<label>identifiers</label><input name="identifiers" class="entry" value="${book['identifiers']}" ><span class="icon invisible">check</span><div></div>
-<label>titles</label><input name="titles" class="entry" value="${book['titles']}" ><span class="icon invisible">check</span><div></div>
+<fieldset class="info group" name="creators"><legend>Autoren aus ePub</legend>${insertObject(book['creators'])}
+</fieldset>
+<fieldset class="info group" name="identifiers"><legend>Identifiers aus ePub</legend>${insertObject(book['identifiers'])}
+</fieldset>
+<fieldset class="info group" name="titles"><legend>Titel aus ePub</legend>${insertObject(book['titles'])}
+</fieldset>
 </fieldset>
 <fieldset class="info column" disabled>
     <legend>Image URLs</legend>
@@ -410,13 +418,25 @@ const details = async (bookId,books) => {
     });
     book['Sachgruppe(n)'].forEach(p => {
       popUp.call(_('input[name^=Sachgruppe] ~ span'),p)
-    });
+    });0
     book['Schlagwörter'].forEach(p => {
       popUp.call(_('input[name=Schlagwörter] ~ span'),p)
     });
     book['Sprache(n)'].forEach(p => {
       popUp.call(_('input[name^=Sprache] ~ span'), p)
     });
+/*    book['Schlagwörter'].forEach(p => {
+      popUp.call(_('input[name=Schlagwörter] ~ span'),p)
+    });
+    book['Schlagwörter'].forEach(p => {
+      popUp.call(_('input[name=Schlagwörter] ~ span'),p)
+    });
+    book['Schlagwörter'].forEach(p => {
+      popUp.call(_('input[name=Schlagwörter] ~ span'),p)
+    });
+    book['Schlagwörter'].forEach(p => {
+      popUp.call(_('input[name=Schlagwörter] ~ span'),p)
+    });*/
   }).then(() => {
     ['categories','authors','Person','Sachgruppe','Schlagw','Sprache'].forEach(name => {
         const input = _(`input[name^=${name}]`)
