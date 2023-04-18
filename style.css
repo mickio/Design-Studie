@@ -23,7 +23,7 @@ body {
 }
 .navbar {
   position: absolute;
-  right:50%;
+  left:50%;
   /* width: 100%; */
   padding:0.3em;
   display: flex;
@@ -33,7 +33,7 @@ body {
 .navbar > div {
   display:flex;
   align-items: center;
-  transform: translate(50%);
+  transform: translate(-50%);
 }
 .navbar > div > input {
   height:38.8px;margin:0;

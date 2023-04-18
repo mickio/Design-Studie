@@ -372,7 +372,8 @@ const createListPage = books => books.map( book => `<div class="card-entry">
 </div>
 `).join('')
 
-const listWrapper = (noi,title,str) => `<div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}`
+const listWrapper = (noi,title,str) => `<div class="button" onclick="gotoHome('zoom')"><span class="icon">west</span></div>
+<div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}`
 
 const panelOne = book => `<div class="panel"><p class="title">${book.title}</p><p class="subtitle">${book.subtitle}</p><p class="authors">${book.authors}</p><p class="description">${book.description}</p></div>`
 
@@ -460,18 +461,6 @@ const details = async (bookId,books) => {
     book['Sprache(n)'].forEach(p => {
       popUp.call(_('input[name^=Sprache] ~ span'), p)
     });
-/*    book['Schlagwörter'].forEach(p => {
-      popUp.call(_('input[name=Schlagwörter] ~ span'),p)
-    });
-    book['Schlagwörter'].forEach(p => {
-      popUp.call(_('input[name=Schlagwörter] ~ span'),p)
-    });
-    book['Schlagwörter'].forEach(p => {
-      popUp.call(_('input[name=Schlagwörter] ~ span'),p)
-    });
-    book['Schlagwörter'].forEach(p => {
-      popUp.call(_('input[name=Schlagwörter] ~ span'),p)
-    });*/
   }).then(() => {
     ['categories','authors','Person','Sachgruppe','Schlagw','Sprache'].forEach(name => {
         const input = _(`input[name^=${name}]`)
