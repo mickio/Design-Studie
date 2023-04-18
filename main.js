@@ -324,6 +324,12 @@ const insertObject = list => {
   html += `<div><span class="icon">add</span></div>`
   return html
 }
+
+const insertIdentifiersObject = list => {
+  let html = list.map(({type,identifier}) => `<div><input name="type" value="${type}"><input name="identifier" value="${identifier}"><span class="icon">cancel</span></div>`)
+  html += `<div><span class="icon">add</span></div>`
+  return html
+}
 const createListPage = books => books.map( book => `<div class="card-entry">
   <div><a href="javascript:gotoDetails('zoom','${book.bookId}','${books.map(bk=>bk.bookId)}')">
     <img src="${book.imageLinks.thumbnail}">
@@ -359,7 +365,8 @@ const panelTwo = (bookId,book) => `<div class="panel">
 <label>Ver&ouml;ffentlichungsdatum</label><input name="publishedDate" class="entry" value="${book.publishedDate}" >
 <label>Anzahl Seiten</label><input name="pageCount" class="entry" value="${book.pageCount}" >
 <label>ISBN</label><input name="isbn" class="entry" value="${book.isbn}" >
-<label>industryIdentifiers</label><input name="industryIdentifiers" class="entry" value="${book['industryIdentifiers']}" ><span class="icon invisible">check</span><div></div>
+<fieldset class="info group" name="industryIdentifiers"><legend>Identifiers aus Google search books</legend>${insertIdentifiersObject(book['industryIdentifiers'])}
+</fieldset>
 <label>Art des Inhalts</label><input name="Art des Inhalts" class="entry" value="${book['Art des Inhalts']}" >
 <label>EAN</label><input name="EAN" class="entry" value="${book['EAN']}" >
 <label>Literarische Gattung</label><input name="Literarische Gattung" class="entry" value="${book['Literarische Gattung']}" >
