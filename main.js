@@ -452,6 +452,16 @@ const details = async (bookId,books) => {
           this.nextElementSibling.classList.replace('invisible', 'visible');
         });
         button.addEventListener('click',popUp)
+    });
+    ['industryIdentifiers','creators','identifiers','titles'].forEach(name => {
+      const fset = _(`fieldset[name=${name}]`)
+      const cancelButtons = fset.querySelectorAll('div input + span')
+      const addButton = fset.lastElementChild.lastElementChild
+      for( button of cancelButtons) {
+        button.addEventListener('click',function(){
+          this.parentNode.remove()
+        })
+      }
     })
     _('input[name=categories]').addEventListener('input',function(){
 
