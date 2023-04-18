@@ -271,10 +271,10 @@ const setEdit = (bookId) => {
   button.onclick = () => editBook(bookId)
 }
 
-const setUpdateBook = (bookId) => {
+const setUpdateBook = () => {
   const button = _('#updateBook')
   button.classList.add('active')
-  button.onclick = () => updateBook(bookId)
+  button.onclick = () => updateBook(bookManager.selectedBook.bookId)
 }
 
 async function updateBook(bookId) {
@@ -352,7 +352,7 @@ const panelOne = book => `<div class="panel"><p class="title">${book.title}</p><
 
 const panelTwo = (bookId,book) => `<div class="panel">
 <button id="updateBook" class="button right action" style="position: fixed;" onclick="editBook('${bookId}')"><span class="icon">edit</span> </button>
-<form oninput="setUpdateBook('${bookId}')">
+<form oninput="setUpdateBook()">
 <fieldset class="content column" disabled>
 <label>Titel</label><input name="title" class="title" value="${book.title}" >
 <label>Untertitel</label><input name="subtitle" class="subtitle" value="${book.subtitle}" >
@@ -462,12 +462,14 @@ const details = async (bookId,books) => {
       for( button of cancelButtons) {
         button.addEventListener('click',function(){
           this.parentNode.remove()
+          setUpdateBook()
         })
       }
       addButton.addEventListener('click',function() {
         this.parentNode.insertAdjacentHTML('beforebegin',insertDataset(name))
         this.parentNode.previousElementSibling.lastElementChild.addEventListener('click',function(){
           this.parentNode.remove()
+          setUpdateBook()
         })
       })
     })
@@ -574,6 +576,7 @@ const popUp = async function (val) {
     if (_('fieldset:disabled')) return 
     this.classList.replace('pop-up','not-visible')
     setTimeout(() =>this.remove(),300)
+    setUpdateBook()
   })
   await nextFrame()
   tag.classList.replace('not-visible','pop-up')
