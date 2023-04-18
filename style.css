@@ -354,6 +354,7 @@ fieldset img {
 }
 .group div {
   display: flex;
+  padding-bottom: 5px
 }
 fieldset:disabled .group span {
   display:none

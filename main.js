@@ -319,14 +319,16 @@ const chooseColor = () => {
 
 const getColor = chooseColor()
 
+const insertDataset = (name,...params) => name == 'industryIdentifiers' ? `<div><input name="type" value="${params[0]??''}"><input name="identifier" value="${params[1]??''}"><span class="icon">cancel</span></div>` : `<div><input value="${params[0]??''}"><input  value="${params[1]??''}"><input value="${params[2]??''}"><span class="icon">cancel</span></div>`
+
 const insertObject = list => {
-  let html = list.map(([one,two,three]) => `<div><input value="${one}"><input  value="${two}"><input value="${three}"><span class="icon">cancel</span></div>`)
+  let html = list.map( ds => insertDataset('',...ds)).join('')
   html += `<div><span class="icon">add</span></div>`
   return html
 }
 
 const insertIdentifiersObject = list => {
-  let html = list.map(({type,identifier}) => `<div><input name="type" value="${type}"><input name="identifier" value="${identifier}"><span class="icon">cancel</span></div>`)
+  let html = list.map(({type,identifier}) => insertDataset('industryIdentifiers',type,identifier)).join('')
   html += `<div><span class="icon">add</span></div>`
   return html
 }
@@ -462,6 +464,12 @@ const details = async (bookId,books) => {
           this.parentNode.remove()
         })
       }
+      addButton.addEventListener('click',function() {
+        this.parentNode.insertAdjacentHTML('beforebegin',insertDataset(name))
+        this.parentNode.previousElementSibling.lastElementChild.addEventListener('click',function(){
+          this.parentNode.remove()
+        })
+      })
     })
     _('input[name=categories]').addEventListener('input',function(){
 
