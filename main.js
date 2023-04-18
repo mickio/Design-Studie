@@ -216,6 +216,8 @@ function scrollToTab(ind) {
   scroller.scrollTo({left:scrollStop,behavior:'smooth'})
   for ( tab of scrollerTitleBar.children) tab.classList.remove('active-tab')
   scrollerTitleBar.children[ind].classList.add('active-tab')
+  if (ind == 1) scroller.children[1].firstElementChild.classList.remove('hidden')
+  else scroller.children[1].firstElementChild.classList.add('hidden')
 }
 
 function scroller() {
@@ -375,7 +377,7 @@ const listWrapper = (noi,title,str) => `<div style="text-align:center"><h2 class
 const panelOne = book => `<div class="panel"><p class="title">${book.title}</p><p class="subtitle">${book.subtitle}</p><p class="authors">${book.authors}</p><p class="description">${book.description}</p></div>`
 
 const panelTwo = (bookId,book) => `<div class="panel">
-<button id="updateBook" class="button right action" style="position: fixed;" onclick="editBook('${bookId}')"><span class="icon">edit</span> </button>
+<button id="updateBook" class="button right bottom action hidden" style="position: fixed;" onclick="editBook('${bookId}')"><span class="icon">edit</span> </button>
 <form oninput="setUpdateBook()">
 <fieldset class="content column" disabled>
 <label>Titel</label><input name="title" class="title" value="${book.title}" >

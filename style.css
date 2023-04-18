@@ -62,6 +62,9 @@ body {
 	opacity: 1;
 	transition: opacity .5s ease;
 }
+.hidden {
+  display: none !important;
+}
 /* functional elements */
 .button {
 	position: fixed;
