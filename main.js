@@ -151,13 +151,17 @@ const bookManager = new BookManager(apiKey)
 const goto = async (pg,transition,...params) => { 
   await new Promise(x => setTimeout(x,500))
   if (typeof transition === 'object') {
-    ({transition,beforeTransition,afterTransition} = transition)
+    ({transition,leaveMethod,enterMethod,beforeTransition,afterTransition} = transition)
   }
   if (typeof beforeTransition === 'function') await beforeTransition()
-  const tpl = await pg(...params) 
-  const page = div(tpl)
-  if (typeof afterTransition === 'function') await afterTransition()
-  const prevPage = anchor.firstElementChild
+  let page
+  if (typeof enterMethod === 'function') {
+    page = await enterMethod()
+  } else {
+    const tpl = await pg(...params) 
+    page = div(tpl)
+  }
+  const prevPage = anchor.lastElementChild
   page.classList.add(transition+"-enter-start")
   prevPage.classList.add(transition+"-leave-start")
   anchor.appendChild(page)
@@ -167,9 +171,11 @@ const goto = async (pg,transition,...params) => {
   await new Promise ( resolve => anchor.addEventListener('transitionend',()=>{
       anchor.lastElementChild.classList.remove(transition+'-enter-end')
       console.log("removed all transition classes")
-      anchor.firstElementChild.remove()
+      if (typeof leaveMethod === 'function') leaveMethod(prevPage)
+      else anchor.firstElementChild.remove()
       resolve()
     },{once:true} ))
+  if (typeof afterTransition === 'function') await afterTransition()
 }
 
 const gotoDetails = (transition,...params) => goto(details,transition,...params)
