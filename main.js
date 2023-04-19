@@ -198,7 +198,7 @@ const switchToDetails = async (transition,...params) => {
       const icon = this.firstElementChild
       icon.remove()
       this.classList.add('uploading')
-      goback('zoom').then(() => {
+      goback('flyaway').then(() => {
         this.classList.remove('uploading')
         this.append(icon)
       })
@@ -215,8 +215,10 @@ const goback = async (transition,...params) => {
   const transitionObj = {
     transition: transition,
     enterMethod: () => new Promise ( resolve => {
-      anchor.lastElementChild.previousElementSibling.style.removeProperty('display')
-      resolve(anchor.lastElementChild.previousElementSibling)
+      const page = anchor.lastElementChild.previousElementSibling
+      page.style.removeProperty('display')
+      //anchor.append(page)
+      resolve(page)
     })
   }
   await goto('',transitionObj,...params)
@@ -260,7 +262,7 @@ const home = async () =>  new Promise(resolve => {
       let html = `<div onclick="refreshSample()" class="button right bottom"><span class="icon">refresh</span></div>`
       html += randomSample.map( cat => {
       let category = `<div><h1>${cat.category}</h1><div class="slider">`
-      category+=cat.books.map( bk => bk.imageLinks?.thumbnail ? `<a href="javascript:gotoDetails('enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><img width="128px" src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:gotoDetails('zoom','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
+      category+=cat.books.map( bk => bk.imageLinks?.thumbnail ? `<a href="javascript:gotoDetails('enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><img width="128px" src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:gotoDetails('enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
     category+=`<div class="card-content" data-category="${cat.category}"><p style="font-size:48pt" class="icon">more_horiz</p></div>`
     category+="</div></div>"
     return category
@@ -419,7 +421,7 @@ const insertIdentifiersObject = list => {
 }
 
 const createListPage = books => books.map( book => `<div class="card-entry">
-  <div><a href="javascript:gotoDetails('zoom','${book.bookId}','${books.map(bk=>bk.bookId)}')">
+  <div><a href="javascript:gotoDetails('enlarge','${book.bookId}','${books.map(bk=>bk.bookId)}')">
     <img src="${book.imageLinks.thumbnail}">
     </a>
   </div>
@@ -557,7 +559,7 @@ const details = async (bookId,books) => {
       suggest.call(this,this.parentNode,cats,term)
       })
     })
-  ,500)
+  ,3100)
 
   const pos = books.findIndex(bid => bid == bookId)
   const nextBookId = books[pos+1]

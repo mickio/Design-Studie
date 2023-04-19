@@ -134,31 +134,33 @@ body {
   overflow: scroll
 }
 /* transitions */
-.enlarge-enter-start {
+.enlarge-enter-start, .minimize-leave-end {
   transform: translate(calc(var(--box-positionX) + var(--scrollX)),calc(var(--box-positionY) - var(--scrollY)));
   width: var(--box-width) !important;
   height: var(--box-height) !important;
   opacity: 0;
 }
-.enlarge-enter-end {
+.enlarge-enter-end, .minimize-leave-start {
   transition: all var(--duration) ease-in;
   transform: translate(0,0);
   width: 100vw;
   height: 100vh;
   opacity: 1;
 }
-.slide-leave-start {
+.flyaway-leave-start {
 	opacity: 1;
+	transform: scale3d(1.,1.,1.) translate(0,0)
 }
-.slide-leave-end {
+.flyaway-leave-end {
 	opacity: 0;
-	transition: opacity var(--duration) cubic-bezier(1, 0, 1.0, 0);
+	transform: scale3d(3.0,3.0,3.0) translate(200px,20px);
+	transition: all var(--duration) cubic-bezier(0.4, 0.2, .9, 1);
 }
 .slide-enter-start {
   transform: translate(-100vw) scale3d(.9, 0.9,.9);
 }
 .slide-enter-end {
-  transition: transform var(--duration) cubic-bezier(1,0,0,1);
+  transition: transform var(--duration) cubic-bezier(1,0.5,0.5,1);
   transform: translate(0,0) scale3d(1,1,1);
 }
 .slide-left-enter-start,.slide-right-leave-end {
