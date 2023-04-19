@@ -1,4 +1,4 @@
-const apiKey='0fNFMpvpJoc2t7BCzvpYqkNiOKYDPEDvk9fk8SkNJUFk9Zn5v5RVYA7jecqtRrge'
+const apiKey=''
 const anchor = document.getElementById('main')
 const currentPage = () => document.getElementById('main').lastElementChild
 const cats = ["Antiquit&auml;ten & Sammlerst&uuml;cke","Architektur","Belletristik","Bibel","Bildung","Biographie & Autobiographie","Business & Wirtschaft","Comics & Graphic Novels","Computer","Darstellende K&uuml;nste","Design","Drama","Familie & Beziehungen","Fremdsprachenstudium","Garten","Geschichte","Gesundheit & Fitness","Handwerk & Hobby","Haus & Heim","Haustiere","Humor","Jugendliteratur","Kinderb&uuml;cher","Kochen","Kunst","K&ouml;rper, Geist und Seele","Literaturkritik","Literatursammlungen","Lyrik","Mathematik","Medizin","Musik","Nachschlagewerke","Natur","Naturwissenschaften","Philosophie","Photographie","Politikwissenschaft","Psychologie","Recht","Reisen","Religion","Sachbucher f&uuml;r Kinder","Sachb&uuml;cher f&uuml;r junge Erwachsene","Selbsthilfe","Sozialwissenschaften","Spiel & Freizeit","Sport & Freizeit","Sprachwissenschaften","Studium","Technik & Ingenieurwesen","True Crime","Verkehr"]
@@ -59,7 +59,7 @@ class BookManager {
   set onFetchRandomSampleOnce(callback) {
     this._observerRandomSample.register(callback,'once')
   }
-  
+  /*
   constructor(apiKey){
     this.app = new Realm.App({ id: 'boox-urcjb' })
     this._observerRandomSample = new Observer()
@@ -68,7 +68,8 @@ class BookManager {
       this.user = usr;
       console.log("Successfully logged in!", usr);
     }).then(this.fetchRandomSample) 
-  }/*
+  }
+  */
   constructor() {
     this._observerRandomSample = new Observer()
   	this.user = {functions:{
@@ -96,7 +97,7 @@ class BookManager {
     }}
     this.fetchRandomSample()
   }
-*/
+
   fetchRandomSample = async () => {
     this.user.functions.randomSample().then(r => {
       this.randomSample = r.items.map(cat => { return {
@@ -150,7 +151,7 @@ class BookManager {
 const bookManager = new BookManager(apiKey)
 
 const goto = async (pg,transition,...params) => { 
-  //await new Promise(x => setTimeout(x,500))
+  await new Promise(x => setTimeout(x,500))
   let leaveMethod,enterMethod,beforeTransition,afterTransition;
   if (typeof transition === 'object') {
     ({transition,leaveMethod,enterMethod,beforeTransition,afterTransition} = transition)
@@ -495,7 +496,7 @@ const panelTwo = (bookId,book) => `<div class="panel">
 
 const details = async (bookId,books) => {
   books = books.split(/\s*,\s*/)
-  //setTimeout(() =>
+  setTimeout(() =>
   bookManager.fetchBook(bookId)
   .then(book => {
     _('div.card-content.tabs').insertAdjacentHTML('afterbegin',panelOne(book))
@@ -521,7 +522,6 @@ const details = async (bookId,books) => {
       popUp.call(_('input[name^=Sprache] ~ span'), p)
     });
     const img = new Image()
-    console.log('das bild ist:',book.image)
     img.src = book.image
     img.addEventListener('load',() => _('div.card-image > img').replaceWith(img))
   }).then(() => {
@@ -555,9 +555,9 @@ const details = async (bookId,books) => {
 
       const term = this.value
       suggest.call(this,this.parentNode,cats,term)
+      })
     })
-
-  })//,500)
+  ,500)
 
   const pos = books.findIndex(bid => bid == bookId)
   const nextBookId = books[pos+1]
@@ -597,7 +597,7 @@ const search = async () => {
   button.classList.add('uploading')
   button.text = ''
   const r = await bookManager.search(term)
-  //await new Promise(resolve => setTimeout(resolve,1000))
+  await new Promise(resolve => setTimeout(resolve,1000))
   button.classList.remove('uploading')
   button.text = "search"
   document.querySelector('.navbar input').value = ""
