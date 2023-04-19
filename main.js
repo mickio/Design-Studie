@@ -151,6 +151,7 @@ const bookManager = new BookManager(apiKey)
 
 const goto = async (pg,transition,...params) => { 
   await new Promise(x => setTimeout(x,500))
+  let leaveMethod,enterMethod,beforeTransition,afterTransition;
   if (typeof transition === 'object') {
     ({transition,leaveMethod,enterMethod,beforeTransition,afterTransition} = transition)
   }
@@ -180,23 +181,27 @@ const goto = async (pg,transition,...params) => {
   if (typeof afterTransition === 'function') await afterTransition()
 }
 
-const gotoDetails = (transition,...params) => {
+const gotoDetails = async (transition,...params) => {
   transitionObj = {
     transition: transition,
     leaveMethod: prevPage => prevPage.style.setProperty('display','none')
   }
-  goto(details,transitionObj,...params)
-.then(() => {
-  currentPage().style.setProperty('background-color','var(--brown)')
-  _('#back').addEventListener('click',function() {
-    const icon = this.firstElementChild
-    icon.remove()
-    this.classList.add('uploading')
-    goback('zoom').then(() => {
-      this.classList.remove('uploading')
-      this.append(icon)
+  await switchToDetails(transitionObj,...params)
+}
+
+const switchToDetails = async (transition,...params) => {
+  goto(details,transition,...params)
+  .then(() => {
+    currentPage().style.setProperty('background-color','var(--brown)')
+    _('#back').addEventListener('click',function() {
+      const icon = this.firstElementChild
+      icon.remove()
+      this.classList.add('uploading')
+      goback('zoom').then(() => {
+        this.classList.remove('uploading')
+        this.append(icon)
+      })
     })
-  })
 })}
 
 const refreshSample = () => {
@@ -573,8 +578,8 @@ const details = async (bookId,books) => {
   </div>
   
   <div id="back" class="button "><span class="icon">north</span></div>
-  ${previousBookId ? '<div onclick="gotoDetails(\'slide-right\',\''+previousBookId+'\',\''+books+'\')" class="button v-centered ease-enter-end" ><span class="icon">arrow_back_ios</span></div>' : ''}
-  ${nextBookId ? '<div onclick="gotoDetails(\'slide-left\',\''+nextBookId+'\',\''+books+'\')" class="button right v-centered ease-enter-end" ><span class="icon">arrow_forward_ios</span></div>' : ''}
+  ${previousBookId ? '<div onclick="switchToDetails(\'slide-right\',\''+previousBookId+'\',\''+books+'\')" class="button v-centered ease-enter-end" ><span class="icon">arrow_back_ios</span></div>' : ''}
+  ${nextBookId ? '<div onclick="switchToDetails(\'slide-left\',\''+nextBookId+'\',\''+books+'\')" class="button right v-centered ease-enter-end" ><span class="icon">arrow_forward_ios</span></div>' : ''}
 </div>
 `
 } 
@@ -609,7 +614,6 @@ function nextFrame() {
 			if(count) requestAnimationFrame(step)
 			else requestAnimationFrame(resolve)
 		}
-		console.log('stepping...')
 		requestAnimationFrame(step);
 	});
 }
@@ -625,7 +629,7 @@ const setBoundingBox = clickEvent => {
     rootStyles.setProperty("--box-positionY",`${box.y}px`)
     rootStyles.setProperty("--scrollX", `${posX}px`)
     rootStyles.setProperty("--scrollY", `${posY}px`)
-    console.debug(`[Transition][setBoundingBox] Set coordinates ${box.x}, ${box.y}, ${box.width}, ${box.height} for zoom transitions and ${posX} resp. ${posY}`)
+    //console.debug(`[Transition][setBoundingBox] Set coordinates ${box.x}, ${box.y}, ${box.width}, ${box.height} for zoom transitions and ${posX} resp. ${posY}`)
 }
 
 anchor.addEventListener("click",setBoundingBox)
