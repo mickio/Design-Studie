@@ -187,6 +187,7 @@ const gotoDetails = (transition,...params) => {
   }
   goto(details,transitionObj,...params)
 .then(() => {
+  currentPage().style.setProperty('background-color','var(--brown)')
   _('#back').addEventListener('click',function() {
     const icon = this.firstElementChild
     icon.remove()
@@ -233,7 +234,9 @@ const gotoCategories = async (transition,cat) => {
     transition: transition,
     leaveMethod: prevPage => prevPage.style.setProperty('display','none')
   }
-  await goto(categories,transitionObj,cat)  
+  await goto(categories,transitionObj,cat)
+  currentPage().style.setProperty('background-color','white')
+
 }
 
 const gotoSearch = async (transition,term) => {
@@ -242,6 +245,7 @@ const gotoSearch = async (transition,term) => {
     leaveMethod: prevPage => prevPage.style.setProperty('display','none')
   }
   await goto(search,transitionObj,term)  
+  currentPage().style.setProperty('background-color','white')
 }
 
 const home = async () =>  new Promise(resolve => {
