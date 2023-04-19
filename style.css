@@ -16,8 +16,8 @@ body {
     font-size: 15pt;
     margin: 0;
     height: 100vh;
-    /* background-image:url(buecherhaufen.jpg); */
-    background-color: var(--brown);
+    background-image:url(buecherhaufen.jpg);
+    /* background-color: var(--brown); */
     background-size: cover;
     background-repeat: no-repeat;
 }

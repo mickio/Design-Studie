@@ -1,9 +1,10 @@
 const apiKey=''
 const anchor = document.getElementById('main')
+const currentPage = () => document.getElementById('main').lastElementChild
 const cats = ["Antiquit&auml;ten & Sammlerst&uuml;cke","Architektur","Belletristik","Bibel","Bildung","Biographie & Autobiographie","Business & Wirtschaft","Comics & Graphic Novels","Computer","Darstellende K&uuml;nste","Design","Drama","Familie & Beziehungen","Fremdsprachenstudium","Garten","Geschichte","Gesundheit & Fitness","Handwerk & Hobby","Haus & Heim","Haustiere","Humor","Jugendliteratur","Kinderb&uuml;cher","Kochen","Kunst","K&ouml;rper, Geist und Seele","Literaturkritik","Literatursammlungen","Lyrik","Mathematik","Medizin","Musik","Nachschlagewerke","Natur","Naturwissenschaften","Philosophie","Photographie","Politikwissenschaft","Psychologie","Recht","Reisen","Religion","Sachbucher f&uuml;r Kinder","Sachb&uuml;cher f&uuml;r junge Erwachsene","Selbsthilfe","Sozialwissenschaften","Spiel & Freizeit","Sport & Freizeit","Sprachwissenschaften","Studium","Technik & Ingenieurwesen","True Crime","Verkehr"]
 
-const _ = el => document.querySelector(el)
-const __ = el => document.querySelectorAll(el)
+const _ = el => currentPage().querySelector(el)
+const __ = el => currentPage().querySelectorAll(el)
 const div = html => {
   const d = document.createElement('div')
   d.insertAdjacentHTML('afterbegin',html)
@@ -155,37 +156,47 @@ const goto = async (pg,transition,...params) => {
   }
   if (typeof beforeTransition === 'function') await beforeTransition()
   let page
+  const prevPage = anchor.lastElementChild
   if (typeof enterMethod === 'function') {
     page = await enterMethod()
   } else {
     const tpl = await pg(...params) 
     page = div(tpl)
+    anchor.appendChild(page)
   }
-  const prevPage = anchor.lastElementChild
   page.classList.add(transition+"-enter-start")
   prevPage.classList.add(transition+"-leave-start")
-  anchor.appendChild(page)
   await nextFrame()
   page.classList.replace(transition+"-enter-start",transition+"-enter-end")
   prevPage.classList.replace(transition+"-leave-start",transition+"-leave-end")
   await new Promise ( resolve => anchor.addEventListener('transitionend',()=>{
-      anchor.lastElementChild.classList.remove(transition+'-enter-end')
+      page.classList.remove(transition+'-enter-end')
+      prevPage.classList.remove(transition+'-leave-end')
       console.log("removed all transition classes")
       if (typeof leaveMethod === 'function') leaveMethod(prevPage)
-      else anchor.firstElementChild.remove()
+      else prevPage.remove()
       resolve()
     },{once:true} ))
   if (typeof afterTransition === 'function') await afterTransition()
 }
 
-const gotoDetails = (transition,...params) => goto(details,transition,...params)
+const gotoDetails = (transition,...params) => {
+  transitionObj = {
+    transition: transition,
+    leaveMethod: prevPage => prevPage.style.setProperty('display','none')
+  }
+  goto(details,transitionObj,...params)
 .then(() => {
   _('#back').addEventListener('click',function() {
-    this.firstElementChild.remove()
+    const icon = this.firstElementChild
+    icon.remove()
     this.classList.add('uploading')
-    goto(currentList,'zoom')
+    goback('zoom').then(() => {
+      this.classList.remove('uploading')
+      this.append(icon)
+    })
   })
-})
+})}
 
 const refreshSample = () => {
   bookManager.fetchRandomSample().then(()=>gotoHome('zoom'))
@@ -193,12 +204,44 @@ const refreshSample = () => {
   _('div.button.right.bottom').classList.add('uploading')
 }
 
+const goback = async (transition,...params) => {
+  const transitionObj = {
+    transition: transition,
+    enterMethod: () => new Promise ( resolve => {
+      anchor.lastElementChild.previousElementSibling.style.removeProperty('display')
+      resolve(anchor.lastElementChild.previousElementSibling)
+    })
+  }
+  await goto('',transitionObj,...params)
+}
+
 const gotoHome = async transition =>  {
-  goto(home,transition)
+  await goto(home,transition)
   __('div.slider > div:last-of-type').forEach(el => el.addEventListener('click', function({ target }) {
-      this.querySelector('p').remove()
+      const icon = this.firstElementChild
+      icon.remove()
       this.classList.add('uploading')
+      gotoCategories('zoom',this.dataset.category).then(() => {
+        this.classList.remove('uploading')
+        this.append(icon)
+      })
   }))
+}
+
+const gotoCategories = async (transition,cat) => {
+  transitionObj = {
+    transition: transition,
+    leaveMethod: prevPage => prevPage.style.setProperty('display','none')
+  }
+  await goto(categories,transitionObj,cat)  
+}
+
+const gotoSearch = async (transition,term) => {
+  transitionObj = {
+    transition: transition,
+    leaveMethod: prevPage => prevPage.style.setProperty('display','none')
+  }
+  await goto(search,transitionObj,term)  
 }
 
 const home = async () =>  new Promise(resolve => {
@@ -208,7 +251,7 @@ const home = async () =>  new Promise(resolve => {
       html += randomSample.map( cat => {
       let category = `<div><h1>${cat.category}</h1><div class="slider">`
       category+=cat.books.map( bk => bk.imageLinks?.thumbnail ? `<a href="javascript:gotoDetails('enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><img width="128px" src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:gotoDetails('zoom','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
-    category+=`<div class="card-content"><a href="javascript:goto(categories,'slide','${cat.category}')"><p style="font-size:48pt" class="icon">more_horiz</p></a></div>`
+    category+=`<div class="card-content" data-category="${cat.category}"><p style="font-size:48pt" class="icon">more_horiz</p></div>`
     category+="</div></div>"
     return category
     }).join('')
@@ -379,7 +422,7 @@ const createListPage = books => books.map( book => `<div class="card-entry">
 </div>
 `).join('')
 
-const listWrapper = (noi,title,str) => `<div class="button" onclick="gotoHome('zoom')"><span class="icon">west</span></div>
+const listWrapper = (noi,title,str) => `<div class="button" onclick="goback('zoom')"><span class="icon">west</span></div>
 <div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}`
 
 const panelOne = book => `<div class="panel"><p class="title">${book.title}</p><p class="subtitle">${book.subtitle}</p><p class="authors">${book.authors}</p><p class="description">${book.description}</p></div>`
@@ -534,22 +577,20 @@ const details = async (bookId,books) => {
 
 /* weitere Ansichten */
 const categories = async cat => {
-  currentList = () => categories(cat)
   const r = await bookManager.search(cat)
   return listWrapper(r.numberOfItems,cat,createListPage(r.result))
 }
 
 const search = async () => {
-  currentList = search
-  const term = _('.navbar input').value
-  const button = _('.navbar a')
+  const term = document.querySelector('.navbar input').value
+  const button = document.querySelector('.navbar a')
   button.classList.add('uploading')
   button.text = ''
   const r = await bookManager.search(term)
   await new Promise(resolve => setTimeout(resolve,1000))
   button.classList.remove('uploading')
   button.text = "search"
-  _('.navbar input').value = ""
+  document.querySelector('.navbar input').value = ""
   return listWrapper(r.numberOfItems,term,createListPage(r.result))
 }
 
