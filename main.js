@@ -421,9 +421,12 @@ const insertIdentifiersObject = list => {
 }
 
 const createListPage = books => books.map( book => `<div class="card-entry">
-  <div><a href="javascript:gotoDetails('enlarge','${book.bookId}','${books.map(bk=>bk.bookId)}')">
+  <div>
+    <a href="javascript:gotoDetails('enlarge','${book.bookId}','${books.map(bk=>bk.bookId)}')">
     <img src="${book.imageLinks.thumbnail}">
     </a>
+    <p class="download"><a href="${book.path}"><span class="icon">download</span><span>download</span></a>
+    </p>
   </div>
   <div>
     <p class="title ${getColor()}">${book.title} </p>
@@ -434,10 +437,10 @@ const createListPage = books => books.map( book => `<div class="card-entry">
 </div>
 `).join('')
 
-const listWrapper = (noi,title,str) => `<div class="button" onclick="goback('zoom')"><span class="icon">west</span></div>
+const listWrapper = (noi,title,str) => `<div class="button" onclick="goback('flyaway')"><span class="icon">west</span></div>
 <div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}`
 
-const panelOne = book => `<div class="panel"><p class="title">${book.title}</p><p class="subtitle">${book.subtitle}</p><p class="authors">${book.authors}</p><p class="description">${book.description}</p></div>`
+const panelOne = book => `<div class="panel"><p class="title">${book.title}</p><p class="subtitle">${book.subtitle}</p><p class="authors">${book.authors}</p><p class="description">${book.description}</p><p class="download"><a href="${book.path}"><span class="icon">download</span><span>herunterladen</span></a></p></div>`
 
 const panelTwo = (bookId,book) => `<div class="panel">
 <button id="updateBook" class="button right bottom action hidden" style="position: fixed;" onclick="editBook('${bookId}')"><span class="icon">edit</span> </button>
@@ -559,7 +562,7 @@ const details = async (bookId,books) => {
       suggest.call(this,this.parentNode,cats,term)
       })
     })
-  ,3100)
+  ,500)
 
   const pos = books.findIndex(bid => bid == bookId)
   const nextBookId = books[pos+1]
@@ -605,8 +608,6 @@ const search = async () => {
   document.querySelector('.navbar input').value = ""
   return listWrapper(r.numberOfItems,term,createListPage(r.result))
 }
-
-const image = () => '<div style="background-color:var(--milka);height: 100%;display:flex;align-items:center;justify-content:center;font-size: 72px; color: var(--orange)"><p>Details</p></div>'
 
 /* noch mehr helpers */
 function nextFrame() {
@@ -672,5 +673,5 @@ const suggest = function(mtPoint, suggestions, term) {
   }))
 }
 
-let currentList
+
 gotoHome('enlarge')

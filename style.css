@@ -255,7 +255,7 @@ div.slider a:link {
 .tabs > * {
 	scroll-snap-align: center;
 	scroll-snap-stop: always;
-	min-width: 100vw;
+	width: 100vw;
 }
 /* Details styles */
 .card {
@@ -332,10 +332,13 @@ div.slider a:link {
  /* transform: rotate(180deg);*/
   height: calc(100vh - 5em);
   overflow-y: scroll;
-  width: 100vw;
   flex-shrink: 0;
 }
-.panel {background-color: white; padding:0 1em;box-sizing: border-box;}
+.panel {
+  background-color: white; 
+  padding:0 1em;
+  box-sizing: border-box;
+}
 
 /* Form tab */
 textarea {
@@ -464,7 +467,7 @@ fieldset .group div:last-child span {
 /* Text styles */
 .title {
 	font-family:  'Walbaumgrot';
-	font-weight: 00;
+	font-weight: 500;
 	font-size: 18pt;
 	margin: 5px 0;
 }
@@ -472,7 +475,7 @@ fieldset .group div:last-child span {
 	font-family:  'Walbaumgrot';
 	font-style: italic;
 	font-weight: 500;
-	font-size: 18pt;
+	font-size: 12pt;
 	color: var(--black);
 	margin: 0;
 }
@@ -509,13 +512,18 @@ fieldset .group div:last-child span {
   border-top: 1px solid grey;
 }
 .card-entry img {
-  width: 128px
+  width: 128px;
+  margin: 10px 5px;
 }
 .card-entry > div {
-  padding: 0 10px;
+  padding: 0 10px 0 0;
 }
-.card-entry > div:first-child {
-  padding: 10px 0;
+.card-entry div:first-child {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: smaller !important;
+  font-weight: 500;
 }
 .color-blue {
   color: var(--blueviolet)
@@ -614,4 +622,26 @@ fieldset:enabled .tags > div:after {
 }
 .options p:hover {
   background-color: lightgray
+}
+.download {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 5px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background-color: var(--green);
+  border-radius: 5px;
+}
+.download a {
+  text-decoration: none;
+  color: black;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.download:active {
+  background-color: var(--orange)
 }
