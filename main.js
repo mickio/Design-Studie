@@ -642,13 +642,13 @@ anchor.addEventListener("click",setBoundingBox)
 const popUp = async function (val) {
   const input = this.previousElementSibling
   const container = this.parentNode.nextElementSibling
-  const text = val ?? input.value
+  const text = typeof val === 'string' ? val : input.value
   input.value = ''
   this.classList.replace('visible','invisible')
   container.insertAdjacentHTML('beforeend',`<div class="not-visible">${text}</div>`)
   const tag = container.lastElementChild
   tag.addEventListener('click',function(){
-    if (_('fieldset:disabled')) return 
+    if (_('fieldset:disabled')) return
     this.classList.replace('pop-up','not-visible')
     setTimeout(() =>this.remove(),300)
     setUpdateBook()
