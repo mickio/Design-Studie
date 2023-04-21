@@ -611,6 +611,7 @@ fieldset:enabled .tags > div:after {
   right:-10px;
   bottom: 4px
 }
+.icon:active {color: var(--orange)}
 .options{
   position: absolute;
   background-color: white;
@@ -644,4 +645,8 @@ fieldset:enabled .tags > div:after {
 }
 .download:active {
   background-color: var(--orange)
+}
+.more-button {
+  height: 40px;
+  width:100%;
 }

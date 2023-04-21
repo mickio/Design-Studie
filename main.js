@@ -83,7 +83,8 @@ class BookManager {
       	}})
   	  }},
     	getBook: async _ => book,
-    	search: async t => {return {numberOfItems: search_data.numberOfItems,result:search_data.result.map(bk=>{
+    	search: async t => {
+    	  return {numberOfItems: search_data.numberOfItems,result:search_data.result.map(bk=>{
     	  return {
     	    title:bk.title,
     	    subtitle:bk.subtitle,
@@ -121,7 +122,13 @@ class BookManager {
     return bk
   })
   
-  search = async term => this.user.functions.search(term).then(r=>{return {numberOfItems:r.numberOfItems,result: r.result.map(bk=>{return{
+  search = async (term,pageCount) => this.user.functions.search(term,pageCount)
+  .then(r=>{
+    this._term = term
+    this._numberOfItems = r.numberOfItems
+    pageCount || (this._pageCount = 0);
+    return {numberOfItems:r.numberOfItems,result: r.result.map(bk=>{
+      return{
     bookId:bk._id.toHexString(),
     title: bk.title,
     subtitle:bk.subtitle,
@@ -129,6 +136,13 @@ class BookManager {
     authors: bk.authors,
     imageLinks: bk.imageLinks
   }})}})
+  
+  fetchNextSearchResult = async () => {
+    this._pageCount += 1;
+    if (12*this._pageCount > this._numberOfItems) return 
+    const nextChunk = await this.search(this._term, this._pageCount)
+    return nextChunk
+  }
 
   updateBook = async (bookId,book) => this.user.functions.updateBook(bookId,book)
   
@@ -221,6 +235,7 @@ const goback = async (transition,...params) => {
       resolve(page)
     })
   }
+  endOfListWatcher?.disconnect()
   await goto('',transitionObj,...params)
 }
 
@@ -244,7 +259,8 @@ const gotoCategories = async (transition,cat) => {
   }
   await goto(categories,transitionObj,cat)
   currentPage().style.setProperty('background-color','white')
-
+  const moreButton = _('.more-button')
+  endOfListWatcher = createEndOfListWatcher(moreButton)
 }
 
 const gotoSearch = async (transition,term) => {
@@ -254,6 +270,8 @@ const gotoSearch = async (transition,term) => {
   }
   await goto(search,transitionObj,term)  
   currentPage().style.setProperty('background-color','white')
+  const moreButton = _('.more-button')
+  endOfListWatcher = createEndOfListWatcher(moreButton)
 }
 
 const home = async () =>  new Promise(resolve => {
@@ -438,7 +456,7 @@ const createListPage = books => books.map( book => `<div class="card-entry">
 `).join('')
 
 const listWrapper = (noi,title,str) => `<div class="button" onclick="goback('flyaway')"><span class="icon">west</span></div>
-<div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}`
+<div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
 
 const panelOne = book => `<div class="panel"><p class="title">${book.title}</p><p class="subtitle">${book.subtitle}</p><p class="authors">${book.authors}</p><p class="description">${book.description}</p><p class="download"><a href="${book.path}"><span class="icon">download</span><span>herunterladen</span></a></p></div>`
 
@@ -672,6 +690,28 @@ const suggest = function(mtPoint, suggestions, term) {
     popUp.call(inp.nextElementSibling)
   }))
 }
+/* intersection observer for infinite scrolling */
+const createEndOfListWatcher = observedElement => {
+  const text = observedElement.text
+  const nix = "mehr gibt's nicht"
+  const fetchMoreItems = async ([oe]) => {
+    if (!oe.isIntersecting) return
+    observedElement.classList.add('uploading')
+    //observedElement.text = ''
+  await new Promise(x => setTimeout(x,1000))
+  bookManager.fetchNextSearchResult()
+    .then(resp => {
+      if (!resp) watcher.disconnect()
+      const html = createListPage(resp?.result||[])
+      observedElement.classList.remove('uploading')
+      //observedElement.textContent = resp ? text : nix
+      observedElement.insertAdjacentHTML('beforebegin',html)
+    })
+  }
+  const watcher = new IntersectionObserver(fetchMoreItems)
+  watcher.observe(observedElement)
+  return watcher
+}
 
-
+let endOfListWatcher
 gotoHome('enlarge')
