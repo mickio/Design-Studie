@@ -1,4 +1,5 @@
 const apiKey=''
+const PER_PAGE = 12
 const anchor = document.getElementById('main')
 const currentPage = () => document.getElementById('main').lastElementChild
 const cats = ["Antiquit&auml;ten & Sammlerst&uuml;cke","Architektur","Belletristik","Bibel","Bildung","Biographie & Autobiographie","Business & Wirtschaft","Comics & Graphic Novels","Computer","Darstellende K&uuml;nste","Design","Drama","Familie & Beziehungen","Fremdsprachenstudium","Garten","Geschichte","Gesundheit & Fitness","Handwerk & Hobby","Haus & Heim","Haustiere","Humor","Jugendliteratur","Kinderb&uuml;cher","Kochen","Kunst","K&ouml;rper, Geist und Seele","Literaturkritik","Literatursammlungen","Lyrik","Mathematik","Medizin","Musik","Nachschlagewerke","Natur","Naturwissenschaften","Philosophie","Photographie","Politikwissenschaft","Psychologie","Recht","Reisen","Religion","Sachbucher f&uuml;r Kinder","Sachb&uuml;cher f&uuml;r junge Erwachsene","Selbsthilfe","Sozialwissenschaften","Spiel & Freizeit","Sport & Freizeit","Sprachwissenschaften","Studium","Technik & Ingenieurwesen","True Crime","Verkehr"]
@@ -122,7 +123,7 @@ class BookManager {
     return bk
   })
   
-  search = async (term,pageCount) => this.user.functions.search(term,pageCount)
+  search = async (term,pageCount) => this.user.functions.search(term,pageCount,PER_PAGE)
   .then(r=>{
     this._term = term
     this._numberOfItems = r.numberOfItems
@@ -139,7 +140,7 @@ class BookManager {
   
   fetchNextSearchResult = async () => {
     this._pageCount += 1;
-    if (12*this._pageCount > this._numberOfItems) return 
+    if (PER_PAGE*this._pageCount > this._numberOfItems) return 
     const nextChunk = await this.search(this._term, this._pageCount)
     return nextChunk
   }
@@ -698,13 +699,18 @@ const createEndOfListWatcher = observedElement => {
     if (!oe.isIntersecting) return
     observedElement.classList.add('uploading')
     //observedElement.text = ''
-  await new Promise(x => setTimeout(x,1000))
-  bookManager.fetchNextSearchResult()
+    await new Promise(x => setTimeout(x,100))
+    bookManager.fetchNextSearchResult()
     .then(resp => {
-      if (!resp) watcher.disconnect()
+      if (!resp) {
+        observedElement.classList.replace('uploading','toast-start')
+        observedElement.textContent = nix
+        setTimeout(() => observedElement.classList.replace('toast-start','toast-end'),2000)
+        watcher.disconnect()
+        return
+      }
       const html = createListPage(resp?.result||[])
       observedElement.classList.remove('uploading')
-      //observedElement.textContent = resp ? text : nix
       observedElement.insertAdjacentHTML('beforebegin',html)
     })
   }

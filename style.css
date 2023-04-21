@@ -197,6 +197,15 @@ body {
   transition: opacity var(--duration) ease-in;
   opacity: 0;
 }
+.toast-start {
+  opacity: 1;
+  background-color: var(--orange);
+}
+.toast-end {
+  opacity: 0;
+  background-color: white;
+  transition: color,opacity var(--duration) ease-out
+}
 /* gallery styles */
 h1 {
   color: var(--milka);
@@ -647,6 +656,9 @@ fieldset:enabled .tags > div:after {
   background-color: var(--orange)
 }
 .more-button {
+  text-align: center;
+  line-height: 40px;
   height: 40px;
   width:100%;
+  color: white;
 }
