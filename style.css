@@ -147,11 +147,11 @@ body {
   height: 100vh;
   opacity: 1;
 }
-.flyaway-leave-start {
+.flyaway-leave-start, .entry-leave-start {
 	opacity: 1;
 	transform: scale3d(1.,1.,1.) translate(0,0)
 }
-.flyaway-leave-end {
+.flyaway-leave-end, .entry-leave-end {
 	opacity: 0;
 	transform: scale3d(3.0,3.0,3.0) translate(200px,20px);
 	transition: all var(--duration) cubic-bezier(0.4, 0.2, .9, 1);
@@ -179,12 +179,12 @@ body {
   transition: transform var(--duration) cubic-bezier(0.68, .55, 0.265, 1);
   transform: translateX(0);
 }
-.zoom-enter-start {
+.zoom-enter-start,.entry-enter-start {
   transition: transform, opacity var(--duration) ease-in;
   transform: scale3d(1.2,1.2,1.2) translate(-.05em,-.05em);
   opacity:0;
 }
-.zoom-enter-end {
+.zoom-enter-end, .entry-enter-end {
   transition: transform var(--duration) ease-out, opacity var(--duration) cubic-bezier(1, 0, 0, 1);
   transform: scale3d(1.,1.,1) translate(0,0);
   opacity: 1;

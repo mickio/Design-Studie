@@ -56,7 +56,7 @@ class BookManager {
   set onFetchRandomSampleOnce(callback) {
     this._observerRandomSample.register(callback,'once')
   }
-  /*
+ /* 
   constructor(apiKey){
     this.app = new Realm.App({ id: 'boox-urcjb' })
     this._observerRandomSample = new Observer()
@@ -66,7 +66,7 @@ class BookManager {
       console.log("Successfully logged in!", usr);
     }).then(this.fetchRandomSample) 
   }
-  */
+*/
   constructor() {
     const wait = 500
     this._observerRandomSample = new Observer()
@@ -719,4 +719,4 @@ const createEndOfListWatcher = observedElement => {
 }
 
 let endOfListWatcher
-gotoHome('enlarge')
+gotoHome('entry')
