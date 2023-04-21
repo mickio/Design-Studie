@@ -43,6 +43,34 @@ class Observer {
   }
 }
 
+class SearchResultPager{
+  constructor(opts) {
+    this._search = opts.search;
+    this._mapItem = opts.mapItem ?? function(x){return x};
+    this._maxResults = opts.maxResults??PER_PAGE
+  }
+  search = async (term,pageCount,maxResults) => {
+    this._pageCount = pageCount ?? 0
+    this._term = term
+    return this._search(term, this._pageCount,maxResults ?? this._maxResults )
+    .then(({numberOfItems,result}) => {
+      this._numberOfItems = numberOfItems
+      return {
+        numberOfItems: numberOfItems,
+        result: result.map(this._mapItem)
+      }
+    })
+  } 
+  
+  fetchNextSearchResult = async () => {
+    this._pageCount += 1;
+    if (this._maxResults*this._pageCount > this._numberOfItems) return 
+    const nextResults = await this.search(this._term, this._pageCount)
+    return nextResults
+  }
+
+}
+
 class BookManager {
   
   get selectedBook(){
@@ -64,7 +92,7 @@ class BookManager {
     .then(usr => {
       this.user = usr;
       console.log("Successfully logged in!", usr);
-    }).then(this.fetchRandomSample) 
+    }).then(this.init) 
   }
 /*/
   constructor() {
@@ -100,8 +128,27 @@ class BookManager {
     	  
     	})}}
     }}
-    this.fetchRandomSample()
+    this.init()
   }
+  
+  init = () => {
+    this.fetchRandomSample()
+    this._searchResultPager = new SearchResultPager({search: this.user.functions.search,mapItem: this.mapSearchResultItem})
+    this.search = this._searchResultPager.search
+    this.fetchNextSearchResult = this._searchResultPager.fetchNextSearchResult
+  }
+  
+  mapSearchResultItem = bk => {
+    return {
+      bookId:bk._id.toHexString(),
+      title: bk.title,
+      subtitle:bk.subtitle,
+      teaser:bk.teaser,
+      authors: bk.authors,
+      imageLinks: bk.imageLinks
+    }
+  }
+  
 
   fetchRandomSample = async () => {
     this.user.functions.randomSample().then(r => {
@@ -125,28 +172,6 @@ class BookManager {
     this._selectedBook = bk
     return bk
   })
-  
-  search = async (term,pageCount) => this.user.functions.search(term,pageCount,PER_PAGE)
-  .then(r=>{
-    this._term = term
-    this._numberOfItems = r.numberOfItems
-    pageCount || (this._pageCount = 0);
-    return {numberOfItems:r.numberOfItems,result: r.result.map(bk=>{
-      return{
-    bookId:bk._id.toHexString(),
-    title: bk.title,
-    subtitle:bk.subtitle,
-    teaser:bk.teaser,
-    authors: bk.authors,
-    imageLinks: bk.imageLinks
-  }})}})
-  
-  fetchNextSearchResult = async () => {
-    this._pageCount += 1;
-    if (PER_PAGE*this._pageCount > this._numberOfItems) return 
-    const nextChunk = await this.search(this._term, this._pageCount)
-    return nextChunk
-  }
 
   updateBook = async (bookId,book) => this.user.functions.updateBook(bookId,book)
   
@@ -719,4 +744,7 @@ const createEndOfListWatcher = observedElement => {
 }
 
 let endOfListWatcher
+
+/* add books */
+
 gotoHome('entry')
