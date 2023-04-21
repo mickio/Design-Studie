@@ -9,7 +9,6 @@ const __ = el => currentPage().querySelectorAll(el)
 const div = html => {
   const d = document.createElement('div')
   d.insertAdjacentHTML('afterbegin',html)
-  // d.style.setProperty('background-color','white')
   return d
 }
 
@@ -24,16 +23,13 @@ class Observer {
   }
   
   register(callback,once) {
-    if (!once) {
-      this.watchers.push(callback)
-    }
-    const [ov,nv] = this.current
-    if (nv) {
-      callback(nv,ov)
-      return
-    } else if (once) {
+    if (once) {
       this.watchersOnce.push(callback)
+      return
     }
+    this.watchers.push(callback)
+    const [ov,nv] = this.current
+    if (nv) callback(nv,ov)
   }
   
   notify(nv) {
@@ -72,9 +68,12 @@ class BookManager {
   }
   */
   constructor() {
+    const wait = 500
     this._observerRandomSample = new Observer()
   	this.user = {functions:{
-  	  randomSample: async _ => {return {items: sample_raw.map(cat => {return {
+  	  randomSample: async _ => {
+      await new Promise(x => setTimeout(x,wait))
+ 	    return {items: sample_raw.map(cat => {return {
   		    _id:[cat.category],
   		    boox:cat.boox.map(bk => {
       			const x = bk._id.toHexString
@@ -83,9 +82,13 @@ class BookManager {
     		  })
       	}})
   	  }},
-    	getBook: async _ => book,
+    	getBook: async _ => {
+        await new Promise(x => setTimeout(x,wait))
+  	    return book
+  	  },
     	search: async t => {
-    	  return {numberOfItems: search_data.numberOfItems,result:search_data.result.map(bk=>{
+      await new Promise(x => setTimeout(x,wait))
+   	  return {numberOfItems: search_data.numberOfItems,result:search_data.result.map(bk=>{
     	  return {
     	    title:bk.title,
     	    subtitle:bk.subtitle,
@@ -166,7 +169,6 @@ class BookManager {
 const bookManager = new BookManager(apiKey)
 
 const goto = async (pg,transition,...params) => { 
-  await new Promise(x => setTimeout(x,500))
   let leaveMethod,enterMethod,beforeTransition,afterTransition;
   if (typeof transition === 'object') {
     ({transition,leaveMethod,enterMethod,beforeTransition,afterTransition} = transition)
@@ -520,7 +522,6 @@ const panelTwo = (bookId,book) => `<div class="panel">
 
 const details = async (bookId,books) => {
   books = books.split(/\s*,\s*/)
-  setTimeout(() =>
   bookManager.fetchBook(bookId)
   .then(book => {
     _('div.card-content.tabs').insertAdjacentHTML('afterbegin',panelOne(book))
@@ -581,7 +582,6 @@ const details = async (bookId,books) => {
       suggest.call(this,this.parentNode,cats,term)
       })
     })
-  ,500)
 
   const pos = books.findIndex(bid => bid == bookId)
   const nextBookId = books[pos+1]
@@ -621,7 +621,6 @@ const search = async () => {
   button.classList.add('uploading')
   button.text = ''
   const r = await bookManager.search(term)
-  await new Promise(resolve => setTimeout(resolve,1000))
   button.classList.remove('uploading')
   button.text = "search"
   document.querySelector('.navbar input').value = ""
