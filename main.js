@@ -119,9 +119,9 @@ class BookManager {
   
   fetchBook = async bookId => this.user.functions.getBook(bookId)
   .then( bk => {
-    if (typeof book['Sachgruppe(n)'] === "string" ) book['Sachgruppe(n)'] = book['Sachgruppe(n)'].split(/\s*;\s*/)
-    if (typeof book['Schlagwörter'] === "string" ) book['Schlagwörter'] = book['Schlagwörter'].split(/\s*;\s*/)
-    if (typeof book['Sprache(n)'] === "string" ) book['Sprache(n)'] = book['Sprache(n)'].split(', ')
+    if (typeof bk['Sachgruppe(n)'] === "string" ) bk['Sachgruppe(n)'] = bk['Sachgruppe(n)'].split(/\s*;\s*/)
+    if (typeof bk['Schlagwörter'] === "string" ) bk['Schlagwörter'] = bk['Schlagwörter'].split(/\s*;\s*/)
+    if (typeof bk === "string" ) bk['Sprache(n)'] = bk['Sprache(n)'].split(', ')
     this._selectedBook = bk
     return bk
   })
