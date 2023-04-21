@@ -56,7 +56,7 @@ class BookManager {
   set onFetchRandomSampleOnce(callback) {
     this._observerRandomSample.register(callback,'once')
   }
- /* 
+ /*
   constructor(apiKey){
     this.app = new Realm.App({ id: 'boox-urcjb' })
     this._observerRandomSample = new Observer()
@@ -66,7 +66,7 @@ class BookManager {
       console.log("Successfully logged in!", usr);
     }).then(this.fetchRandomSample) 
   }
-*/
+/*/
   constructor() {
     const wait = 500
     this._observerRandomSample = new Observer()
@@ -283,7 +283,7 @@ const home = async () =>  new Promise(resolve => {
       let html = `<div onclick="refreshSample()" class="button right bottom"><span class="icon">refresh</span></div>`
       html += randomSample.map( cat => {
       let category = `<div><h1>${cat.category}</h1><div class="slider">`
-      category+=cat.books.map( bk => bk.imageLinks?.thumbnail ? `<a href="javascript:gotoDetails('enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><img width="128px" src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:gotoDetails('enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
+      category+=cat.books.map( bk => bk.imageLinks?.thumbnail ? `<a href="javascript:gotoDetails('enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}','${bk.imageLinks.thumbnail}')"><img width="128px" src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:gotoDetails('enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
     category+=`<div class="card-content" data-category="${cat.category}"><p style="font-size:48pt" class="icon">more_horiz</p></div>`
     category+="</div></div>"
     return category
@@ -443,7 +443,7 @@ const insertIdentifiersObject = list => {
 
 const createListPage = books => books.map( book => `<div class="card-entry">
   <div>
-    <a href="javascript:gotoDetails('enlarge','${book.bookId}','${books.map(bk=>bk.bookId)}')">
+    <a href="javascript:gotoDetails('enlarge','${book.bookId}','${books.map(bk=>bk.bookId)}','${book.imageLinks.thumbnail}')">
     <img src="${book.imageLinks.thumbnail}">
     </a>
     <p class="download"><a href="${book.path}"><span class="icon">download</span><span>download</span></a>
@@ -520,7 +520,7 @@ const panelTwo = (bookId,book) => `<div class="panel">
 </div>
 <div id="related" class="column"></div>`
 
-const details = async (bookId,books) => {
+const details = async (bookId,books,thumbnail) => {
   books = books.split(/\s*,\s*/)
   bookManager.fetchBook(bookId)
   .then(book => {
@@ -588,7 +588,7 @@ const details = async (bookId,books) => {
   const previousBookId = books[pos-1]
   return `<div class="card" onscroll="onScrollCard()">        
   <div class="card-image visible">
-      <img src="${book.imageLinks.thumbnail}">
+      <img src="${thumbnail}">
   </div>
   <div class="spacer">
       <h1 class="invisible">Metadaten</h1>
