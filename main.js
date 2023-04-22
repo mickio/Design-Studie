@@ -2,6 +2,10 @@ const apiKey=''
 const PER_PAGE = 12
 const anchor = document.getElementById('main')
 const currentPage = () => document.getElementById('main').lastElementChild
+const filterUndefined = obj =>Object.keys(obj).reduce((n, i) => {
+  if (obj[i] !== undefined) n[i] = obj[i]
+  return n
+}, {})
 const cats = ["Antiquit&auml;ten & Sammlerst&uuml;cke","Architektur","Belletristik","Bibel","Bildung","Biographie & Autobiographie","Business & Wirtschaft","Comics & Graphic Novels","Computer","Darstellende K&uuml;nste","Design","Drama","Familie & Beziehungen","Fremdsprachenstudium","Garten","Geschichte","Gesundheit & Fitness","Handwerk & Hobby","Haus & Heim","Haustiere","Humor","Jugendliteratur","Kinderb&uuml;cher","Kochen","Kunst","K&ouml;rper, Geist und Seele","Literaturkritik","Literatursammlungen","Lyrik","Mathematik","Medizin","Musik","Nachschlagewerke","Natur","Naturwissenschaften","Philosophie","Photographie","Politikwissenschaft","Psychologie","Recht","Reisen","Religion","Sachbucher f&uuml;r Kinder","Sachb&uuml;cher f&uuml;r junge Erwachsene","Selbsthilfe","Sozialwissenschaften","Spiel & Freizeit","Sport & Freizeit","Sprachwissenschaften","Studium","Technik & Ingenieurwesen","True Crime","Verkehr"]
 
 const _ = el => currentPage().querySelector(el)
@@ -44,11 +48,14 @@ class Observer {
 }
 
 class SearchResultPager{
-  constructor(opts) {
-    this._search = opts.search;
-    this._mapItem = opts.mapItem ?? function(x){return x};
-    this._maxResults = opts.maxResults??PER_PAGE
+  static createFrom(opts) {
+    const srp = new SearchResultPager()
+    srp._search = opts.search;
+    srp._mapItem = opts.mapItem ?? function(x){return x};
+    srp._maxResults = opts.maxResults??PER_PAGE
+    return srp
   }
+  
   search = async (term,pageCount,maxResults) => {
     this._pageCount = pageCount ?? 0
     this._term = term
@@ -69,6 +76,42 @@ class SearchResultPager{
     return nextResults
   }
 
+}
+
+class GoogleBooksPager extends SearchResultPager {
+  _maxResults = 10
+  searchURL = (term,pageCount,maxResults) => {
+    const url = "https://www.googleapis.com/books/v1/volumes"
+    const q = { q: term }
+    pageCount && (q.startIndex = pageCount * this._maxResults)
+    maxResults && (q.maxResults = maxResults)
+    const qs = new URLSearchParams(q)
+    return `${url}?${qs}`
+  }
+  
+  _search = async (term, pageCount, maxResults) => {
+    return fetch(this.searchURL(term,pageCount,maxResults)).then(r => r.json()).then(({items,totalItems}) => {
+      return {numberOfItems: totalItems,result:items}
+    })
+  }
+  
+  _mapItem = ( {id, volumeInfo, searchInfo} ) => {
+			/* 
+				Das Google Suchergebnis bedarf einer Anreicherung und Filterung
+			 */
+			const {authors,title, subtitle,industryIdentifiers,publisher,imageLinks,pageCount, description,categories} = volumeInfo
+			const isbn = volumeInfo.industryIdentifiers?.find( identifier => identifier.type === "ISBN_13" || identifier.type === "ISBN_10")?.identifier??''
+			const metaData = {
+				imageLinks,authors,industryIdentifiers,publisher,pageCount,categories,description,title,subtitle,
+				thumbnail: `http://books.google.com/books/content?id=${id}&printsec=frontcover&img=1&zoom=1&source=gbs_api`,
+				image: `https://portal.dnb.de/opac/mvb/cover?isbn=${isbn}`,
+				categories: categories?.map( cat => translateCategory( cat ) ) ?? [],
+				teaser:searchInfo?.textSnippet
+			};
+			
+			return filterUndefined(metaData)
+		}
+  
 }
 
 class BookManager {
@@ -133,19 +176,15 @@ class BookManager {
   
   init = () => {
     this.fetchRandomSample()
-    this._searchResultPager = new SearchResultPager({search: this.user.functions.search,mapItem: this.mapSearchResultItem})
+    this._searchResultPager =  SearchResultPager.createFrom({search: this.user.functions.search,mapItem: this.mapSearchResultItem})
     this.search = this._searchResultPager.search
     this.fetchNextSearchResult = this._searchResultPager.fetchNextSearchResult
   }
   
-  mapSearchResultItem = bk => {
+  mapSearchResultItem = ({_id,title,subtitle,teaser,authors,imageLinks}) => {
     return {
-      bookId:bk._id.toHexString(),
-      title: bk.title,
-      subtitle:bk.subtitle,
-      teaser:bk.teaser,
-      authors: bk.authors,
-      imageLinks: bk.imageLinks
+      bookId:_id.toHexString(),
+      title,subtitle,teaser,authors,imageLinks
     }
   }
   
@@ -154,11 +193,9 @@ class BookManager {
     this.user.functions.randomSample().then(r => {
       this.randomSample = r.items.map(cat => { return {
         category: cat._id,
-        books: cat.boox.map(bk => { return {
-          bookId:bk._id.toHexString(),
-          title: bk.title,
-          authors: bk.authors,
-          imageLinks: bk.imageLinks
+        books: cat.boox.map(({_id,title,authors,imageLinks}) => { return {
+          bookId:_id.toHexString(),
+          title,authors,imageLinks
         }})
       }})
     }).then(() => this._observerRandomSample.notify(this.randomSample))
@@ -748,3 +785,5 @@ let endOfListWatcher
 /* add books */
 
 gotoHome('entry')
+const g = new GoogleBooksPager()
+//g.search('warrior cats').then(gg=>console.log(gg))
