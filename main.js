@@ -520,7 +520,7 @@ const createListPage = books => books.map( book => `<div class="card-entry">
 </div>
 `).join('')
 
-const listWrapper = (noi,title,str) => `<div class="button" onclick="goback('flyaway')"><span class="icon">west</span></div>
+const listWrapper = (noi,title,str) => `<div class="button" onclick="goback('flyaway')"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="goto(addBook,'slide')"><span class="icon">add</span> </button>
 <div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
 
 const panelOne = book => `<div class="panel"><p class="title">${book.title}</p><p class="subtitle">${book.subtitle}</p><p class="authors">${book.authors}</p><p class="description">${book.description}</p><p class="download"><a href="${book.path}"><span class="icon">download</span><span>herunterladen</span></a></p></div>`
