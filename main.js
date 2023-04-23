@@ -6,7 +6,7 @@ const filterUndefined = obj =>Object.keys(obj).reduce((n, i) => {
   if (obj[i] !== undefined) n[i] = obj[i]
   return n
 }, {})
-const notInMetadata = obj => ['authors','title','subtitle','publisher','pageCount','imageLinks','industryIdentifiers','isbn','teaser','description','thumbnail','image'].filter(att => !obj[att] || (typeof obj[att] === 'object' && !obj[att].length))
+const notInMetadata = obj => ['authors','title','subtitle','publisher','pageCount','imageLinks','industryIdentifiers','isbn','teaser','description','thumbnail','image'].filter(att => !obj[att] || (typeof obj[att] === 'object' && !Object.keys(obj[att]).length))
 const cats = ["Antiquit&auml;ten & Sammlerst&uuml;cke","Architektur","Belletristik","Bibel","Bildung","Biographie & Autobiographie","Business & Wirtschaft","Comics & Graphic Novels","Computer","Darstellende K&uuml;nste","Design","Drama","Familie & Beziehungen","Fremdsprachenstudium","Garten","Geschichte","Gesundheit & Fitness","Handwerk & Hobby","Haus & Heim","Haustiere","Humor","Jugendliteratur","Kinderb&uuml;cher","Kochen","Kunst","K&ouml;rper, Geist und Seele","Literaturkritik","Literatursammlungen","Lyrik","Mathematik","Medizin","Musik","Nachschlagewerke","Natur","Naturwissenschaften","Philosophie","Photographie","Politikwissenschaft","Psychologie","Recht","Reisen","Religion","Sachbucher f&uuml;r Kinder","Sachb&uuml;cher f&uuml;r junge Erwachsene","Selbsthilfe","Sozialwissenschaften","Spiel & Freizeit","Sport & Freizeit","Sprachwissenschaften","Studium","Technik & Ingenieurwesen","True Crime","Verkehr"]
 
 const _ = el => currentPage().querySelector(el)
@@ -103,7 +103,7 @@ class GoogleBooksPager extends SearchResultPager {
 			const {authors,title, subtitle,industryIdentifiers,publisher,imageLinks,pageCount, description,categories} = volumeInfo
 			const isbn = volumeInfo.industryIdentifiers?.find( identifier => identifier.type === "ISBN_13" || identifier.type === "ISBN_10")?.identifier??''
 			const metaData = {
-				imageLinks,authors,industryIdentifiers,publisher,pageCount,categories,description,title,subtitle,
+				imageLinks,authors,industryIdentifiers,publisher,pageCount,categories,description,title,subtitle,isbn,
 				thumbnail: `http://books.google.com/books/content?id=${id}&printsec=frontcover&img=1&zoom=1&source=gbs_api`,
 				image: `https://portal.dnb.de/opac/mvb/cover?isbn=${isbn}`,
 				categories: categories?.map( cat => translateCategory( cat ) ) ?? [],
@@ -544,8 +544,6 @@ const createOptions = books => books.map( (book,index) => `<div class="card-entr
     <a href="javascript:gotoSelect('enlarge','${index}'">
     <img src="${book.imageLinks?.thumbnail}">
     </a>
-    <p class="nots"><span class="icon">notification_important</span><span>${notInMetadata(book)}</span>
-    </p>
   </div>
   <div>
     <p class="title ${getColor()}">${book.title} </p>
@@ -554,6 +552,8 @@ const createOptions = books => books.map( (book,index) => `<div class="card-entr
     <p class="teaser">${book.teaser??book.description??''}</p>
   </div>
 </div>
+    <p class="nots"><span class="icon">notification_important</span><span>${notInMetadata(book)}</span>
+    </p>
 `).join('')
 
 const optionsWrapper = (noi,title,str) => `<div class="button" onclick="goback('flyaway')"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="gotoAddBook('slide')"><span class="icon">add</span> </button>
@@ -828,7 +828,7 @@ const createEndOfListWatcher = observedElement => {
 const searchMetaData = evt => {
   evt.preventDefault()
   if (googlePager) {
-    goto(search,'zoom').then( () => currentPage.style.setProperty('background-color','white'))
+    goto(search,'zoom').then( () => currentPage().style.setProperty('background-color','white'))
   } else {
     googlePager = new GoogleBooksPager()
     searchManager = {
@@ -840,7 +840,7 @@ const searchMetaData = evt => {
       transition: 'zoom',
       leaveMethod: prevPage => prevPage.style.setProperty('display','none')
     }
-    goto(search, transition).then( () => currentPage.style.setProperty('background-color','white'))
+    goto(search, transition).then( () => currentPage().style.setProperty('background-color','white'))
   }
   
 }
