@@ -6,6 +6,7 @@ const filterUndefined = obj =>Object.keys(obj).reduce((n, i) => {
   if (obj[i] !== undefined) n[i] = obj[i]
   return n
 }, {})
+const notInMetadata = obj => ['authors','title','subtitle','publisher','pageCount','imageLinks','industryIdentifiers','isbn','teaser','description','thumbnail','image'].filter(att => !obj[att] || (typeof obj[att] === 'object' && !obj[att].length))
 const cats = ["Antiquit&auml;ten & Sammlerst&uuml;cke","Architektur","Belletristik","Bibel","Bildung","Biographie & Autobiographie","Business & Wirtschaft","Comics & Graphic Novels","Computer","Darstellende K&uuml;nste","Design","Drama","Familie & Beziehungen","Fremdsprachenstudium","Garten","Geschichte","Gesundheit & Fitness","Handwerk & Hobby","Haus & Heim","Haustiere","Humor","Jugendliteratur","Kinderb&uuml;cher","Kochen","Kunst","K&ouml;rper, Geist und Seele","Literaturkritik","Literatursammlungen","Lyrik","Mathematik","Medizin","Musik","Nachschlagewerke","Natur","Naturwissenschaften","Philosophie","Photographie","Politikwissenschaft","Psychologie","Recht","Reisen","Religion","Sachbucher f&uuml;r Kinder","Sachb&uuml;cher f&uuml;r junge Erwachsene","Selbsthilfe","Sozialwissenschaften","Spiel & Freizeit","Sport & Freizeit","Sprachwissenschaften","Studium","Technik & Ingenieurwesen","True Crime","Verkehr"]
 
 const _ = el => currentPage().querySelector(el)
@@ -276,9 +277,9 @@ const switchToDetails = async (transition,...params) => {
     _('#back').addEventListener('click',function() {
       const icon = this.firstElementChild
       icon.remove()
-      this.classList.add('uploading')
+      this.classList.add('loading')
       goback('flyaway').then(() => {
-        this.classList.remove('uploading')
+        this.classList.remove('loading')
         this.append(icon)
       })
     })
@@ -287,7 +288,7 @@ const switchToDetails = async (transition,...params) => {
 const refreshSample = () => {
   bookManager.fetchRandomSample().then(()=>gotoHome('zoom'))
   _('div.button.right.bottom span').remove()
-  _('div.button.right.bottom').classList.add('uploading')
+  _('div.button.right.bottom').classList.add('loading')
 }
 
 const goback = async (transition,...params) => {
@@ -309,9 +310,9 @@ const gotoHome = async transition =>  {
   __('div.slider > div:last-of-type').forEach(el => el.addEventListener('click', function({ target }) {
       const icon = this.firstElementChild
       icon.remove()
-      this.classList.add('uploading')
+      this.classList.add('loading')
       gotoCategories('zoom',this.dataset.category).then(() => {
-        this.classList.remove('uploading')
+        this.classList.remove('loading')
         this.append(icon)
       })
   }))
@@ -328,15 +329,30 @@ const gotoCategories = async (transition,cat) => {
   endOfListWatcher = createEndOfListWatcher(moreButton)
 }
 
-const gotoSearch = async (transition,term) => {
+const gotoSearch = async (transition,term,target) => {
   transitionObj = {
     transition: transition,
     leaveMethod: prevPage => prevPage.style.setProperty('display','none')
   }
-  await goto(search,transitionObj,term)  
+  await goto(target??search,transitionObj,term)  
   currentPage().style.setProperty('background-color','white')
   const moreButton = _('.more-button')
   endOfListWatcher = createEndOfListWatcher(moreButton)
+}
+
+const gotoAddBook = async (transition) => {
+  document.querySelector('.navbar').classList.add('navbar-invisible')
+  document.querySelector('.navbar a').addEventListener('click',searchMetaData)
+  goto(addBook,transition)
+  .then(() => {
+    const uploadButton = _('.upload')
+    uploadButton.addEventListener('change',() =>   {
+      document.querySelector('.navbar').classList.remove('navbar-invisible')
+      document.querySelector('.navbar').classList.add('search-google')
+      document.querySelector('.navbar input').focus()
+      document.querySelector('.navbar input').value = _('input').files[0].name
+    })
+  })
 }
 
 const home = async () =>  new Promise(resolve => {
@@ -416,7 +432,7 @@ const editBook = (bookId) => {
 const setEdit = (bookId) => {
   const button = _('#updateBook')
   button.firstElementChild?.remove()
-  button.classList.remove('uploading')
+  button.classList.remove('loading')
   button.classList.remove('active')
   button.insertAdjacentHTML('afterbegin','<span class="icon">edit</span>')
   __('fieldset').forEach( fset => fset.setAttribute('disabled',''))
@@ -435,7 +451,7 @@ async function updateBook(bookId) {
   const form = _('form')
   const button = _('#updateBook')
   button.firstElementChild?.remove()
-  button.classList.add('uploading')
+  button.classList.add('loading')
   const formData = new FormData(form)
   for(entry of formData.entries()) {
     if (['categories','authors','Person(en)','Sachgruppe(n)','Schlagwörter','Sprache(n)'].includes(entry[0])) {
@@ -515,12 +531,32 @@ const createListPage = books => books.map( book => `<div class="card-entry">
     <p class="title ${getColor()}">${book.title} </p>
     <p class="subtitle">${book.subtitle} </p>
     <p class="authors">${book.authors} </p>
-    <p class="teaser">${book.teaser}</p>
+    <p class="teaser">${book.teaser??book.description??''}</p>
   </div>
 </div>
 `).join('')
 
-const listWrapper = (noi,title,str) => `<div class="button" onclick="goback('flyaway')"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="goto(addBook,'slide')"><span class="icon">add</span> </button>
+const listWrapper = (noi,title,str) => `<div class="button" onclick="goback('flyaway')"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="gotoAddBook('slide')"><span class="icon">add</span> </button>
+<div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
+
+const createOptions = books => books.map( (book,index) => `<div class="card-entry">
+  <div>
+    <a href="javascript:gotoSelect('enlarge','${index}'">
+    <img src="${book.imageLinks?.thumbnail}">
+    </a>
+    <p class="nots"><span class="icon">notification_important</span><span>${notInMetadata(book)}</span>
+    </p>
+  </div>
+  <div>
+    <p class="title ${getColor()}">${book.title} </p>
+    <p class="subtitle">${book.subtitle} </p>
+    <p class="authors">${book.authors} </p>
+    <p class="teaser">${book.teaser??book.description??''}</p>
+  </div>
+</div>
+`).join('')
+
+const optionsWrapper = (noi,title,str) => `<div class="button" onclick="goback('flyaway')"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="gotoAddBook('slide')"><span class="icon">add</span> </button>
 <div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
 
 const panelOne = book => `<div class="panel"><p class="title">${book.title}</p><p class="subtitle">${book.subtitle}</p><p class="authors">${book.authors}</p><p class="description">${book.description}</p><p class="download"><a href="${book.path}"><span class="icon">download</span><span>herunterladen</span></a></p></div>`
@@ -680,15 +716,23 @@ const categories = async cat => {
 const search = async () => {
   const term = document.querySelector('.navbar input').value
   const button = document.querySelector('.navbar a')
-  button.classList.add('uploading')
+  button.classList.add('loading')
   button.text = ''
-  const r = await bookManager.search(term)
-  button.classList.remove('uploading')
+  const r = await searchManager.search(term)
+  button.classList.remove('loading')
   button.text = "search"
-  document.querySelector('.navbar input').value = ""
-  return listWrapper(r.numberOfItems,term,createListPage(r.result))
+  if (searchManager.reset) document.querySelector('.navbar input').value = ""
+  return searchManager.listWrapper(r.numberOfItems,term,searchManager.createListPage(r.result))
 }
 
+const addBook = () => `<label class="upload">
+    <input name="upload" type="file">
+    <div>
+      <span class="icon">upload</span>
+      <span>E-Book auswählen</span>
+    </div>
+  </label>
+`
 /* noch mehr helpers */
 function nextFrame() {
 	let count = 5
@@ -758,20 +802,20 @@ const createEndOfListWatcher = observedElement => {
   const nix = "mehr gibt's nicht"
   const fetchMoreItems = async ([oe]) => {
     if (!oe.isIntersecting) return
-    observedElement.classList.add('uploading')
+    observedElement.classList.add('loading')
     //observedElement.text = ''
     await new Promise(x => setTimeout(x,100))
     bookManager.fetchNextSearchResult()
     .then(resp => {
       if (!resp) {
-        observedElement.classList.replace('uploading','toast-start')
+        observedElement.classList.replace('loading','toast-start')
         observedElement.textContent = nix
         setTimeout(() => observedElement.classList.replace('toast-start','toast-end'),2000)
         watcher.disconnect()
         return
       }
       const html = createListPage(resp?.result||[])
-      observedElement.classList.remove('uploading')
+      observedElement.classList.remove('loading')
       observedElement.insertAdjacentHTML('beforebegin',html)
     })
   }
@@ -780,10 +824,33 @@ const createEndOfListWatcher = observedElement => {
   return watcher
 }
 
-let endOfListWatcher
-
 /* add books */
-
+const searchMetaData = evt => {
+  evt.preventDefault()
+  if (googlePager) {
+    goto(search,'zoom').then( () => currentPage.style.setProperty('background-color','white'))
+  } else {
+    googlePager = new GoogleBooksPager()
+    searchManager = {
+      search: googlePager.search,
+      createListPage: createOptions,
+      listWrapper: optionsWrapper
+    }
+    const transition = {
+      transition: 'zoom',
+      leaveMethod: prevPage => prevPage.style.setProperty('display','none')
+    }
+    goto(search, transition).then( () => currentPage.style.setProperty('background-color','white'))
+  }
+  
+}
+/* und los */
+let endOfListWatcher
+let googlePager, dnbPager
+const defaultSearchManager = {
+  search: bookManager.search,
+  reset: true,
+  createListPage,listWrapper
+}
+let searchManager = defaultSearchManager
 gotoHome('entry')
-const g = new GoogleBooksPager()
-//g.search('warrior cats').then(gg=>console.log(gg))

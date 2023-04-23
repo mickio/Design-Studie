@@ -4,6 +4,7 @@
   --orange: #E86602;
   --green: #87B42D;
   --brown: #2F1908;
+  --black: black;
 	--box-positionX: 50vw;
 	--box-positionY: 50vh;
 	--box-width: 0;
@@ -25,25 +26,41 @@ body {
   position: absolute;
   left:50%;
   /* width: 100%; */
+  transition: transform var(--duration) ease-out;
+  transform: translateY(0);
   padding:0.3em;
   display: flex;
   justify-content: space-around;
-  z-index: 10
+  z-index: 10;
+}
+.navbar-invisible {
+  transform: translateY(-38px);
+  transition: transform var(--duration) ease-in;
 }
 .navbar > div {
   display:flex;
   align-items: center;
   transform: translate(-50%);
+  box-shadow: 2px 2px 25px var(--blueviolet);
+  border-radius: 18px
 }
 .navbar > div > input {
-  height:38.8px;margin:0;
+  width: 150px;
+  height:38.8px;
+  margin:0;
   box-sizing: border-box;
   border-bottom-left-radius: 17px;
   border-top-left-radius: 17px;
   padding: 0 10px;
-  background-color: rgba(255,255,255,.5)
+  transition: width,border-color,color var(--duration) ease-in;
+  background-color: rgba(255,255,255,.5);
+}
+.navbar input:focus {
+  width: 80vw;
+  transition: width var(--duration) ease-out;
 }
 .navbar > div > a {
+  transition: background-color var(--duration) ease-in;
   height: 28.8px;
   width: 28.8px;
   text-decoration: none;
@@ -51,7 +68,7 @@ body {
   padding: 5px;
   border-bottom-right-radius: 50%;
   border-top-right-radius: 50%;
-  color:black;
+  color:var(--black);
 }
 /* helpers */
 .invisible {
@@ -95,8 +112,9 @@ body {
 	direction: ltr;
 	-moz-font-feature-settings: 'liga';
 	-moz-osx-font-smoothing: grayscale;
+  transition: color var(--duration) ease-out;
 }
-.uploading {
+.loading {
 	background-color: white;
 	background-image: url(preparing.gif);
 	background-position: center;
@@ -367,7 +385,7 @@ input:focus {
 input:disabled, textarea:disabled  {
 	border: none;
 }
-label {
+fieldset label {
 	color: var(--green);
 	font-variant-caps: all-petite-caps;
 	margin: 5px 5px 0 5px;
@@ -618,9 +636,12 @@ fieldset:enabled .tags > div:after {
   color: var(--green);
   position: absolute;
   right:-10px;
-  bottom: 4px
+  bottom: 4px;
 }
-.icon:active {color: var(--orange)}
+.icon:active {
+  color: var(--orange);
+  transition: color var(--duration) ease-in;
+}
 .options{
   position: absolute;
   background-color: white;
@@ -633,6 +654,7 @@ fieldset:enabled .tags > div:after {
 .options p:hover {
   background-color: lightgray
 }
+/* download button */
 .download {
   width: 100%;
   box-sizing: border-box;
@@ -643,6 +665,7 @@ fieldset:enabled .tags > div:after {
   align-items: stretch;
   background-color: var(--green);
   border-radius: 5px;
+  transition: background-color var(--duration) ease-out;
 }
 .download a {
   text-decoration: none;
@@ -653,12 +676,49 @@ fieldset:enabled .tags > div:after {
   justify-content: center;
 }
 .download:active {
-  background-color: var(--orange)
+  background-color: var(--orange);
+  transition: background-color var(--duration) ease-in;
 }
+/* more button infinite scrolling */
 .more-button {
   text-align: center;
   line-height: 40px;
   height: 40px;
   width:100%;
   color: white;
+}
+/* upload button */
+.upload {
+}
+.upload div {
+  cursor: pointer;
+  background-color: var(--green);
+  color: var(--black) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  margin: 5px;
+  border-radius: 5px;
+  margin-top: 40px;
+  transition: background-color var(--duration) ease-in;
+}
+.upload div:active {
+  background-color: var(--orange);
+  transition: background-color var(--duration) ease-out;
+}
+.upload input {
+  display: none
+}
+/* google search */
+.search-google input {
+  border-color: var(--orange) !important;
+  transition: border-color var(--duration) ease-in;
+}
+.search-google input:focus {
+	box-shadow: inset 0 0 2px 2px var(--orange);
+}
+.search-google a {
+  transition: background-color var(--duration) ease-in;
+  background-color: var(--orange) !important;
 }
