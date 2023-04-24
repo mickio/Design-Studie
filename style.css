@@ -722,3 +722,14 @@ fieldset:enabled .tags > div:after {
   transition: background-color var(--duration) ease-in;
   background-color: var(--orange) !important;
 }
+.nots {
+  background-color: var(--green);
+  color: white;
+  padding: 5px;
+}
+.nots div {
+text-align: center
+}
+.nots p {
+  font-size: small
+}

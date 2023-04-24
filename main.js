@@ -57,15 +57,36 @@ class SearchResultPager{
     return srp
   }
   
+  
+  get searchResultItems() {
+    return this._result
+  }
+  
+  constructor(){
+    this._onSearchResultItems = new Observer('neue Suchergebnisse')
+  }
+  
+  get onSearchResult() {
+    return this._onSearchResultItems
+  }
+  
+  set onSearchResult(callback) {
+    this._onSearchResultItems.register(callback)
+  }
+  
   search = async (term,pageCount,maxResults) => {
     this._pageCount = pageCount ?? 0
     this._term = term
     return this._search(term, this._pageCount,maxResults ?? this._maxResults )
     .then(({numberOfItems,result}) => {
+      result = result.map(this._mapItem)
       this._numberOfItems = numberOfItems
+      if (this._pageCount == 0) this._result = result
+      else result.forEach(item => this._result.push(item))
+      this.onSearchResult.notify(result)
       return {
-        numberOfItems: numberOfItems,
-        result: result.map(this._mapItem)
+        numberOfItems,
+        result
       }
     })
   } 
@@ -81,6 +102,7 @@ class SearchResultPager{
 
 class GoogleBooksPager extends SearchResultPager {
   _maxResults = 10
+  constructor(){super()}
   searchURL = (term,pageCount,maxResults) => {
     const url = "https://www.googleapis.com/books/v1/volumes"
     const q = { q: term }
@@ -324,7 +346,7 @@ const gotoCategories = async (transition,cat) => {
     leaveMethod: prevPage => prevPage.style.setProperty('display','none')
   }
   await goto(categories,transitionObj,cat)
-  currentPage().style.setProperty('background-color','white')
+  currentPage().style.setProperty('background-color','lightyellow')
   const moreButton = _('.more-button')
   endOfListWatcher = createEndOfListWatcher(moreButton)
 }
@@ -346,7 +368,7 @@ const gotoAddBook = async (transition) => {
   goto(addBook,transition)
   .then(() => {
     const uploadButton = _('.upload')
-    uploadButton.addEventListener('change',() =>   {
+    uploadButton.addEventListener('change',() => {
       document.querySelector('.navbar').classList.remove('navbar-invisible')
       document.querySelector('.navbar').classList.add('search-google')
       document.querySelector('.navbar input').focus()
@@ -359,9 +381,9 @@ const home = async () =>  new Promise(resolve => {
   currentList = home
   bookManager.onFetchRandomSampleOnce = randomSample => {
       let html = `<div onclick="refreshSample()" class="button right bottom"><span class="icon">refresh</span></div>`
-      html += randomSample.map( cat => {
-      let category = `<div><h1>${cat.category}</h1><div class="slider">`
-      category+=cat.books.map( bk => bk.imageLinks?.thumbnail ? `<a href="javascript:gotoDetails('enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}','${bk.imageLinks.thumbnail}')"><img width="128px" src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:gotoDetails('enlarge','${bk.bookId}','${cat.books.map(o=> o.bookId)}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
+      html += randomSample.map( (cat,catIndex) => {
+      let category = `<div data-cat-index="${catIndex}"><h1>${cat.category}</h1><div class="slider">`
+      category+=cat.books.map( (bk,bookIndex) => bk.imageLinks?.thumbnail ? `<a data-cat-index="${catIndex}" data-book-index="${bookIndex}" href="javascript:gotoDetails('enlarge','${bk.bookId}','${catIndex}','${bookIndex}')"><img width="128px" src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:gotoDetails('enlarge','${bk.bookId}','${catIndex}','${bookIndex}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
     category+=`<div class="card-content" data-category="${cat.category}"><p style="font-size:48pt" class="icon">more_horiz</p></div>`
     category+="</div></div>"
     return category
@@ -552,8 +574,7 @@ const createOptions = books => books.map( (book,index) => `<div class="card-entr
     <p class="teaser">${book.teaser??book.description??''}</p>
   </div>
 </div>
-    <p class="nots"><span class="icon">notification_important</span><span>${notInMetadata(book)}</span>
-    </p>
+<div class="nots"><div><span class="icon">notification_important</span>Fehlende Attribute:</div><p>${notInMetadata(book).join(', ')}</p></div>
 `).join('')
 
 const optionsWrapper = (noi,title,str) => `<div class="button" onclick="goback('flyaway')"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="gotoAddBook('slide')"><span class="icon">add</span> </button>
@@ -618,8 +639,7 @@ const panelTwo = (bookId,book) => `<div class="panel">
 </div>
 <div id="related" class="column"></div>`
 
-const details = async (bookId,books,thumbnail) => {
-  books = books.split(/\s*,\s*/)
+const details = async (bookId,catIndex,bookIndex) => {
   bookManager.fetchBook(bookId)
   .then(book => {
     _('div.card-content.tabs').insertAdjacentHTML('afterbegin',panelOne(book))
@@ -681,12 +701,11 @@ const details = async (bookId,books,thumbnail) => {
       })
     })
 
-  const pos = books.findIndex(bid => bid == bookId)
-  const nextBookId = books[pos+1]
-  const previousBookId = books[pos-1]
-  return `<div class="card" onscroll="onScrollCard()">        
+  const nextBookId = catIndex?bookManager.randomSample[catIndex].books[bookIndex+1]?.bookId : searchManager.searchResultItems[bookIndex]?.bookId
+  const previousBookId = bookManager.randomSample[catIndex].books[bookIndex-1]?.bookId
+  return `<div class="card" onscroll="onScrollCard()" data-cat-index="${catIndex}" data-book-index="${bookIndex}">        
   <div class="card-image visible">
-      <img src="${thumbnail}">
+      <img src="${bookManager.randomSample[catIndex].books[bookIndex].imageLinks?.thumbnail}">
   </div>
   <div class="spacer">
       <h1 class="invisible">Metadaten</h1>
@@ -701,8 +720,8 @@ const details = async (bookId,books,thumbnail) => {
   </div>
   
   <div id="back" class="button "><span class="icon">north</span></div>
-  ${previousBookId ? '<div onclick="switchToDetails(\'slide-right\',\''+previousBookId+'\',\''+books+'\')" class="button v-centered ease-enter-end" ><span class="icon">arrow_back_ios</span></div>' : ''}
-  ${nextBookId ? '<div onclick="switchToDetails(\'slide-left\',\''+nextBookId+'\',\''+books+'\')" class="button right v-centered ease-enter-end" ><span class="icon">arrow_forward_ios</span></div>' : ''}
+  ${previousBookId ? '<div onclick="switchToDetails(\'slide-right\',\''+previousBookId+'\',\''+catIndex+'\',\''+bookIndex+'\')" class="button v-centered ease-enter-end" ><span class="icon">arrow_back_ios</span></div>' : ''}
+  ${nextBookId ? '<div onclick="switchToDetails(\'slide-left\',\''+nextBookId+'\',\''+catIndex+'\',\''+bookIndex+'\')" class="button right v-centered ease-enter-end" ><span class="icon">arrow_forward_ios</span></div>' : ''}
 </div>
 `
 } 
@@ -710,7 +729,7 @@ const details = async (bookId,books,thumbnail) => {
 /* weitere Ansichten */
 const categories = async cat => {
   const r = await bookManager.search(cat)
-  return listWrapper(r.numberOfItems,cat,createListPage(r.result))
+  return searchManager.listWrapper(r.numberOfItems,cat,searchManager.createListPage(r.result))
 }
 
 const search = async () => {
@@ -840,17 +859,19 @@ const searchMetaData = evt => {
       transition: 'zoom',
       leaveMethod: prevPage => prevPage.style.setProperty('display','none')
     }
-    goto(search, transition).then( () => currentPage().style.setProperty('background-color','white'))
+    goto(search, transition).then( () => currentPage().style.setProperty('background-color','lightyellow'))
   }
-  
 }
-/* und los */
+
+/* und los geht's */
 let endOfListWatcher
 let googlePager, dnbPager
 const defaultSearchManager = {
   search: bookManager.search,
+      listWrapper: optionsWrapper,
   reset: true,
-  createListPage,listWrapper
+      createListPage: createOptions,
+//  createListPage,listWrapper
 }
 let searchManager = defaultSearchManager
 gotoHome('entry')
