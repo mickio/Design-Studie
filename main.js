@@ -157,6 +157,10 @@ class BookManager {
     return this._selectedBook
   }
   
+  get searchResultPager() {
+    return this._searchResultPager
+  }
+  
   set onFetchRandomSample(callback) {
     this._observerRandomSample.register(callback)
   }
@@ -241,6 +245,7 @@ class BookManager {
   fetchBook = async bookId => this.user.functions.getBook(bookId)
   .then( bk => {
     if (typeof bk['Sachgruppe(n)'] === "string" ) bk['Sachgruppe(n)'] = bk['Sachgruppe(n)'].split(/\s*;\s*/)
+    if (typeof bk['Sprache(n)'] === "string" ) bk['Sprache(n)'] = bk['Sprache(n)'].split(/\s*;\s*/)
     if (typeof bk['Schlagwörter'] === "string" ) bk['Schlagwörter'] = bk['Schlagwörter'].split(/\s*;\s*/)
     if (typeof bk === "string" ) bk['Sprache(n)'] = bk['Sprache(n)'].split(', ')
     this._selectedBook = bk
@@ -307,6 +312,15 @@ const details2detailsTransition = transition => {
   return {
     transition,
     afterTransition: () => {
+      const listNode = currentPage().previousElementSibling
+      const catIndex = Number(_(':first-child').dataset.catIndex)
+      const bookIndex = Number(_(':first-child').dataset.bookIndex)
+      const list = !isNaN(catIndex) ?bookManager.randomSample[catIndex].books : listNode.searchResultPager.searchResultItems
+      const next = list[bookIndex+1]
+      const previous = list[bookIndex-1]
+      console.log(next,previous,list,catIndex,bookIndex)
+      if(previous) _('#back').insertAdjacentHTML('afterend',  previous.bookId ? `<div onclick="goto(details,details2detailsTransition('slide-right'),'${previous.bookId}','${bookIndex-1}','${catIndex}','${previous.imageLinks?.thumbnail}')" class="button v-centered ease-enter-end" ><span class="icon">arrow_back_ios</span></div>` : '')
+      if(next) _('#back').insertAdjacentHTML('afterend',  next.bookId ? `<div onclick="goto(details,details2detailsTransition('slide-left'),'${next.bookId}','${bookIndex+1}','${catIndex}','${next.imageLinks?.thumbnail}')" class="button v-centered right ease-enter-end" ><span class="icon">arrow_forward_ios</span></div>` : '')
       currentPage().style.setProperty('background-color','var(--brown)')
       _('#back').addEventListener('click',function() {
         const icon = this.firstElementChild
@@ -329,22 +343,25 @@ const list2detailsTransition = transition => {
 const homeTransition = transition => {
   return {
     transition,
-    afterTransition: () => __('div.slider > div:last-of-type').forEach(el => el.addEventListener('click', function({ target }) {
-      const icon = this.firstElementChild
-      icon.remove()
-      this.classList.add('loading')
-      goto(categories,categoriesTransition('zoom'),this.dataset.category).then(() => {
-        this.classList.remove('loading')
-        this.append(icon)
-      })
+    afterTransition: () => {
+      currentPage().searchResultItems = bookManager.randomSample
+      __('div.slider > div:last-of-type').forEach(el => el.addEventListener('click', function({ target }) {
+        const icon = this.firstElementChild
+        icon.remove()
+        this.classList.add('loading')
+        goto(categories,categoriesTransition('zoom'),this.dataset.category).then(() => {
+          this.classList.remove('loading')
+          this.append(icon)
+        })
     }))
-  }
+  }}
 }
 const categoriesTransition = transition => {
   return {
     transition,
     leaveMethod: prevPage => prevPage.style.setProperty('display','none'),
     afterTransition: () => {
+      currentPage().searchResultPager = searchProvider.searchResultPager
       currentPage().style.setProperty('background-color','lightyellow')
       const moreButton = _('.more-button')
       endOfListWatcher = createEndOfListWatcher(moreButton)
@@ -356,6 +373,7 @@ const searchListTransition = transition => {
     transition,
     leaveMethod: prevPage => prevPage.style.setProperty('display','none'),
     afterTransition: () => {
+      currentPage().searchResultPager = searchResultPager
       currentPage().style.setProperty('background-color','white')
       const moreButton = _('.more-button')
       endOfListWatcher = createEndOfListWatcher(moreButton)
@@ -396,11 +414,11 @@ const backTransition = transition => {
 
 /* Templates */
 const home = async () =>  new Promise(resolve => {
-  bookManager.onFetchRandomSampleOnce = randomSample => {
+  bookManager.onFetchRandomSample = randomSample => {
       let html = `<div onclick="refreshSample()" class="button right bottom"><span class="icon">refresh</span></div>`
       html += randomSample.map( (cat,catIndex) => {
       let category = `<div data-cat-index="${catIndex}"><h1>${cat.category}</h1><div class="slider">`
-      category+=cat.books.map( (bk,bookIndex) => bk.imageLinks?.thumbnail ? `<a data-cat-index="${catIndex}" data-book-index="${bookIndex}" href="javascript:goto(details,list2detailsTransition('enlarge'),'${bk.bookId}','${catIndex}','${bookIndex}')"><img width="128px" src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:goto(details,list2detailsTransition('enlarge'),'${bk.bookId}','${catIndex}','${bookIndex}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
+      category+=cat.books.map( (bk,bookIndex) => bk.imageLinks?.thumbnail ? `<a data-cat-index="${catIndex}" data-book-index="${bookIndex}" href="javascript:goto(details,list2detailsTransition('enlarge'),'${bk.bookId}','${bookIndex}','${catIndex}','${bk.imageLinks?.thumbnail}')"><img width="128px" src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:goto(details,list2detailsTransition('enlarge'),'${bk.bookId}','${bookIndex}','${catIndex}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
     category+=`<div class="card-content" data-category="${cat.category}"><p style="font-size:48pt" class="icon">more_horiz</p></div>`
     category+="</div></div>"
     return category
@@ -408,9 +426,9 @@ const home = async () =>  new Promise(resolve => {
     resolve(html)
   }
 })
-const createListPage = books => books.map( book => `<div class="card-entry">
+const createListPage = books => books.map( (book,bookIndex) => `<div class="card-entry">
   <div>
-    <a href="javascript:goto(details,list2detailsTransition('enlarge'),'${book.bookId}','${books.map(bk=>bk.bookId)}','${book.imageLinks.thumbnail}')">
+    <a href="javascript:goto(details,list2detailsTransition('enlarge'),'${book.bookId}','${bookIndex}', undefined,'${book.imageLinks.thumbnail}')">
     <img src="${book.imageLinks.thumbnail}">
     </a>
     <p class="download"><a href="${book.path}"><span class="icon">download</span><span>download</span></a>
@@ -668,13 +686,17 @@ const panelTwo = (bookId,book) => `<div class="panel">
 </div>
 <div id="related" class="column"></div>`
 
-const details = async (bookId,catIndex,bookIndex) => {
+const details = async (bookId,bookIndex,catIndex,thumbnail) => {
   bookManager.fetchBook(bookId)
   .then(book => {
     _('div.card-content.tabs').insertAdjacentHTML('afterbegin',panelOne(book))
     _('div.card-content.tabs').insertAdjacentHTML('beforeend',panelTwo(bookId,book))
     bookManager.search(book.authors)
-      .then(bx => _('#related').insertAdjacentHTML('afterbegin',createListPage(bx.result)))
+      .then(bx => {
+        currentPage().searchResultPager = bookManager.searchResultPager
+        _('#related').insertAdjacentHTML('afterbegin',createListPage(bx.result))
+        }
+       )
     book.authors?.forEach(aut => {
       popUp.call(_('input[name=authors] ~ span'),aut)
     })
@@ -729,12 +751,9 @@ const details = async (bookId,catIndex,bookIndex) => {
       suggest.call(this,this.parentNode,cats,term)
       })
     })
-
-  const nextBookId = catIndex?bookManager.randomSample[catIndex].books[bookIndex+1]?.bookId : searchProvider.searchResultItems[bookIndex]?.bookId
-  const previousBookId = bookManager.randomSample[catIndex].books[bookIndex-1]?.bookId
   return `<div class="card" onscroll="onScrollCard()" data-cat-index="${catIndex}" data-book-index="${bookIndex}">        
   <div class="card-image visible">
-      <img src="${bookManager.randomSample[catIndex].books[bookIndex].imageLinks?.thumbnail}">
+      <img src="${thumbnail}">
   </div>
   <div class="spacer">
       <h1 class="invisible">Metadaten</h1>
@@ -749,8 +768,6 @@ const details = async (bookId,catIndex,bookIndex) => {
   </div>
   
   <div id="back" class="button "><span class="icon">north</span></div>
-  ${previousBookId ? `<div onclick="goto(details,details2detailsTransition('slide-right'),'${previousBookId}','${catIndex}','${bookIndex}')" class="button v-centered ease-enter-end" ><span class="icon">arrow_back_ios</span></div>` : ''}
-  ${nextBookId ? `<div onclick="goto(details,details2detailsTransition('slide-left'),'${nextBookId}','${catIndex}','${bookIndex}')" class="button right v-centered ease-enter-end" ><span class="icon">arrow_forward_ios</span></div>` : ''}
 </div>
 `
 } 
@@ -854,22 +871,27 @@ const createEndOfListWatcher = observedElement => {
 }
 
 /* add books */
+const googleSearchTransition = transition => {
+  return {
+    transition,
+    beforeTransition: () => {
+      googlePager = new GoogleBooksPager()
+      searchProvider = {
+        search: googlePager.search,
+        createListPage: createOptions,
+        listWrapper: optionsWrapper
+      }
+    },
+    afterTransition: () => currentPage().style.setProperty('background-color','lightyellow'),
+    leaveMethod: prevPage => prevPage.style.setProperty('display','none')
+  }
+}
 const searchMetaData = evt => {
   evt.preventDefault()
   if (googlePager) {
     goto(search,'zoom').then( () => currentPage().style.setProperty('background-color','white'))
   } else {
-    googlePager = new GoogleBooksPager()
-    searchProvider = {
-      search: googlePager.search,
-      createListPage: createOptions,
-      listWrapper: optionsWrapper
-    }
-    const transition = {
-      transition: 'zoom',
-      leaveMethod: prevPage => prevPage.style.setProperty('display','none')
-    }
-    goto(search, transition).then( () => currentPage().style.setProperty('background-color','lightyellow'))
+    goto(search, googleSearchTransition('zoom'))
   }
 }
 
@@ -877,16 +899,14 @@ const searchMetaData = evt => {
 let endOfListWatcher
 let googlePager, dnbPager
 const defaultSearchProvider = {
+  searchResultPager: bookManager.searchResultPager,
   search: bookManager.search,
   reset: true,
   listWrapper: optionsWrapper,
   createListPage: createOptions,
 //  createListPage,listWrapper
 }
-const defaultContentProvider = {}
-bookManager.onFetchRandomSampleOnce = sample => defaultContentProvider.content = sample
 let searchProvider = defaultSearchProvider
-let contentProvider = defaultContentProvider
 const routes = [
     {
       pattern: /^\/$/,
@@ -896,18 +916,18 @@ const routes = [
     {
       pattern: /^\/(?=<category>.+?)\/?$/,
       template: categories,
-      content: bookManager.gotoCategories
+      content: bookManager.categories
     },
     {
       pattern: /^\/(?=<bookId>.+?)\/(?=<title>.+?)\/?$/,
-      template: categories,
-      content: bookManager.gotoCategories
+      template: details,
+      content: bookManager.getBook
     },
     {
       pattern: /^\/suche\/?\?q=$/,
       template: categories,
       content: bookManager.gotoCategories
     },
-  ]
+  ];
 
 goto(home,homeTransition('entry'))
