@@ -99,6 +99,7 @@ body {
 	justify-content: center;
 }
 .icon {
+  vertical-align: bottom;
 	font-family: 'Material Icons';
 	font-weight: normal;
 	font-style: normal;
@@ -723,13 +724,55 @@ fieldset:enabled .tags > div:after {
   background-color: var(--orange) !important;
 }
 .nots {
-  background-color: var(--green);
-  color: white;
   padding: 5px;
 }
 .nots div {
 text-align: center
 }
 .nots p {
-  font-size: small
+  font-size: normal;
+  line-height: 40px;
+  height: 40px;
+  padding: 5px;
+}
+.warning {
+  background-color: yellow;
+}
+.success {
+  background-color: green;
+  color: white;
+}
+.warning:before {
+	font-family: 'Material Icons';
+  content: "notification_important";
+  vertical-align: bottom;
+  font-size: 24px;
+  padding: 0 5px 0 2px;
+}
+.success:before {
+	font-family: 'Material Icons';
+  content: "check";
+  vertical-align: bottom;
+  font-size: 24px;
+  padding: 0 5px 0 2px;
+}
+.inverted {
+  float: right;
+  margin-top: 7px;
+  font-size: 14pt;
+  height: 28px;
+  line-height: 28px;
+  vertical-align: bottom;
+  color: white;
+  background-color: black;
+  border-radius: 50%;
+  width: 28px;
+  text-align: center;
+  box-shadow: 2px 2px 25px aquamarine;
+  cursor: pointer;
+  transition: background-color var(--duration) ease-in;
+}
+.inverted:active {
+  transition: background-color var(--duration) ease-out;
+  background-color: aquamarine;
 }

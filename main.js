@@ -30,7 +30,6 @@ const chooseColor = () => {
 }
 const getColor = chooseColor()
 
-
 class Observer {
   
   constructor(){
@@ -276,12 +275,12 @@ const bookManager = new BookManager(apiKey)
 
 const goto = async (pg,transition,...params) => { 
   /* 
-    Hängt das template "pg" mit dem Übergrang "transition" und den Paramtern "params"
+    Hängt den view "pg" mit dem Übergrang "transition" und den Paramtern "params"
     am Aufhängepunkt "anchor" ein
    */
-  let leaveMethod,enterMethod,beforeTransition,afterTransition;
+  let leaveMethod,enterMethod,beforeTransition,viewCreated,afterTransition;
   if (typeof transition === 'object') {
-    ({transition,leaveMethod,enterMethod,beforeTransition,afterTransition} = transition)
+    ({transition,leaveMethod,enterMethod,beforeTransition,viewCreated,afterTransition} = transition)
   }
   if (typeof beforeTransition === 'function') await beforeTransition()
   let page
@@ -293,6 +292,7 @@ const goto = async (pg,transition,...params) => {
     page = div(tpl)
     anchor.appendChild(page)
   }
+  if (typeof viewCreated === 'function') await viewCreated()
   page.classList.add(transition+"-enter-start")
   prevPage.classList.add(transition+"-leave-start")
   await nextFrame()
@@ -309,7 +309,7 @@ const goto = async (pg,transition,...params) => {
   if (typeof afterTransition === 'function') await afterTransition()
 }
 
-/* Seitennavigation */
+/* Seitenübergänge */
 const details2detailsTransition = transition => {
   return {
     transition,
@@ -321,8 +321,8 @@ const details2detailsTransition = transition => {
       const next = list[bookIndex+1]
       const previous = list[bookIndex-1]
       console.log(next,previous,list,catIndex,bookIndex)
-      if(previous) _('#back').insertAdjacentHTML('afterend',  previous.bookId ? `<div onclick="goto(details,details2detailsTransition('slide-right'),'${previous.bookId}','${bookIndex-1}','${catIndex}','${previous.imageLinks?.thumbnail}')" class="button v-centered ease-enter-end" ><span class="icon">arrow_back_ios</span></div>` : '')
-      if(next) _('#back').insertAdjacentHTML('afterend',  next.bookId ? `<div onclick="goto(details,details2detailsTransition('slide-left'),'${next.bookId}','${bookIndex+1}','${catIndex}','${next.imageLinks?.thumbnail}')" class="button v-centered right ease-enter-end" ><span class="icon">arrow_forward_ios</span></div>` : '')
+      if(previous) _('#back').insertAdjacentHTML('afterend',  previous.bookId ? `<div onclick="goto(detailsView,details2detailsTransition('slide-right'),'${previous.bookId}','${bookIndex-1}','${catIndex}','${previous.imageLinks?.thumbnail}')" class="button v-centered ease-enter-end" ><span class="icon">arrow_back_ios</span></div>` : '')
+      if(next) _('#back').insertAdjacentHTML('afterend',  next.bookId ? `<div onclick="goto(detailsView,details2detailsTransition('slide-left'),'${next.bookId}','${bookIndex+1}','${catIndex}','${next.imageLinks?.thumbnail}')" class="button v-centered right ease-enter-end" ><span class="icon">arrow_forward_ios</span></div>` : '')
       currentPage().style.setProperty('background-color','var(--brown)')
       _('#back').addEventListener('click',function() {
         const icon = this.firstElementChild
@@ -351,7 +351,7 @@ const homeTransition = transition => {
         const icon = this.firstElementChild
         icon.remove()
         this.classList.add('loading')
-        goto(categories,categoriesTransition('zoom'),this.dataset.category).then(() => {
+        goto(categoriesView,categoriesTransition('zoom'),this.dataset.category).then(() => {
           this.classList.remove('loading')
           this.append(icon)
         })
@@ -414,14 +414,34 @@ const backTransition = transition => {
     beforeTransition: () => endOfListWatcher?.disconnect()
   }
 }
+const googleSearchTransition = transition => {
+  return {
+    transition,
+    beforeTransition: () => {
+      googlePager = new GoogleBooksPager()
+      searchProvider = {
+        searchResultPager: googlePager,
+        search: googlePager.search,
+        listViewComponent: googleListViewComponent,
+        listView: googleListView
+      }
+    },
+    afterTransition: () => {
+      currentPage().style.setProperty('background-color','lightyellow')
+      const moreButton = _('.more-button')
+      endOfListWatcher = createEndOfListWatcher(moreButton)
+  },
+    leaveMethod: prevPage => prevPage.style.setProperty('display','none')
+  }
+}
 
-/* Templates */
-const home = async () =>  new Promise(resolve => {
+/* Views und View Components*/
+const homeView = async () =>  new Promise(resolve => {
   bookManager.onFetchRandomSample = randomSample => {
       let html = `<div onclick="refreshSample()" class="button right bottom"><span class="icon">refresh</span></div>`
       html += randomSample.map( (cat,catIndex) => {
       let category = `<div data-cat-index="${catIndex}"><h1>${cat.category}</h1><div class="slider">`
-      category+=cat.books.map( (bk,bookIndex) => bk.imageLinks?.thumbnail ? `<a data-cat-index="${catIndex}" data-book-index="${bookIndex}" href="javascript:goto(details,list2detailsTransition('enlarge'),'${bk.bookId}','${bookIndex}','${catIndex}','${bk.imageLinks?.thumbnail}')"><img width="128px" src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:goto(details,list2detailsTransition('enlarge'),'${bk.bookId}','${bookIndex}','${catIndex}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
+      category+=cat.books.map( (bk,bookIndex) => bk.imageLinks?.thumbnail ? `<a data-cat-index="${catIndex}" data-book-index="${bookIndex}" href="javascript:goto(detailsView,list2detailsTransition('enlarge'),'${bk.bookId}','${bookIndex}','${catIndex}','${bk.imageLinks?.thumbnail}')"><img width="128px" src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:goto(detailsView,list2detailsTransition('enlarge'),'${bk.bookId}','${bookIndex}','${catIndex}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
     category+=`<div class="card-content" data-category="${cat.category}"><p style="font-size:48pt" class="icon">more_horiz</p></div>`
     category+="</div></div>"
     return category
@@ -429,9 +449,9 @@ const home = async () =>  new Promise(resolve => {
     resolve(html)
   }
 })
-const createListPage = books => books.map( (book,bookIndex) => `<div class="card-entry">
+const listViewComponent = books => books.map( (book,bookIndex) => `<div class="card-entry">
   <div>
-    <a href="javascript:goto(details,list2detailsTransition('enlarge'),'${book.bookId}','${bookIndex}', undefined,'${book.imageLinks.thumbnail}')">
+    <a href="javascript:goto(detailsView,list2detailsTransition('enlarge'),'${book.bookId}','${bookIndex}', undefined,'${book.imageLinks.thumbnail}')">
     <img src="${book.imageLinks.thumbnail}">
     </a>
     <p class="download"><a href="${book.path}"><span class="icon">download</span><span>download</span></a>
@@ -446,11 +466,11 @@ const createListPage = books => books.map( (book,bookIndex) => `<div class="card
 </div>
 `).join('')
 
-//const listWrapper = (noi,title,str) => `<div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="goto(addBook,addBookTransition('slide'))"><span class="icon">add</span> </button><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
+//const listView = (noi,title,str) => `<div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="goto(addBookView,addBookTransition('slide'))"><span class="icon">add</span> </button><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
 
-const listWrapper = (noi,title,str) => `<div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="searchMetaData()"><span class="icon">add</span> </button><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
+const listView = (noi,title,str) => `<div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="searchMetaData()"><span class="icon">add</span> </button><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
 
-const createOptions = books => books.map( (book,index) => `<div class="card-entry">
+const googleListViewComponent = books => books.map( (book,index) => `<div class="card-entry">
   <div>
     <a href="javascript:gotoSelect('enlarge','${index}'">
     <img src="${book.imageLinks?.thumbnail}">
@@ -458,24 +478,23 @@ const createOptions = books => books.map( (book,index) => `<div class="card-entr
   </div>
   <div>
     <p class="title ${getColor()}">${book.title} </p>
-    <p class="subtitle">${book.subtitle} </p>
+    <p class="subtitle">${book.subtitle??''} </p>
     <p class="authors">${book.authors} </p>
     <p class="teaser">${book.teaser??book.description??''}</p>
   </div>
 </div>
-<div class="nots">${evaluateResult(book)}</div>
+<div class="nots">${evaluateResultViewComponent(book)}</div>
 `).join('')
 
-//const optionsWrapper = (noi,title,str) => `<div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="goto(addBook,addBookTransition('slide'))"><span class="icon">add</span> </button><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
+//const googleListView = (noi,title,str) => `<div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="goto(addBookView,addBookTransition('slide'))"><span class="icon">add</span> </button><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
 
-const optionsWrapper = (noi,title,str) => `<div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="goto(addBook,addBookTransition('slide'))"><span class="icon">add</span> </button><div style="text-align:center"><h2 class="${getColor()}">Ian McEwan - Zwischen den Laken</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
+const googleListView = (noi,title,str) => `<div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="goto(addBookView,addBookTransition('slide'))"><span class="icon">add</span> </button><div style="text-align:center"><h2 class="${getColor()}">Ian McEwan - Zwischen den Laken</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
 
-
-const categories = async cat => {
+const categoriesView = async cat => {
   const r = await bookManager.search(cat)
-  return searchProvider.listWrapper(r.numberOfItems,cat,searchProvider.createListPage(r.result))
+  return searchProvider.listView(r.numberOfItems,cat,searchProvider.listViewComponent(r.result))
 }
-const search = async () => {
+const searchResultsView = async () => {
   const term = document.querySelector('.navbar input').value
   const button = document.querySelector('.navbar a')
   button.classList.add('loading')
@@ -484,9 +503,9 @@ const search = async () => {
   button.classList.remove('loading')
   button.text = "search"
   if (searchProvider.reset) document.querySelector('.navbar input').value = ""
-  return searchProvider.listWrapper(r.numberOfItems,term,searchProvider.createListPage(r.result))
+  return searchProvider.listView(r.numberOfItems,term,searchProvider.listViewComponent(r.result))
 }
-const addBook = () => `<label class="upload">
+const addBookView = () => `<label class="upload">
     <input name="upload" type="file">
     <div>
       <span class="icon">upload</span>
@@ -494,9 +513,148 @@ const addBook = () => `<label class="upload">
     </div>
   </label>
 `
-
+const evaluateResultViewComponent = book => {
+  const missingData = notInMetadata(book)
+  if (missingData.some(att => ['authors','title','categories','description','publisher','imageLinks','isbn'].includes(att)))
+    return `<p class="warning">Es fehlen ${notInMetadata(book).join(', ')}. Bearbeiten? <span class="icon inverted">edit</span></p>`
+  else
+    return `<p class="success">Alle erforderlichen Attribute vorhanden. Übernehmen? <span class="icon inverted">check</span></p>`
+}
 
 /* die details Ansicht... */
+const detailsViewComponent = book => `<div class="panel"><p class="title">${book.title}</p><p class="subtitle">${book.subtitle}</p><p class="authors">${book.authors}</p><p class="description">${book.description}</p><p class="download"><a href="${book.path}"><span class="icon">download</span><span>herunterladen</span></a></p></div>`
+
+const detailsFormView = (bookId,book) => `<div class="panel">
+<button id="updateBook" class="button right bottom action hidden" style="position: fixed;" onclick="editBook('${bookId}')"><span class="icon">edit</span> </button>
+<form oninput="setUpdateBook()">
+<fieldset class="content column" disabled>
+<label>Titel</label><input name="title" class="title" value="${book.title}" >
+<label>Untertitel</label><input name="subtitle" class="subtitle" value="${book.subtitle}" >
+<label>Autor(en)</label><div class="tag"><div><input name="authors" class="authors" value="${book.authors}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
+<label>Teaser</label><textarea name="teaser" class="teaser" rows="3">${book.teaser}</textarea>
+<label>Beschreibung</label><textarea name="description" class="description" rows="10">${book.description}</textarea>
+</fieldset>
+<fieldset class="info column"  disabled>
+    <legend>Zusatzinfos</legend>
+<label>Kategorien</label><div class="tag"><div><input name="categories" class="categories"><span class="icon invisible">check</span></div><div class="tags"></div></div>
+<label>Verlag</label><input name="publisher" class="entry" value="${book.publisher}" >
+<label>Ver&ouml;ffentlichungsdatum</label><input name="publishedDate" class="entry" value="${book.publishedDate}" >
+<label>Anzahl Seiten</label><input name="pageCount" class="entry" value="${book.pageCount}" >
+<label>ISBN</label><input name="isbn" class="entry" value="${book.isbn}" >
+<fieldset class="info group" name="industryIdentifiers"><legend>Identifiers aus Google search books</legend>${insertIdentifiersObject(book['industryIdentifiers'])}
+</fieldset>
+<label>Art des Inhalts</label><input name="Art des Inhalts" class="entry" value="${book['Art des Inhalts']}" >
+<label>EAN</label><input name="EAN" class="entry" value="${book['EAN']}" >
+<label>Literarische Gattung</label><input name="Literarische Gattung" class="entry" value="${book['Literarische Gattung']}" >
+<label>Organisation(en)</label><input name="Organisation(en)" class="entry" value="${book['Organisation(en)']}" >
+<label>Person(en)</label><div class="tag"><div><input name="Person(en)" class="entry" value="${book['Person(en)']}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
+<label>Sachgruppe(n)</label><div class="tag"><div><input name="Sachgruppe(n)" class="entry" value="${book['Sachgruppe(n)']}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
+<label>Schlagwörter</label><div class="tag"><div><input name="Schlagwörter" class="entry" value="${book['Schlagwörter']}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
+<label>Sprache(n)</label><div class="tag"><div><input name="Sprache(n)" class="entry" value="${book['Sprache(n)']}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
+<label>Titel</label><input name="Titel" class="entry" value="${book['Titel']}" >
+<label>Verlag</label><input name="Verlag" class="entry" value="${book['Verlag']}" >
+<label>Zeitliche Einordnung</label><input name="Zeitliche Einordnung" class="entry" value="${book['Zeitliche Einordnung']}" >
+<label>Zielgruppe</label><input name="Zielgruppe" class="entry" value="${book['Zielgruppe']}" >
+<fieldset class="info group" name="creators"><legend>Autoren aus ePub</legend>${insertObject(book['creators'])}
+</fieldset>
+<fieldset class="info group" name="identifiers"><legend>Identifiers aus ePub</legend>${insertObject(book['identifiers'])}
+</fieldset>
+<fieldset class="info group" name="titles"><legend>Titel aus ePub</legend>${insertObject(book['titles'])}
+</fieldset>
+</fieldset>
+<fieldset class="info column" disabled>
+    <legend>Image URLs</legend>
+    <div>
+        <img class="thumbnail" src="${book.thumbnail}">
+        <div class="column">
+<label>Thumbnail Image</label><input name="thumbnail" class="entry" value="${book.thumbnail}" >
+        </div>
+    </div>
+    <div>
+        <img class="image" src="${book.image}">
+        <div class="column">
+<label>Cover Image</label><input name="image" class="entry" value="${book.image}" >
+        </div>
+    </div>
+</fieldset>
+</form>
+</div>`
+
+const detailsView = async (bookId,bookIndex,catIndex,thumbnail) => {
+  const insertTab = html => _('div.card-content.tabs').insertAdjacentHTML('beforeend',html)
+  bookManager.fetchBook(bookId)
+  .then(book => {
+    const relatedSearchTerm = book.authors
+    insertTab(detailsViewComponent(book))
+    insertTab(detailsFormView(bookId,book))
+    insertTab('<div id="related" class="column"></div>')
+    bookManager.search(relatedSearchTerm).then(bx => {
+      currentPage().searchResultPager = bookManager.searchResultPager
+      _('#related').insertAdjacentHTML('afterbegin',listViewComponent(bx.result))
+    })
+    prepareTags(book)
+    const img = new Image()
+    img.src = book.image
+    img.addEventListener('load',() => _('div.card-image > img').replaceWith(img))
+  }).then(prepareListObjectInput)
+  return `<div class="card" onscroll="onScrollCard()" data-cat-index="${catIndex}" data-book-index="${bookIndex}">        
+  <div class="card-image visible">
+      <img src="${thumbnail}">
+  </div>
+  <div class="spacer">
+      <h1 class="invisible">Metadaten</h1>
+      <div class="white">
+          <span onclick="scrollToTab(0)" class="active-tab">Übersicht</span>
+          <span onclick="scrollToTab(1)">Bearbeiten</span>
+          <span onclick="scrollToTab(2)">Ähnliches</span>
+      </div>
+  </div>
+  <div class="card-content tabs">
+
+  </div>
+  
+  <div id="back" class="button "><span class="icon">north</span></div>
+</div>
+`
+} 
+
+
+/* noch mehr helpers */
+const refreshSample = () => {
+  bookManager.fetchRandomSample().then(()=>goto(homeView,homeTransition('zoom')))
+  _('div.button.right.bottom span').remove()
+  _('div.button.right.bottom').classList.add('loading')
+}
+
+function nextFrame() {
+	let count = 5
+	return new Promise(resolve => {
+		const step = () => {
+			count-=1
+			if(count) requestAnimationFrame(step)
+			else requestAnimationFrame(resolve)
+		}
+		requestAnimationFrame(step);
+	});
+}
+
+const setBoundingBox = clickEvent => {
+    const box = clickEvent.target.getBoundingClientRect()
+    const posX = 0 //clickEvent.target.parentNode.parentNode.scrollLeft
+    const posY = 0 //_('#main > div').scrollTop
+    const rootStyles = document.documentElement.style
+    rootStyles.setProperty("--box-width",`${box.width}px`)
+    rootStyles.setProperty("--box-height",`${box.height}px`)
+    rootStyles.setProperty("--box-positionX",`${box.x}px`)
+    rootStyles.setProperty("--box-positionY",`${box.y}px`)
+    rootStyles.setProperty("--scrollX", `${posX}px`)
+    rootStyles.setProperty("--scrollY", `${posY}px`)
+    //console.debug(`[Transition][setBoundingBox] Set coordinates ${box.x}, ${box.y}, ${box.width}, ${box.height} for zoom transitions and ${posX} resp. ${posY}`)
+}
+
+anchor.addEventListener("click",setBoundingBox)
+
+/* helper für details view */
 function scrollToTab(ind) {
   const scroller = _('div.card-content')
   const scrollerTitleBar = _('div.spacer div')
@@ -548,6 +706,7 @@ function scroller() {
 }
 const onScrollCard = scroller()
 
+/* helper für details form view */
 const editBook = (bookId) => {
   const button = _("#updateBook")
   button.firstElementChild.remove()
@@ -633,188 +792,7 @@ const insertIdentifiersObject = list => {
   return html
 }
 
-const panelOne = book => `<div class="panel"><p class="title">${book.title}</p><p class="subtitle">${book.subtitle}</p><p class="authors">${book.authors}</p><p class="description">${book.description}</p><p class="download"><a href="${book.path}"><span class="icon">download</span><span>herunterladen</span></a></p></div>`
-
-const panelTwo = (bookId,book) => `<div class="panel">
-<button id="updateBook" class="button right bottom action hidden" style="position: fixed;" onclick="editBook('${bookId}')"><span class="icon">edit</span> </button>
-<form oninput="setUpdateBook()">
-<fieldset class="content column" disabled>
-<label>Titel</label><input name="title" class="title" value="${book.title}" >
-<label>Untertitel</label><input name="subtitle" class="subtitle" value="${book.subtitle}" >
-<label>Autor(en)</label><div class="tag"><div><input name="authors" class="authors" value="${book.authors}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
-<label>Teaser</label><textarea name="teaser" class="teaser" rows="3">${book.teaser}</textarea>
-<label>Beschreibung</label><textarea name="description" class="description" rows="10">${book.description}</textarea>
-</fieldset>
-<fieldset class="info column"  disabled>
-    <legend>Zusatzinfos</legend>
-<label>Kategorien</label><div class="tag"><div><input name="categories" class="categories"><span class="icon invisible">check</span></div><div class="tags"></div></div>
-<label>Verlag</label><input name="publisher" class="entry" value="${book.publisher}" >
-<label>Ver&ouml;ffentlichungsdatum</label><input name="publishedDate" class="entry" value="${book.publishedDate}" >
-<label>Anzahl Seiten</label><input name="pageCount" class="entry" value="${book.pageCount}" >
-<label>ISBN</label><input name="isbn" class="entry" value="${book.isbn}" >
-<fieldset class="info group" name="industryIdentifiers"><legend>Identifiers aus Google search books</legend>${insertIdentifiersObject(book['industryIdentifiers'])}
-</fieldset>
-<label>Art des Inhalts</label><input name="Art des Inhalts" class="entry" value="${book['Art des Inhalts']}" >
-<label>EAN</label><input name="EAN" class="entry" value="${book['EAN']}" >
-<label>Literarische Gattung</label><input name="Literarische Gattung" class="entry" value="${book['Literarische Gattung']}" >
-<label>Organisation(en)</label><input name="Organisation(en)" class="entry" value="${book['Organisation(en)']}" >
-<label>Person(en)</label><div class="tag"><div><input name="Person(en)" class="entry" value="${book['Person(en)']}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
-<label>Sachgruppe(n)</label><div class="tag"><div><input name="Sachgruppe(n)" class="entry" value="${book['Sachgruppe(n)']}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
-<label>Schlagwörter</label><div class="tag"><div><input name="Schlagwörter" class="entry" value="${book['Schlagwörter']}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
-<label>Sprache(n)</label><div class="tag"><div><input name="Sprache(n)" class="entry" value="${book['Sprache(n)']}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
-<label>Titel</label><input name="Titel" class="entry" value="${book['Titel']}" >
-<label>Verlag</label><input name="Verlag" class="entry" value="${book['Verlag']}" >
-<label>Zeitliche Einordnung</label><input name="Zeitliche Einordnung" class="entry" value="${book['Zeitliche Einordnung']}" >
-<label>Zielgruppe</label><input name="Zielgruppe" class="entry" value="${book['Zielgruppe']}" >
-<fieldset class="info group" name="creators"><legend>Autoren aus ePub</legend>${insertObject(book['creators'])}
-</fieldset>
-<fieldset class="info group" name="identifiers"><legend>Identifiers aus ePub</legend>${insertObject(book['identifiers'])}
-</fieldset>
-<fieldset class="info group" name="titles"><legend>Titel aus ePub</legend>${insertObject(book['titles'])}
-</fieldset>
-</fieldset>
-<fieldset class="info column" disabled>
-    <legend>Image URLs</legend>
-    <div>
-        <img class="thumbnail" src="${book.thumbnail}">
-        <div class="column">
-<label>Thumbnail Image</label><input name="thumbnail" class="entry" value="${book.thumbnail}" >
-        </div>
-    </div>
-    <div>
-        <img class="image" src="${book.image}">
-        <div class="column">
-<label>Cover Image</label><input name="image" class="entry" value="${book.image}" >
-        </div>
-    </div>
-</fieldset>
-</form>
-</div>
-<div id="related" class="column"></div>`
-
-const details = async (bookId,bookIndex,catIndex,thumbnail) => {
-  bookManager.fetchBook(bookId)
-  .then(book => {
-    _('div.card-content.tabs').insertAdjacentHTML('afterbegin',panelOne(book))
-    _('div.card-content.tabs').insertAdjacentHTML('beforeend',panelTwo(bookId,book))
-    bookManager.search(book.authors)
-      .then(bx => {
-        currentPage().searchResultPager = bookManager.searchResultPager
-        _('#related').insertAdjacentHTML('afterbegin',createListPage(bx.result))
-        }
-       )
-    book.authors?.forEach(aut => {
-      popUp.call(_('input[name=authors] ~ span'),aut)
-    })
-    book.categories?.forEach(cat => {
-      popUp.call(_('input[name=categories] ~ span'),cat)
-    });
-    book['Person(en)']?.forEach(p => {
-      popUp.call(_('input[name^=Person] ~ span'),p)
-    });
-    book['Sachgruppe(n)']?.forEach(p => {
-      popUp.call(_('input[name^=Sachgruppe] ~ span'),p)
-    });0
-    book['Schlagwörter']?.forEach(p => {
-      popUp.call(_('input[name=Schlagwörter] ~ span'),p)
-    });
-    book['Sprache(n)']?.forEach(p => {
-      popUp.call(_('input[name^=Sprache] ~ span'), p)
-    });
-    const img = new Image()
-    img.src = book.image
-    img.addEventListener('load',() => _('div.card-image > img').replaceWith(img))
-  }).then(() => {
-    ['categories','authors','Person','Sachgruppe','Schlagw','Sprache'].forEach(name => {
-        const input = _(`input[name^=${name}]`)
-        const button = input.nextElementSibling
-        input.addEventListener('input', function() {
-          this.nextElementSibling.classList.replace('invisible', 'visible');
-        });
-        button.addEventListener('click',popUp)
-    });
-    ['industryIdentifiers','creators','identifiers','titles'].forEach(name => {
-      const fset = _(`fieldset[name=${name}]`)
-      const cancelButtons = fset.querySelectorAll('div input + span')
-      const addButton = fset.lastElementChild.lastElementChild
-      for( button of cancelButtons) {
-        button.addEventListener('click',function(){
-          this.parentNode.remove()
-          setUpdateBook()
-        })
-      }
-      addButton.addEventListener('click',function() {
-        this.parentNode.insertAdjacentHTML('beforebegin',insertDataset(name))
-        this.parentNode.previousElementSibling.lastElementChild.addEventListener('click',function(){
-          this.parentNode.remove()
-          setUpdateBook()
-        })
-      })
-    })
-    _('input[name=categories]').addEventListener('input',function(){
-
-      const term = this.value
-      suggest.call(this,this.parentNode,cats,term)
-      })
-    })
-  return `<div class="card" onscroll="onScrollCard()" data-cat-index="${catIndex}" data-book-index="${bookIndex}">        
-  <div class="card-image visible">
-      <img src="${thumbnail}">
-  </div>
-  <div class="spacer">
-      <h1 class="invisible">Metadaten</h1>
-      <div class="white">
-          <span onclick="scrollToTab(0)" class="active-tab">Übersicht</span>
-          <span onclick="scrollToTab(1)">Bearbeiten</span>
-          <span onclick="scrollToTab(2)">Ähnliches</span>
-      </div>
-  </div>
-  <div class="card-content tabs">
-
-  </div>
-  
-  <div id="back" class="button "><span class="icon">north</span></div>
-</div>
-`
-} 
-
-
-/* noch mehr helpers */
-const refreshSample = () => {
-  bookManager.fetchRandomSample().then(()=>goto(home,homeTransition('zoom')))
-  _('div.button.right.bottom span').remove()
-  _('div.button.right.bottom').classList.add('loading')
-}
-
-function nextFrame() {
-	let count = 5
-	return new Promise(resolve => {
-		const step = () => {
-			count-=1
-			if(count) requestAnimationFrame(step)
-			else requestAnimationFrame(resolve)
-		}
-		requestAnimationFrame(step);
-	});
-}
-
-const setBoundingBox = clickEvent => {
-    const box = clickEvent.target.getBoundingClientRect()
-    const posX = 0 //clickEvent.target.parentNode.parentNode.scrollLeft
-    const posY = 0 //_('#main > div').scrollTop
-    const rootStyles = document.documentElement.style
-    rootStyles.setProperty("--box-width",`${box.width}px`)
-    rootStyles.setProperty("--box-height",`${box.height}px`)
-    rootStyles.setProperty("--box-positionX",`${box.x}px`)
-    rootStyles.setProperty("--box-positionY",`${box.y}px`)
-    rootStyles.setProperty("--scrollX", `${posX}px`)
-    rootStyles.setProperty("--scrollY", `${posY}px`)
-    //console.debug(`[Transition][setBoundingBox] Set coordinates ${box.x}, ${box.y}, ${box.width}, ${box.height} for zoom transitions and ${posX} resp. ${posY}`)
-}
-
-anchor.addEventListener("click",setBoundingBox)
-
-/* Helper für input */
+/* Helpers für list input */
 const popUp = async function (val) {
   const input = this.previousElementSibling
   const container = this.parentNode.nextElementSibling
@@ -832,7 +810,58 @@ const popUp = async function (val) {
   await nextFrame()
   tag.classList.replace('not-visible','pop-up')
 }
-
+const prepareTags = book => {
+  book.authors?.forEach(aut => {
+    popUp.call(_('input[name=authors] ~ span'),aut)
+  })
+  book.categories?.forEach(cat => {
+    popUp.call(_('input[name=categories] ~ span'),cat)
+  });
+  book['Person(en)']?.forEach(p => {
+    popUp.call(_('input[name^=Person] ~ span'),p)
+  });
+  book['Sachgruppe(n)']?.forEach(p => {
+    popUp.call(_('input[name^=Sachgruppe] ~ span'),p)
+  });0
+  book['Schlagwörter']?.forEach(p => {
+    popUp.call(_('input[name=Schlagwörter] ~ span'),p)
+  });
+  book['Sprache(n)']?.forEach(p => {
+    popUp.call(_('input[name^=Sprache] ~ span'), p)
+  });
+}
+const prepareListObjectInput = () => {
+  ['categories','authors','Person','Sachgruppe','Schlagw','Sprache'].forEach(name => {
+    const input = _(`input[name^=${name}]`)
+    const button = input.nextElementSibling
+    input.addEventListener('input', function() {
+      this.nextElementSibling.classList.replace('invisible', 'visible');
+    });
+    button.addEventListener('click',popUp)
+});
+['industryIdentifiers','creators','identifiers','titles'].forEach(name => {
+  const fset = _(`fieldset[name=${name}]`)
+  const cancelButtons = fset.querySelectorAll('div input + span')
+  const addButton = fset.lastElementChild.lastElementChild
+  for( button of cancelButtons) {
+    button.addEventListener('click',function(){
+      this.parentNode.remove()
+      setUpdateBook()
+    })
+  }
+  addButton.addEventListener('click',function() {
+    this.parentNode.insertAdjacentHTML('beforebegin',insertDataset(name))
+    this.parentNode.previousElementSibling.lastElementChild.addEventListener('click',function(){
+      this.parentNode.remove()
+      setUpdateBook()
+    })
+  })
+})
+_('input[name=categories]').addEventListener('input',function(){
+  const term = this.value
+  suggest.call(this,this.parentNode,cats,term)
+  })
+}
 /* helper für suggest */
 const suggest = function(mtPoint, suggestions, term) {
   if (term.length < 3) return
@@ -866,7 +895,7 @@ const createEndOfListWatcher = observedElement => {
         watcher.disconnect()
         return
       }
-      const html = searchProvider.createListPage(resp?.result||[])
+      const html = searchProvider.listViewComponent(resp?.result||[])
       observedElement.classList.remove('loading')
       observedElement.insertAdjacentHTML('beforebegin',html)
     })
@@ -877,38 +906,15 @@ const createEndOfListWatcher = observedElement => {
 }
 
 /* add books */
-const googleSearchTransition = transition => {
-  return {
-    transition,
-    beforeTransition: () => {
-      googlePager = new GoogleBooksPager()
-      searchProvider = {
-        searchResultPager: googlePager,
-        search: googlePager.search,
-        createListPage: createOptions,
-        listWrapper: optionsWrapper
-      }
-    },
-    afterTransition: () => {
-      currentPage().style.setProperty('background-color','lightyellow')
-      const moreButton = _('.more-button')
-      endOfListWatcher = createEndOfListWatcher(moreButton)
-  },
-    leaveMethod: prevPage => prevPage.style.setProperty('display','none')
-  }
-}
 const searchMetaData = evt => {
   evt?.preventDefault()
   if (googlePager) {
-    goto(search,'zoom').then( () => currentPage().style.setProperty('background-color','white'))
+    goto(searchResultsView,'zoom').then( () => currentPage().style.setProperty('background-color','white'))
   } else {
-    goto(search, googleSearchTransition('zoom'))
+    goto(searchResultsView, googleSearchTransition('zoom'))
   }
 }
 
-const evaluateResult = book => {
-  return `<div><span class="icon">notification_important</span>Fehlende Attribute:</div><p>${notInMetadata(book).join(', ')}</p>`
-}
 /* und los geht's */
 let endOfListWatcher
 let googlePager, dnbPager
@@ -916,32 +922,30 @@ const defaultSearchProvider = {
   searchResultPager: bookManager.searchResultPager,
   search: bookManager.search,
   reset: true,
-  //listWrapper: optionsWrapper,
-  //createListPage: createOptions,
-  createListPage,listWrapper
+  listViewComponent,listView
 }
 let searchProvider = defaultSearchProvider
 const routes = [
     {
       pattern: /^\/$/,
-      template: home,
+      template: homeView,
       content: bookManager.fetchRandomSample
     },
     {
       pattern: /^\/(?=<category>.+?)\/?$/,
-      template: categories,
+      template: categoriesView,
       content: bookManager.categories
     },
     {
       pattern: /^\/(?=<bookId>.+?)\/(?=<title>.+?)\/?$/,
-      template: details,
+      template: detailsView,
       content: bookManager.getBook
     },
     {
       pattern: /^\/suche\/?\?q=$/,
-      template: categories,
+      template: categoriesView,
       content: bookManager.gotoCategories
     },
   ];
 
-goto(home,homeTransition('entry'))
+goto(homeView,homeTransition('entry'))
