@@ -127,7 +127,9 @@ class GoogleBooksPager extends SearchResultPager {
   }
   
   _search = async (term, pageCount, maxResults) => {
-    return fetch(this.searchURL(term,pageCount,maxResults)).then(r => r.json()).then(({items,totalItems}) => {
+    //return fetch(this.searchURL(term,pageCount,maxResults)).then(r => r.json())
+    return (new Promise(resolve => setTimeout(() => resolve(googleSearchResult),500)))
+    .then(({items,totalItems}) => {
       return {numberOfItems: totalItems,result:items}
     })
   }
@@ -362,7 +364,7 @@ const categoriesTransition = transition => {
     leaveMethod: prevPage => prevPage.style.setProperty('display','none'),
     afterTransition: () => {
       currentPage().searchResultPager = searchProvider.searchResultPager
-      currentPage().style.setProperty('background-color','lightyellow')
+      currentPage().style.setProperty('background-color','white')
       const moreButton = _('.more-button')
       endOfListWatcher = createEndOfListWatcher(moreButton)
     }
@@ -373,7 +375,8 @@ const searchListTransition = transition => {
     transition,
     leaveMethod: prevPage => prevPage.style.setProperty('display','none'),
     afterTransition: () => {
-      currentPage().searchResultPager = searchResultPager
+      searchProvider = defaultSearchProvider
+      currentPage().searchResultPager = searchProvider.searchResultPager
       currentPage().style.setProperty('background-color','white')
       const moreButton = _('.more-button')
       endOfListWatcher = createEndOfListWatcher(moreButton)
@@ -443,8 +446,9 @@ const createListPage = books => books.map( (book,bookIndex) => `<div class="card
 </div>
 `).join('')
 
-const listWrapper = (noi,title,str) => `<div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="goto(addBook,addBookTransition('slide'))"><span class="icon">add</span> </button>
-<div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
+//const listWrapper = (noi,title,str) => `<div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="goto(addBook,addBookTransition('slide'))"><span class="icon">add</span> </button><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
+
+const listWrapper = (noi,title,str) => `<div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="searchMetaData()"><span class="icon">add</span> </button><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
 
 const createOptions = books => books.map( (book,index) => `<div class="card-entry">
   <div>
@@ -459,11 +463,13 @@ const createOptions = books => books.map( (book,index) => `<div class="card-entr
     <p class="teaser">${book.teaser??book.description??''}</p>
   </div>
 </div>
-<div class="nots"><div><span class="icon">notification_important</span>Fehlende Attribute:</div><p>${notInMetadata(book).join(', ')}</p></div>
+<div class="nots">${evaluateResult(book)}</div>
 `).join('')
 
-const optionsWrapper = (noi,title,str) => `<div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="goto(addBook,addBookTransition('slide'))"><span class="icon">add</span> </button>
-<div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
+//const optionsWrapper = (noi,title,str) => `<div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="goto(addBook,addBookTransition('slide'))"><span class="icon">add</span> </button><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
+
+const optionsWrapper = (noi,title,str) => `<div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="goto(addBook,addBookTransition('slide'))"><span class="icon">add</span> </button><div style="text-align:center"><h2 class="${getColor()}">Ian McEwan - Zwischen den Laken</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
+
 
 const categories = async cat => {
   const r = await bookManager.search(cat)
@@ -851,7 +857,7 @@ const createEndOfListWatcher = observedElement => {
     observedElement.classList.add('loading')
     //observedElement.text = ''
     await new Promise(x => setTimeout(x,100))
-    bookManager.fetchNextSearchResult()
+    searchProvider.searchResultPager.fetchNextSearchResult()
     .then(resp => {
       if (!resp) {
         observedElement.classList.replace('loading','toast-start')
@@ -860,7 +866,7 @@ const createEndOfListWatcher = observedElement => {
         watcher.disconnect()
         return
       }
-      const html = createListPage(resp?.result||[])
+      const html = searchProvider.createListPage(resp?.result||[])
       observedElement.classList.remove('loading')
       observedElement.insertAdjacentHTML('beforebegin',html)
     })
@@ -877,17 +883,22 @@ const googleSearchTransition = transition => {
     beforeTransition: () => {
       googlePager = new GoogleBooksPager()
       searchProvider = {
+        searchResultPager: googlePager,
         search: googlePager.search,
         createListPage: createOptions,
         listWrapper: optionsWrapper
       }
     },
-    afterTransition: () => currentPage().style.setProperty('background-color','lightyellow'),
+    afterTransition: () => {
+      currentPage().style.setProperty('background-color','lightyellow')
+      const moreButton = _('.more-button')
+      endOfListWatcher = createEndOfListWatcher(moreButton)
+  },
     leaveMethod: prevPage => prevPage.style.setProperty('display','none')
   }
 }
 const searchMetaData = evt => {
-  evt.preventDefault()
+  evt?.preventDefault()
   if (googlePager) {
     goto(search,'zoom').then( () => currentPage().style.setProperty('background-color','white'))
   } else {
@@ -895,6 +906,9 @@ const searchMetaData = evt => {
   }
 }
 
+const evaluateResult = book => {
+  return `<div><span class="icon">notification_important</span>Fehlende Attribute:</div><p>${notInMetadata(book).join(', ')}</p>`
+}
 /* und los geht's */
 let endOfListWatcher
 let googlePager, dnbPager
@@ -902,9 +916,9 @@ const defaultSearchProvider = {
   searchResultPager: bookManager.searchResultPager,
   search: bookManager.search,
   reset: true,
-  listWrapper: optionsWrapper,
-  createListPage: createOptions,
-//  createListPage,listWrapper
+  //listWrapper: optionsWrapper,
+  //createListPage: createOptions,
+  createListPage,listWrapper
 }
 let searchProvider = defaultSearchProvider
 const routes = [
