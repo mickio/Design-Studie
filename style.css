@@ -26,7 +26,7 @@ body {
   position: absolute;
   left:50%;
   /* width: 100%; */
-  transition: transform var(--duration) ease-out;
+  transition: transform,width var(--duration) ease-out;
   transform: translateY(0);
   padding:0.3em;
   display: flex;
@@ -35,7 +35,7 @@ body {
 }
 .navbar-invisible {
   transform: translateY(-38px);
-  transition: transform var(--duration) ease-in;
+  transition: transform,width var(--duration) ease-in;
 }
 .navbar > div {
   display:flex;
@@ -45,7 +45,7 @@ body {
   border-radius: 18px
 }
 .navbar > div > input {
-  width: 150px;
+  width: 70vw;
   height:38.8px;
   margin:0;
   box-sizing: border-box;
@@ -56,7 +56,6 @@ body {
   background-color: rgba(255,255,255,.5);
 }
 .navbar input:focus {
-  width: 80vw;
   transition: width var(--duration) ease-out;
 }
 .navbar > div > a {
@@ -243,7 +242,7 @@ h2 {
 a > img {
   margin: 2em 5px;
   cursor: pointer;
-  box-shadow: 2px 2px 20px rgba(0,0,0,0.75)
+  box-shadow: 2px 2px 20px rgba(0,0,0,0.75);
 }
 .slider {
   display: flex;
@@ -272,6 +271,19 @@ a > img {
 div.slider a:link {
   color: whitesmoke;
   text-decoration: none;
+}
+/* list styles */
+.card-entry img {
+    max-width: 96px;
+}
+.card-entry .teaser {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+}
+.card-entry .authors {
+  margin: 8px 0 !important;
 }
 /* scroll snap tabs */
 .tabs {
@@ -366,8 +378,12 @@ div.slider a:link {
   background-color: white; 
   padding:0 1em;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
-
+label.upload ~ div.panel {
+  min-height: calc(100% - 80px);
+}
 /* Form tab */
 textarea {
 	margin: 0 5px 5px 5px;
@@ -660,6 +676,7 @@ fieldset:enabled .tags > div:after {
   width: 100%;
   box-sizing: border-box;
   margin: 5px;
+  margin-top: auto;
   padding: 5px;
   display: flex;
   flex-direction: column;
@@ -699,7 +716,8 @@ fieldset:enabled .tags > div:after {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  margin: 5px;
+  padding: 5px;
+  margin: 10px;
   border-radius: 5px;
   margin-top: 40px;
   transition: background-color var(--duration) ease-in;
@@ -726,20 +744,34 @@ fieldset:enabled .tags > div:after {
 .nots {
   padding: 5px;
 }
-.nots div {
-text-align: center
-}
 .nots p {
-  font-size: normal;
-  line-height: 40px;
-  height: 40px;
+  margin: 0;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  border-radius: 5px;
+  font-weight: 400;
+  font-size: smaller;
+  line-height: 30px;
+  height: 30px;
   padding: 5px;
+  transition: border-radius,font-weight var(--duration) ease-out;
+  cursor: pointer;
 }
+.nots p:active {
+  border-radius: 10px;
+  font-weight: 700;
+  transition: border-radius,font-weight var(--duration) ease-in;
+}
+
 .warning {
-  background-color: yellow;
+  background-color: hsl(120,5%,80%,.5);
+  color: hsl(120, 0%, 40%);
+  font-size: smaller !important;
 }
 .success {
-  background-color: green;
+  background-color: hsla(120, 100%, 40%,.5);
   color: white;
 }
 .warning:before {
@@ -748,6 +780,7 @@ text-align: center
   vertical-align: bottom;
   font-size: 24px;
   padding: 0 5px 0 2px;
+  color: yellow;
 }
 .success:before {
 	font-family: 'Material Icons';

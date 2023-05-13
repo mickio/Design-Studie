@@ -203,6 +203,7 @@ class BookManager {
       await new Promise(x => setTimeout(x,wait))
    	  return {numberOfItems: search_data.numberOfItems,result:search_data.result.map(bk=>{
     	  return {
+    	    path:bk.path,
     	    title:bk.title,
     	    subtitle:bk.subtitle,
     	    teaser:bk.teaser,
@@ -223,13 +224,12 @@ class BookManager {
     this.fetchNextSearchResult = this._searchResultPager.fetchNextSearchResult
   }
   
-  mapSearchResultItem = ({_id,title,subtitle,teaser,authors,imageLinks}) => {
+  mapSearchResultItem = ({_id,title,subtitle,teaser,authors,imageLinks,path}) => {
     return {
       bookId:_id.toHexString(),
-      title,subtitle,teaser,authors,imageLinks
+      title,subtitle,teaser,authors,imageLinks,path
     }
   }
-  
 
   fetchRandomSample = async () => {
     this.user.functions.randomSample().then(r => {
@@ -366,7 +366,7 @@ const categoriesTransition = transition => {
       currentPage().searchResultPager = searchProvider.searchResultPager
       currentPage().style.setProperty('background-color','white')
       const moreButton = _('.more-button')
-      endOfListWatcher = createEndOfListWatcher(moreButton)
+      currentPage().endOfListWatcher = createEndOfListWatcher(moreButton)
     }
   }
 }
@@ -379,7 +379,7 @@ const searchListTransition = transition => {
       currentPage().searchResultPager = searchProvider.searchResultPager
       currentPage().style.setProperty('background-color','white')
       const moreButton = _('.more-button')
-      endOfListWatcher = createEndOfListWatcher(moreButton)
+      currentPage().endOfListWatcher = createEndOfListWatcher(moreButton)
     }
   }
 }
@@ -387,6 +387,7 @@ const addBookTransition = (transition) => {
   return {
     transition,
     leaveMethod: prevPage => prevPage.style.setProperty('display','none'),
+    viewCreated: () => currentPage().style.setProperty('background-color','lightyellow'),
     beforeTransition: () => {
       document.querySelector('.navbar').classList.add('navbar-invisible')
       document.querySelector('.navbar a').addEventListener('click',searchMetaData)
@@ -402,6 +403,31 @@ const addBookTransition = (transition) => {
     }
   }
 }
+const uploadSelectedBookTransition = bookIndex => {
+  return {
+  transition: 'flyaway',
+  viewCreated: currentPage().style.setProperty('background-color','lightyellow'),
+  beforeTransition: () => selectedBook = currentPage().searchResultPager.searchResultItems[bookIndex],
+  afterTransition: () => {
+    _('label').insertAdjacentHTML('afterend', detailsViewComponent(selectedBook))
+    _('p.download a').addEventListener('click',(evt) => {
+      evt.preventDefault()
+      addBook(selectedBook)
+    })
+    _('p.download span.icon').textContent = 'upload'
+    _('p.download span.icon ~ span').textContent = 'E-Book hochladen'
+  }
+}}
+
+const editSelectedBookTransition = bookIndex => {
+  return {
+    ...uploadSelectedBookTransition(bookIndex),
+    transition: 'zoom',
+    afterTransition: () => {
+      
+    }
+  }
+}
 const backTransition = transition => {
   return {
     transition,
@@ -411,7 +437,7 @@ const backTransition = transition => {
       //anchor.append(page)
       resolve(page)
     }),
-    beforeTransition: () => endOfListWatcher?.disconnect()
+    beforeTransition: () => currentPage().endOfListWatcher?.disconnect()
   }
 }
 const googleSearchTransition = transition => {
@@ -428,6 +454,7 @@ const googleSearchTransition = transition => {
     },
     afterTransition: () => {
       currentPage().style.setProperty('background-color','lightyellow')
+      currentPage().searchResultPager = searchProvider.searchResultPager
       const moreButton = _('.more-button')
       endOfListWatcher = createEndOfListWatcher(moreButton)
   },
@@ -441,7 +468,7 @@ const homeView = async () =>  new Promise(resolve => {
       let html = `<div onclick="refreshSample()" class="button right bottom"><span class="icon">refresh</span></div>`
       html += randomSample.map( (cat,catIndex) => {
       let category = `<div data-cat-index="${catIndex}"><h1>${cat.category}</h1><div class="slider">`
-      category+=cat.books.map( (bk,bookIndex) => bk.imageLinks?.thumbnail ? `<a data-cat-index="${catIndex}" data-book-index="${bookIndex}" href="javascript:goto(detailsView,list2detailsTransition('enlarge'),'${bk.bookId}','${bookIndex}','${catIndex}','${bk.imageLinks?.thumbnail}')"><img width="128px" src="${bk.imageLinks.thumbnail}"></a>` : `<a href="javascript:goto(detailsView,list2detailsTransition('enlarge'),'${bk.bookId}','${bookIndex}','${catIndex}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
+      category+=cat.books.map( (bk,bookIndex) => bk.imageLinks?.thumbnail ? `<a data-cat-index="${catIndex}" data-book-index="${bookIndex}" href="javascript:goto(detailsView,list2detailsTransition('enlarge'),'${bk.bookId}','${bookIndex}','${catIndex}','${bk.imageLinks?.thumbnail}')"><img width="128px" src="${bk.imageLinks?.thumbnail}"></a>` : `<a href="javascript:goto(detailsView,list2detailsTransition('enlarge'),'${bk.bookId}','${bookIndex}','${catIndex}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
     category+=`<div class="card-content" data-category="${cat.category}"><p style="font-size:48pt" class="icon">more_horiz</p></div>`
     category+="</div></div>"
     return category
@@ -451,8 +478,8 @@ const homeView = async () =>  new Promise(resolve => {
 })
 const listViewComponent = books => books.map( (book,bookIndex) => `<div class="card-entry">
   <div>
-    <a href="javascript:goto(detailsView,list2detailsTransition('enlarge'),'${book.bookId}','${bookIndex}', undefined,'${book.imageLinks.thumbnail}')">
-    <img src="${book.imageLinks.thumbnail}">
+    <a href="javascript:goto(detailsView,list2detailsTransition('enlarge'),'${book.bookId}','${bookIndex}', undefined,'${book.imageLinks?.thumbnail}')">
+    <img src="${book.imageLinks?.thumbnail}">
     </a>
     <p class="download"><a href="${book.path}"><span class="icon">download</span><span>download</span></a>
     </p>
@@ -468,7 +495,7 @@ const listViewComponent = books => books.map( (book,bookIndex) => `<div class="c
 
 //const listView = (noi,title,str) => `<div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="goto(addBookView,addBookTransition('slide'))"><span class="icon">add</span> </button><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
 
-const listView = (noi,title,str) => `<div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="searchMetaData()"><span class="icon">add</span> </button><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
+const listView = (noi,title,str) => `<div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="goto(addBookView,addBookTransition('slide'))"><span class="icon">add</span> </button><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
 
 const googleListViewComponent = books => books.map( (book,index) => `<div class="card-entry">
   <div>
@@ -483,7 +510,7 @@ const googleListViewComponent = books => books.map( (book,index) => `<div class=
     <p class="teaser">${book.teaser??book.description??''}</p>
   </div>
 </div>
-<div class="nots">${evaluateResultViewComponent(book)}</div>
+<div class="nots">${evaluateResultViewComponent(book,index)}</div>
 `).join('')
 
 //const googleListView = (noi,title,str) => `<div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div><button class="button right bottom action" style="position: fixed;" onclick="goto(addBookView,addBookTransition('slide'))"><span class="icon">add</span> </button><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
@@ -508,23 +535,23 @@ const searchResultsView = async () => {
 const addBookView = () => `<label class="upload">
     <input name="upload" type="file">
     <div>
-      <span class="icon">upload</span>
+      <span class="icon">upload_file</span>
       <span>E-Book auswählen</span>
     </div>
   </label>
 `
-const evaluateResultViewComponent = book => {
+const evaluateResultViewComponent = (book,bookIndex) => {
   const missingData = notInMetadata(book)
   if (missingData.some(att => ['authors','title','categories','description','publisher','imageLinks','isbn'].includes(att)))
-    return `<p class="warning">Es fehlen ${notInMetadata(book).join(', ')}. Bearbeiten? <span class="icon inverted">edit</span></p>`
+    return `<p class="warning" onclick="goto(detailsFormGoogleView, editSelectedBookTransition(${bookIndex}),${bookIndex})">Es fehlen ${notInMetadata(book).join(', ')}`
   else
-    return `<p class="success">Alle erforderlichen Attribute vorhanden. Übernehmen? <span class="icon inverted">check</span></p>`
+    return `<p class="success" onclick="goto(addBookView, uploadSelectedBookTransition(${bookIndex}))">Alle erforderlichen Attribute vorhanden`
 }
 
 /* die details Ansicht... */
-const detailsViewComponent = book => `<div class="panel"><p class="title">${book.title}</p><p class="subtitle">${book.subtitle}</p><p class="authors">${book.authors}</p><p class="description">${book.description}</p><p class="download"><a href="${book.path}"><span class="icon">download</span><span>herunterladen</span></a></p></div>`
+const detailsViewComponent = book => `<div class="panel"><p class="title">${book.title}</p><p class="subtitle">${book.subtitle}</p><p class="authors">${book.authors}</p><p class="description">${book.description}</p><div></div><p class="download"><a href="${book.path}"><span class="icon">download</span><span>herunterladen</span></a></p></div>`
 
-const detailsFormView = (bookId,book) => `<div class="panel">
+const detailsFormGoogleView = (bookId,book=selectedBook) => `<div class="panel">
 <button id="updateBook" class="button right bottom action hidden" style="position: fixed;" onclick="editBook('${bookId}')"><span class="icon">edit</span> </button>
 <form oninput="setUpdateBook()">
 <fieldset class="content column" disabled>
@@ -542,8 +569,9 @@ const detailsFormView = (bookId,book) => `<div class="panel">
 <label>Anzahl Seiten</label><input name="pageCount" class="entry" value="${book.pageCount}" >
 <label>ISBN</label><input name="isbn" class="entry" value="${book.isbn}" >
 <fieldset class="info group" name="industryIdentifiers"><legend>Identifiers aus Google search books</legend>${insertIdentifiersObject(book['industryIdentifiers'])}
-</fieldset>
-<label>Art des Inhalts</label><input name="Art des Inhalts" class="entry" value="${book['Art des Inhalts']}" >
+</fieldset>`
+
+const detailsFormDNBView = (book = selectedBook) => `<label>Art des Inhalts</label><input name="Art des Inhalts" class="entry" value="${book['Art des Inhalts']}" >
 <label>EAN</label><input name="EAN" class="entry" value="${book['EAN']}" >
 <label>Literarische Gattung</label><input name="Literarische Gattung" class="entry" value="${book['Literarische Gattung']}" >
 <label>Organisation(en)</label><input name="Organisation(en)" class="entry" value="${book['Organisation(en)']}" >
@@ -585,6 +613,7 @@ const detailsView = async (bookId,bookIndex,catIndex,thumbnail) => {
   bookManager.fetchBook(bookId)
   .then(book => {
     const relatedSearchTerm = book.authors
+    const detailsFormView = (bookId,book) => detailsFormGoogleView(bookId,book)+detailsFormDNBView(book)
     insertTab(detailsViewComponent(book))
     insertTab(detailsFormView(bookId,book))
     insertTab('<div id="related" class="column"></div>')
@@ -725,19 +754,34 @@ const setEdit = (bookId) => {
   button.onclick = () => editBook(bookId)
 }
 
-const setUpdateBook = () => {
+const setUpdateBook = book => {
   const button = _('#updateBook')
   button.classList.add('active')
-  button.onclick = () => updateBook(bookManager.selectedBook.bookId)
+  button.onclick = () => book ? addBook(book) : updateBook(bookManager.selectedBook.bookId)
+}
+
+async function addBook (book) {
+  const button = _('p.download')
+  button.firstElementChild?.remove()
+  button.classList.add('loading')
+  getFormData(book,book)
+  // bookManager.addBook(book)
+  setTimeout(() => button.remove(),1000)
 }
 
 async function updateBook(bookId) {
   const book = {}
   const oBook = bookManager.selectedBook
-  const form = _('form')
   const button = _('#updateBook')
   button.firstElementChild?.remove()
   button.classList.add('loading')
+  getFormData(book,oBook)
+  // bookManager.updateBook(bookId,book)
+  setTimeout(() => setEdit(bookId),1000)
+}
+
+async function getFormData (book,oBook) {
+  const form = _('form')
   const formData = new FormData(form)
   for(entry of formData.entries()) {
     if (['categories','authors','Person(en)','Sachgruppe(n)','Schlagwörter','Sprache(n)'].includes(entry[0])) {
@@ -761,8 +805,6 @@ async function updateBook(bookId) {
     if(elems.length && !isEqual(oBook[name],a))  book[name] = a
   })
   console.log('update book',book)
-  // bookManager.updateBook(bookId,book)
-  setTimeout(() => setEdit(bookId),1000)
 }
 
 const isEqual = (o,p) => typeof o === 'object' ? JSON.stringify(p) === JSON.stringify(o) : o == p
@@ -916,7 +958,7 @@ const searchMetaData = evt => {
 }
 
 /* und los geht's */
-let endOfListWatcher
+let endOfListWatcher, selectedBook
 let googlePager, dnbPager
 const defaultSearchProvider = {
   searchResultPager: bookManager.searchResultPager,
@@ -949,3 +991,4 @@ const routes = [
   ];
 
 goto(homeView,homeTransition('entry'))
+//searchMetaData()
