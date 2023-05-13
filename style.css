@@ -24,8 +24,8 @@ body {
 }
 .navbar {
   position: absolute;
-  left:50%;
-  /* width: 100%; */
+  width: 100vw;
+  box-sizing: border-box;
   transition: transform,width var(--duration) ease-out;
   transform: translateY(0);
   padding:0.3em;
@@ -40,7 +40,6 @@ body {
 .navbar > div {
   display:flex;
   align-items: center;
-  transform: translate(-50%);
   box-shadow: 2px 2px 25px var(--blueviolet);
   border-radius: 18px
 }
