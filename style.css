@@ -44,18 +44,19 @@ body {
   border-radius: 18px
 }
 .navbar > div > input {
-  width: 70vw;
+  width: 40vw;
   height:38.8px;
   margin:0;
   box-sizing: border-box;
   border-bottom-left-radius: 17px;
   border-top-left-radius: 17px;
   padding: 0 10px;
-  transition: width,border-color,color var(--duration) ease-in;
+  transition: width var(--duration) ease-in;
   background-color: rgba(255,255,255,.5);
 }
 .navbar input:focus {
   transition: width var(--duration) ease-out;
+  width: 80vw;
 }
 .navbar > div > a {
   transition: background-color var(--duration) ease-in;
@@ -81,8 +82,11 @@ body {
   display: none !important;
 }
 /* functional elements */
-.button {
+.buttons {
 	position: fixed;
+  display: flex;  
+}
+.button {
 	background-color: var(--orange);
 	border-radius: 50%;
   border:none;
@@ -95,6 +99,22 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+}
+.minimizable {
+  transform: scaleY(1);
+  transition: all var(--duration) ease-out;
+}
+.minimized {
+  transform: scaleY(0);
+  transition: all var(--duration) ease-in;
+}
+.rotatable {
+  transform: rotate(0);
+  transition: all var(--duration) ease-out;
+}
+.rotated {
+  transform: rotate(-90deg);
+  transition: all var(--duration) ease-in;
 }
 .icon {
   vertical-align: bottom;
