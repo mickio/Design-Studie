@@ -11,20 +11,22 @@
 </head>
 
 <body>
-  <div class="navbar">
+  <!--div class="navbar">
     <div><input><a href="javascript:goto(searchResultsView,searchListTransition('zoom'))" class="icon">search</a></div>
-  </div>
+  </div-->
  <div id="main"><div class="uploading"></div></div>
   <script src="sample.js"></script>
   <script src="search.js"></script>
   <script src="google-result.js"></script>
   <script src="book.js"></script>
+  <script src="boox-button.js"></script>
+  <script src="boox-form.js"></script>
   <script src="categories.js"></script>
   <script src="main.js"></script>
-  <div class="buttons right bottom">
-    <div class="button minimizable minimized" onclick="searchGoogle()"><span class="icon">search</span><span style="position:absolute;color: lightsalmon;font-size: 9pt;z-index: -1">google</span></div>
-    <div class="button minimizable minimized"><span class="icon">save</span></div>
-    <div class="button rotatable" onclick="toggleButtons()"><span class="icon">more_vert</span></div>
- </div>
+  <!--div class="buttons right bottom">
+    <boox-button onclick="searchGoogle()" icon="google" minimizable minimized></boox-button>
+    <boox-button icon="save" minimizable minimized></boox-button>
+    <boox-button icon="more_vert" rotatable onclick="toggleButtons()"></boox-button>
+ </div-->
 </body>
 </html>

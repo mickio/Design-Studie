@@ -195,6 +195,14 @@ class BookManager {
     		  })
       	}})
   	  }},
+      addBook: async () => {
+        await new Promise(x => setTimeout(x,wait))
+  	    return book.bookId
+  	  },
+    	updateBook: async () => {
+        await new Promise(x => setTimeout(x,wait))
+  	    return book
+  	  },
     	getBook: async _ => {
         await new Promise(x => setTimeout(x,wait))
   	    return book
@@ -321,16 +329,13 @@ const details2detailsTransition = transition => {
       const next = list[bookIndex+1]
       const previous = list[bookIndex-1]
       console.log(next,previous,list,catIndex,bookIndex)
-      if(previous) _('#back').insertAdjacentHTML('afterend',  previous.bookId ? `<div class="buttons v-centered"><div onclick="goto(detailsView,details2detailsTransition('slide-right'),'${previous.bookId}','${bookIndex-1}','${catIndex}','${previous.imageLinks?.thumbnail}')" class="button ease-enter-end" ><span class="icon">arrow_back_ios</span></div></div>` : '')
-      if(next) _('#back').insertAdjacentHTML('afterend',  next.bookId ? `<div class="classes v-centered right"><div onclick="goto(detailsView,details2detailsTransition('slide-left'),'${next.bookId}','${bookIndex+1}','${catIndex}','${next.imageLinks?.thumbnail}')" class="button ease-enter-end" ><span class="icon">arrow_forward_ios</span></div></div>` : '')
+      if(previous) _('#back').insertAdjacentHTML('afterend',  previous.bookId ? `<div class="buttons v-centered"><boox-button onclick="goto(detailsView,details2detailsTransition('slide-right'),'${previous.bookId}','${bookIndex-1}','${catIndex}','${previous.imageLinks?.thumbnail}')" class="ease-enter-end" icon="arrow_back_ios"></boox-button></div>` : '')
+      if(next) _('#back').insertAdjacentHTML('afterend',  next.bookId ? `<div class="classes v-centered right"><boox-button onclick="goto(detailsView,details2detailsTransition('slide-left'),'${next.bookId}','${bookIndex+1}','${catIndex}','${next.imageLinks?.thumbnail}')" class="button ease-enter-end" icon="arrow_forward_ios"></boox-button></div>` : '')
       currentPage().style.setProperty('background-color','var(--brown)')
       _('#back').addEventListener('click',function() {
-        const icon = this.firstElementChild
-        icon.remove()
-        this.classList.add('loading')
+        this.setAttribute('loading','')
         goto('',backTransition('flyaway')).then(() => {
-          this.classList.remove('loading')
-          this.append(icon)
+          this.removeAttribute('loading')
         })
       })
     }
@@ -465,11 +470,11 @@ const googleSearchTransition = transition => {
 /* Views und View Components*/
 const homeView = async () =>  new Promise(resolve => {
   bookManager.onFetchRandomSample = randomSample => {
-      let html = `<div class="buttons right bottom"><div onclick="refreshSample()" class="button right bottom"><span class="icon">refresh</span></div></div>`
+      let html = `<div class="buttons right bottom"><boox-button onclick="refreshSample()" icon="refresh"></boox-button></div>`
       html += randomSample.map( (cat,catIndex) => {
       let category = `<div data-cat-index="${catIndex}"><h1>${cat.category}</h1><div class="slider">`
       category+=cat.books.map( (bk,bookIndex) => bk.imageLinks?.thumbnail ? `<a data-cat-index="${catIndex}" data-book-index="${bookIndex}" href="javascript:goto(detailsView,list2detailsTransition('enlarge'),'${bk.bookId}','${bookIndex}','${catIndex}','${bk.imageLinks?.thumbnail}')"><img width="128px" src="${bk.imageLinks?.thumbnail}"></a>` : `<a href="javascript:goto(detailsView,list2detailsTransition('enlarge'),'${bk.bookId}','${bookIndex}','${catIndex}')"><div class="card-content"><p class="header">${bk.title}</p><p class="authors">${bk.authors}</p></div></a>`).join('')
-    category+=`<div class="card-content" data-category="${cat.category}"><p style="font-size:48pt" class="icon">more_horiz</p></div>`
+    category+=`<div class="card-content" data-category="${cat.category}"><p class="more-horizontal">mehr in dieser Kategorie </p></div>`
     category+="</div></div>"
     return category
     }).join('')
@@ -478,11 +483,10 @@ const homeView = async () =>  new Promise(resolve => {
 })
 const listViewComponent = books => books.map( (book,bookIndex) => `<div class="card-entry">
   <div>
-    <a href="javascript:goto(detailsView,list2detailsTransition('enlarge'),'${book.bookId}','${bookIndex}', undefined,'${book.imageLinks?.thumbnail}')">
+    <a href="javascript:goto(detailsView,list2detailsTransition('enlarge'),'${book.bookId}','${bookIndex}', ${undefined},'${book.imageLinks?.thumbnail}')">
     <img src="${book.imageLinks?.thumbnail}">
     </a>
-    <p class="download"><a href="${book.path}"><span class="icon">download</span><span>download</span></a>
-    </p>
+    <p class="download"><a href="${book.path}">download</a></p>
   </div>
   <div>
     <p class="title ${getColor()}">${book.title} </p>
@@ -493,9 +497,9 @@ const listViewComponent = books => books.map( (book,bookIndex) => `<div class="c
 </div>
 `).join('')
 
-//const listView = (noi,title,str) => `<div class="buttons"><div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div></div><div class="buttons right bottom"><button class="button right bottom action" onclick="goto(addBookView,addBookTransition('slide'))"><span class="icon">add</span> </button></div><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
+//const listView = (noi,title,str) => `<div class="buttons"><boox-button onclick="goto('',backTransition('flyaway'))" icon="west"></boox-button></div><div class="buttons right bottom"><boox-button icon="add" onclick="goto(addBookView,addBookTransition('slide'))"></boox-button></div><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
 
-const listView = (noi,title,str) => `<div class="buttons"><div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div></div><div class="buttons right bottom"><button class="button action" onclick="goto(addBookView,addBookTransition('slide'))"><span class="icon">add</span> </button></div><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
+const listView = (noi,title,str) => `<div class="buttons"><boox-button onclick="goto('',backTransition('flyaway'))" icon="west"></boox-button></div><div class="buttons right bottom"><boox-button icon="add" onclick="goto(addBookView,addBookTransition('slide'))"></boox-button></div><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
 
 const googleListViewComponent = books => books.map( (book,index) => `<div class="card-entry">
   <div>
@@ -513,9 +517,9 @@ const googleListViewComponent = books => books.map( (book,index) => `<div class=
 <div class="nots">${evaluateResultViewComponent(book,index)}</div>
 `).join('')
 
-//const googleListView = (noi,title,str) => `<div class="buttons"><div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div></div><div class="buttons right bottom"><button class="button action" style="position: fixed;" onclick="goto(addBookView,addBookTransition('slide'))"><span class="icon">add</span> </button><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
+//const googleListView = (noi,title,str) => `<div class="buttons"><boox-button onclick="goto('',backTransition('flyaway'))" icon="west"></boox-button></div><div class="buttons right bottom"><boox-button icon="add" onclick="goto(addBookView,addBookTransition('slide'))"></boox-button></div><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
 
-const googleListView = (noi,title,str) => `<div class="buttons"><div class="button" onclick="goto('',backTransition('flyaway'))"><span class="icon">west</span></div></div><div class="buttons right bottom"><button class="button action" style="position: fixed;" onclick="goto(addBookView,addBookTransition('slide'))"><span class="icon">add</span> </button></div><div style="text-align:center"><h2 class="${getColor()}">Ian McEwan - Zwischen den Laken</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
+const googleListView = (noi,title,str) => `<div class="buttons"><boox-button onclick="goto('',backTransition('flyaway'))" icon="west"></boox-button></div><div class="buttons right bottom"><boox-button icon="add" onclick="goto(addBookView,addBookTransition('slide'))"></boox-button></div><div style="text-align:center"><h2 class="${getColor()}">Ian McEwan - Zwischen den Laken</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
 
 const categoriesView = async cat => {
   const r = await bookManager.search(cat)
@@ -549,10 +553,10 @@ const evaluateResultViewComponent = (book,bookIndex) => {
 }
 
 /* die details Ansicht... */
-const detailsViewComponent = book => `<div class="panel"><p class="title">${book.title}</p><p class="subtitle">${book.subtitle}</p><p class="authors">${book.authors}</p><p class="description">${book.description}</p><div></div><p class="download"><a href="${book.path}"><span class="icon">download</span><span>herunterladen</span></a></p></div>`
+const detailsViewComponent = book => `<div class="panel"><p class="title">${book.title}</p><p class="subtitle">${book.subtitle}</p><p class="authors">${book.authors}</p><p class="description">${book.description}</p><div></div><p class="download"><a href="${book.path}">herunterladen</a></p></div>`
 
 const detailsFormGoogleView = (bookId,book=selectedBook) => `<div class="panel">
-<div class="buttons right bottom"><button id="updateBook" class="button action hidden" style="position: fixed;" onclick="editBook('${bookId}')"><span class="icon">edit</span> </button></div>
+<div class="buttons right bottom hidden"><boox-button id="updateBook" onclick="editBook('${bookId}')" icon="edit"></boox-button></div>
 <form oninput="setUpdateBook()">
 <fieldset class="content column" disabled>
 <label>Titel</label><input name="title" class="title" value="${book.title}" >
@@ -642,17 +646,17 @@ const detailsView = async (bookId,bookIndex,catIndex,thumbnail) => {
 
   </div>
   
-  <div id="back" class="button "><span class="icon">north</span></div>
+  <div class="buttons"><boox-button id="back" icon="north"></boox-button></div>
 </div>
 `
 } 
 
 
 /* noch mehr helpers */
-const refreshSample = () => {
-  bookManager.fetchRandomSample().then(()=>goto(homeView,homeTransition('zoom')))
-  _('div.button.right.bottom span').remove()
-  _('div.button.right.bottom').classList.add('loading')
+function refreshSample () {
+  bookManager.fetchRandomSample()
+  .then(()=>goto(homeView,homeTransition('zoom')))
+  _('boox-button[icon=refresh]').setAttribute('loading','')
 }
 
 function nextFrame() {
@@ -738,25 +742,21 @@ const onScrollCard = scroller()
 /* helper für details form view */
 const editBook = (bookId) => {
   const button = _("#updateBook")
-  button.firstElementChild.remove()
-  button.insertAdjacentHTML('afterbegin','<span class="icon">save</span>')
+  button.setAttribute('icon','save')
   __('fieldset').forEach( fset => fset.removeAttribute('disabled',''))
   button.onclick = () => setEdit(bookId)
 }
 
 const setEdit = (bookId) => {
   const button = _('#updateBook')
-  button.firstElementChild?.remove()
-  button.classList.remove('loading')
-  button.classList.remove('active')
-  button.insertAdjacentHTML('afterbegin','<span class="icon">edit</span>')
+  button.removeAttribute('loading')
+  button.setAttribute('icon','edit')
   __('fieldset').forEach( fset => fset.setAttribute('disabled',''))
   button.onclick = () => editBook(bookId)
 }
 
 const setUpdateBook = book => {
   const button = _('#updateBook')
-  button.classList.add('active')
   button.onclick = () => book ? addBook(book) : updateBook(bookManager.selectedBook.bookId)
 }
 
@@ -773,8 +773,7 @@ async function updateBook(bookId) {
   const book = {}
   const oBook = bookManager.selectedBook
   const button = _('#updateBook')
-  button.firstElementChild?.remove()
-  button.classList.add('loading')
+  button.setAttribute('loading','')
   getFormData(book,oBook)
   // bookManager.updateBook(bookId,book)
   setTimeout(() => setEdit(bookId),1000)
@@ -958,9 +957,9 @@ const searchMetaData = evt => {
 }
 
 /* button helpers */
-const toggleButtons = () => {
-  document.querySelectorAll('.button.minimizable').forEach(button => button.classList.toggle('minimized'))
-  document.querySelector('.button.rotatable').classList.toggle('rotated')
+function toggleButtons () {
+  document.querySelectorAll('boox-button[minimizable]')?.forEach(button => button.toggleMinimized())
+  document.querySelector('boox-button[rotatable]')?.toggleRotated()
 }
 
 const searchGoogle = () => {
@@ -1006,5 +1005,10 @@ const routes = [
     },
   ];
 
-//goto(homeView,homeTransition('entry'))
-//searchMetaData()
+// goto(homeView,homeTransition('entry'))
+// searchMetaData()
+bookManager.fetchBook().then(book => {
+  const fView = new BooxForm(book)
+  anchor.firstElementChild.remove()
+  anchor.append(fView)
+})
