@@ -14,7 +14,8 @@ const _ = el => currentPage().querySelector(el)
 const __ = el => currentPage().querySelectorAll(el)
 const div = html => {
   const d = document.createElement('div')
-  d.insertAdjacentHTML('afterbegin',html)
+  if(typeof html === 'string') d.insertAdjacentHTML('afterbegin',html)
+  else d.appendChild(html)
   return d
 }
 const chooseColor = () => {
@@ -808,7 +809,7 @@ async function getFormData (book,oBook) {
 
 const isEqual = (o,p) => typeof o === 'object' ? JSON.stringify(p) === JSON.stringify(o) : o == p
 
-const insertDataset = (name,...params) => name == 'industryIdentifiers' ? `<div class="dataset"><input value="${params[0]??''}"><input value="${params[1]??''}"><span class="icon">cancel</span></div>` : `<div class="dataset"><input value="${params[0]??''}"><input  value="${params[1]??''}"><input value="${params[2]??''}"><span class="icon">cancel</span></div>`
+const insertDataset = (name,...params) => name == 'industryIdentifiers' ? `<div class="dataset"><input value="${params[0]??''}"><input value="${params[1]??''}"><span></span></div>` : `<div class="dataset"><input value="${params[0]??''}"><input  value="${params[1]??''}"><input value="${params[2]??''}"><span></span></div>`
 
 const getDataset = (dataElement,name) => {
   const dataset = []
@@ -823,13 +824,13 @@ const getDataset = (dataElement,name) => {
 
 const insertObject = list => {
   let html = list.map( ds => insertDataset('',...ds)).join('')
-  html += `<div><span class="icon">add</span></div>`
+  html += `<div class="add-identifier"></div>`
   return html
 }
 
 const insertIdentifiersObject = list => {
   let html = list.map(({type,identifier}) => insertDataset('industryIdentifiers',type,identifier)).join('')
-  html += `<div><span class="icon">add</span></div>`
+  html += `<div class="add-identifier"></div>`
   return html
 }
 
@@ -1008,7 +1009,5 @@ const routes = [
 // goto(homeView,homeTransition('entry'))
 // searchMetaData()
 bookManager.fetchBook().then(book => {
-  const fView = new BooxForm(book)
-  anchor.firstElementChild.remove()
-  anchor.append(fView)
+  goto(book => new BooxForm(book),'zoom-in',book)
 })

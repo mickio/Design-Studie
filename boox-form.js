@@ -43,8 +43,14 @@ const formGoogleView = book => `<div class="panel">
 </div>`
 
 class BooxForm extends HTMLElement {
+  static get observedAttributes() {
+    return ['book']
+  }
   constructor(book,buttonHandler) {
     super()
+    book && this.init(book)
+  }
+  init(book) {
     this.book=book
     this.attachShadow({mode:'open'})
     const style = document.createElement('style')
@@ -61,6 +67,12 @@ class BooxForm extends HTMLElement {
   connectedCallback() {
     this.prepareTags(this.book)
     this.prepareListObjectInput()
+  }
+  attributeChangedCallback(attName,oldValue,newValue) {
+    if(attName=='book') {
+      const book = JSON.parse(this.getAttribute('book'))
+      book && this.init(book)
+    }
   }
   showEditButtons = () => {
     this.button.setAttribute('icon','close')
@@ -162,30 +174,30 @@ class BooxForm extends HTMLElement {
         });
         button.addEventListener('click',this.popUp)
       } 
-  });
-  ['industryIdentifiers','creators','identifiers','titles'].forEach(name => {
-    const fset = this.shadowRoot.querySelector(`fieldset[name=${name}]`)
-    if (fset) {
-      const cancelButtons = fset.querySelectorAll('div input + span')
-      const addButton = fset.lastElementChild.lastElementChild
-      for( let button of cancelButtons) {
-        button.addEventListener('click',function(){
-          this.parentNode.remove()
-          self.enableSaveButton()
+    });
+    ['industryIdentifiers','creators','identifiers','titles'].forEach(name => {
+      const fset = this.shadowRoot.querySelector(`fieldset[name=${name}]`)
+      if (fset) {
+        const cancelButtons = fset.querySelectorAll('div input + span')
+        const addButton = fset.querySelector('.add-identifier')
+        for( let button of cancelButtons) {
+          button.addEventListener('click',function(){
+            this.parentNode.remove()
+            self.enableSaveButton()
+          })
+        }
+        addButton.addEventListener('click',function() {
+          this.insertAdjacentHTML('beforebegin',insertDataset(name))
+          this.previousElementSibling.lastElementChild.addEventListener('click',function(){
+            this.parentNode.remove()
+            self.enableSaveButton()
+          })
         })
       }
-      addButton.addEventListener('click',function() {
-        this.parentNode.insertAdjacentHTML('beforebegin',insertDataset(name))
-        this.parentNode.previousElementSibling.lastElementChild.addEventListener('click',function(){
-          this.parentNode.remove()
-          self.enableSaveButton()
-        })
-      })
-    }
-  })
-  self.shadowRoot.querySelector('input[name=categories]').addEventListener('input',function(){
-    const term = this.value
-    self.suggest.call(this,this.parentNode,cats,term)
+    })
+    self.shadowRoot.querySelector('input[name=categories]').addEventListener('input',function(){
+      const term = this.value
+      self.suggest.call(this,this.parentNode,cats,term)
     })
   }
   /* helper für suggest */
@@ -208,14 +220,12 @@ class BooxForm extends HTMLElement {
 customElements.define('boox-form',BooxForm)
 
 const formStyles = `/* Form tab */
-textarea {
-	margin: 0 5px 5px 5px;
-}
 input, textarea {
-  width: 100%;
+  width: calc(100% - 10px);
 	margin: 0 5px;
 	border: 1px solid var(--green);
-	padding:5px;
+	padding: 5px;
+	box-sizing: border-box;
 }
 input:focus {
 	box-shadow: inset 0 0 2px 2px var(--green);
@@ -223,7 +233,7 @@ input:focus {
 	border-color: var(--orange);
 }
 input:disabled, textarea:disabled  {
-	border: none;
+	border-color: white;
 }
 input ~ span:before {
   font-family: "Material Icons";
@@ -234,10 +244,15 @@ fieldset label {
 	font-variant-caps: all-petite-caps;
 	margin: 5px 5px 0 5px;
 }
+.dataset span:before {
+  content: "cancel";
+  vertical-align: middle;
+  cursor: pointer;
+}
 fieldset {
 	margin: 5px;
 	padding: 0 0 5px 0;
-	border:none
+	border: none;
 }
 legend{
 	font-size: x-small;
@@ -252,7 +267,8 @@ fieldset img {
 	align-items: flex-start;
 }
 .group {
-  width: 100%;
+  width: calc(100% - 10px);
+  box-sizing: border-box;
   border: 1px solid var(--green);
   padding: 0 5px 0 0;
 }
@@ -272,6 +288,7 @@ fieldset:enabled .group span {
 }
 fieldset .group div:last-child {
   width: 100%;
+  box-sizing: border-box;
 }
 fieldset .group div:last-child span {
   background-color: #87B42D;
@@ -295,9 +312,6 @@ fieldset .group div:last-child span {
 }
 .tag > div {
   position: relative;
-  width: 100%;
-}
-.tag > input {
   width: 100%;
 }
 .tags {
@@ -329,6 +343,7 @@ fieldset:disabled .tags {
 }
 .not-visible{
   transform: scale(0.0)
+  transition: transform .2s cubic-bezier(0.68, 0.55, 0.265, 1.55);
 }
 .pop-up {
   transition: transform .2s cubic-bezier(0.68, 0.55, 0.265, 1.55);
@@ -347,13 +362,27 @@ fieldset:enabled .tags > div:after {
   text-decoration: none;
   color: var(--green);
   position: absolute;
-  right:-10px;
-  bottom: 4px;
+  right: 8px;
+  top: 4px;
+}
+fieldset:enabled .add-identifier:before {
+  font-family: "Material Icons";
+  content: "cancel";
+  transform: rotate(45deg);
+  color: green;
 }
 .buttons {
 	position: fixed;
   display: flex;
   bottom: 0;
   right: 0
+}
+.invisible {
+	opacity: 0;
+	transition: opacity .5s ease;
+}
+.visible {
+	opacity: 1;
+	transition: opacity .5s ease;
 }
 `
