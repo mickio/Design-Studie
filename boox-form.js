@@ -7,7 +7,7 @@ const insertIdentifiers = list => {
 const objFields = ['categories','authors','Person(en)','Sachgruppe(n)','Schlagwörter','Sprache(n)'];
 
 const formGoogleView = book => `<div class="panel">
-<div class="buttons"><boox-button icon="save" id="saveBook" minimizable minimized disabled></boox-button><boox-button icon="google" id="searchBook" minimizable minimized></boox-button><boox-button icon="edit" id="updateBook"></boox-button></div>
+<div class="buttons not-visible"><boox-button icon="save" id="saveBook" minimizable minimized disabled></boox-button><boox-button icon="google" id="searchBook" minimizable minimized></boox-button><boox-button icon="edit" id="updateBook"></boox-button></div>
 <form>
 <fieldset class="content column" disabled>
 <label>Titel</label><input name="title" class="title" value="${book.title}" >
@@ -93,7 +93,12 @@ class BooxForm extends HTMLElement {
     this.shadowRoot.querySelectorAll('fieldset').forEach( fset => fset.setAttribute('disabled',''))
     this.button.onclick = this.showEditButtons
   }
-  
+  toggleButtonGroup = ([form]) => {
+    const buttonGroupClasses = this.button.parentNode.classList
+    console.log('observed form',this.button.parentNode)
+    if(form.intersectionRatio > .5 && buttonGroupClasses.contains('not-visible')) buttonGroupClasses.replace('not-visible','pop-up')
+    else if (!form.intersectionRatio <= .5 && buttonGroupClasses.contains('pop-up')) buttonGroupClasses.replace('pop-up','not-visible')
+  }
   saveBook = async () => {
     this.saveButton.setAttribute('loading','')
     if (this.book.bookId) this.updateBook()
@@ -348,7 +353,7 @@ fieldset:disabled .tags {
 .pop-up {
   transition: transform .2s cubic-bezier(0.68, 0.55, 0.265, 1.55);
   transform: scale(1.1);
-  box-shadow: 2px 2px 15px grey
+  /* box-shadow: 2px 2px 15px grey */
 }
 fieldset:enabled .tags > div:after {
   font-family: "Material Icons";

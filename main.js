@@ -556,26 +556,6 @@ const evaluateResultViewComponent = (book,bookIndex) => {
 /* die details Ansicht... */
 const detailsViewComponent = book => `<div class="panel"><p class="title">${book.title}</p><p class="subtitle">${book.subtitle}</p><p class="authors">${book.authors}</p><p class="description">${book.description}</p><div></div><p class="download"><a href="${book.path}">herunterladen</a></p></div>`
 
-const detailsFormGoogleView = (bookId,book=selectedBook) => `<div class="panel">
-<div class="buttons right bottom hidden"><boox-button id="updateBook" onclick="editBook('${bookId}')" icon="edit"></boox-button></div>
-<form oninput="setUpdateBook()">
-<fieldset class="content column" disabled>
-<label>Titel</label><input name="title" class="title" value="${book.title}" >
-<label>Untertitel</label><input name="subtitle" class="subtitle" value="${book.subtitle}" >
-<label>Autor(en)</label><div class="tag"><div><input name="authors" class="authors" value="${book.authors}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
-<label>Teaser</label><textarea name="teaser" class="teaser" rows="3">${book.teaser}</textarea>
-<label>Beschreibung</label><textarea name="description" class="description" rows="10">${book.description}</textarea>
-</fieldset>
-<fieldset class="info column"  disabled>
-    <legend>Zusatzinfos</legend>
-<label>Kategorien</label><div class="tag"><div><input name="categories" class="categories"><span class="icon invisible">check</span></div><div class="tags"></div></div>
-<label>Verlag</label><input name="publisher" class="entry" value="${book.publisher}" >
-<label>Ver&ouml;ffentlichungsdatum</label><input name="publishedDate" class="entry" value="${book.publishedDate}" >
-<label>Anzahl Seiten</label><input name="pageCount" class="entry" value="${book.pageCount}" >
-<label>ISBN</label><input name="isbn" class="entry" value="${book.isbn}" >
-<fieldset class="info group" name="industryIdentifiers"><legend>Identifiers aus Google search books</legend>${insertIdentifiersObject(book['industryIdentifiers'])}
-</fieldset>`
-
 const detailsFormDNBView = (book = selectedBook) => `<label>Art des Inhalts</label><input name="Art des Inhalts" class="entry" value="${book['Art des Inhalts']}" >
 <label>EAN</label><input name="EAN" class="entry" value="${book['EAN']}" >
 <label>Literarische Gattung</label><input name="Literarische Gattung" class="entry" value="${book['Literarische Gattung']}" >
@@ -614,23 +594,28 @@ const detailsFormDNBView = (book = selectedBook) => `<label>Art des Inhalts</lab
 </div>`
 
 const detailsView = async (bookId,bookIndex,catIndex,thumbnail) => {
-  const insertTab = html => _('div.card-content.tabs').insertAdjacentHTML('beforeend',html)
+  const insertTab = html => {
+    if (typeof html === 'string') _('div.card-content.tabs').insertAdjacentHTML('beforeend',html)
+    else _('div.card-content.tabs').append(html)
+  }
   bookManager.fetchBook(bookId)
   .then(book => {
     const relatedSearchTerm = book.authors
-    const detailsFormView = (bookId,book) => detailsFormGoogleView(bookId,book)+detailsFormDNBView(book)
+    const booxForm = new BooxForm(book)
     insertTab(detailsViewComponent(book))
-    insertTab(detailsFormView(bookId,book))
+    insertTab(booxForm)
     insertTab('<div id="related" class="column"></div>')
     bookManager.search(relatedSearchTerm).then(bx => {
       currentPage().searchResultPager = bookManager.searchResultPager
       _('#related').insertAdjacentHTML('afterbegin',listViewComponent(bx.result))
     })
-    prepareTags(book)
+    booxForm.prepareTags(book)
+    booxForm.prepareListObjectInput
+    formWatcher = createFormObserver(booxForm)
     const img = new Image()
     img.src = book.image
     img.addEventListener('load',() => _('div.card-image > img').replaceWith(img))
-  }).then(prepareListObjectInput)
+  })
   return `<div class="card" onscroll="onScrollCard()" data-cat-index="${catIndex}" data-book-index="${bookIndex}">        
   <div class="card-image visible">
       <img src="${thumbnail}">
@@ -696,8 +681,6 @@ function scrollToTab(ind) {
   scroller.scrollTo({left:scrollStop,behavior:'smooth'})
   for ( tab of scrollerTitleBar.children) tab.classList.remove('active-tab')
   scrollerTitleBar.children[ind].classList.add('active-tab')
-  if (ind == 1) scroller.children[1].firstElementChild.classList.remove('hidden')
-  else scroller.children[1].firstElementChild.classList.add('hidden')
 }
 
 function scroller() {
@@ -741,44 +724,6 @@ function scroller() {
 const onScrollCard = scroller()
 
 /* helper für details form view */
-const editBook = (bookId) => {
-  const button = _("#updateBook")
-  button.setAttribute('icon','save')
-  __('fieldset').forEach( fset => fset.removeAttribute('disabled',''))
-  button.onclick = () => setEdit(bookId)
-}
-
-const setEdit = (bookId) => {
-  const button = _('#updateBook')
-  button.removeAttribute('loading')
-  button.setAttribute('icon','edit')
-  __('fieldset').forEach( fset => fset.setAttribute('disabled',''))
-  button.onclick = () => editBook(bookId)
-}
-
-const setUpdateBook = book => {
-  const button = _('#updateBook')
-  button.onclick = () => book ? addBook(book) : updateBook(bookManager.selectedBook.bookId)
-}
-
-async function addBook (book) {
-  const button = _('p.download')
-  button.firstElementChild?.remove()
-  button.classList.add('loading')
-  getFormData(book,book)
-  // bookManager.addBook(book)
-  setTimeout(() => button.remove(),1000)
-}
-
-async function updateBook(bookId) {
-  const book = {}
-  const oBook = bookManager.selectedBook
-  const button = _('#updateBook')
-  button.setAttribute('loading','')
-  getFormData(book,oBook)
-  // bookManager.updateBook(bookId,book)
-  setTimeout(() => setEdit(bookId),1000)
-}
 
 async function getFormData (book,oBook) {
   const form = _('form')
@@ -834,91 +779,6 @@ const insertIdentifiersObject = list => {
   return html
 }
 
-/* Helpers für list input */
-const popUp = async function (val) {
-  const input = this.previousElementSibling
-  const container = this.parentNode.nextElementSibling
-  const text = typeof val === 'string' ? val : input.value
-  input.value = ''
-  this.classList.replace('visible','invisible')
-  container.insertAdjacentHTML('beforeend',`<div class="not-visible">${text}</div>`)
-  const tag = container.lastElementChild
-  tag.addEventListener('click',function(){
-    if (_('fieldset:disabled')) return
-    this.classList.replace('pop-up','not-visible')
-    setTimeout(() =>this.remove(),300)
-    setUpdateBook()
-  })
-  await nextFrame()
-  tag.classList.replace('not-visible','pop-up')
-}
-const prepareTags = book => {
-  book.authors?.forEach(aut => {
-    popUp.call(_('input[name=authors] ~ span'),aut)
-  })
-  book.categories?.forEach(cat => {
-    popUp.call(_('input[name=categories] ~ span'),cat)
-  });
-  book['Person(en)']?.forEach(p => {
-    popUp.call(_('input[name^=Person] ~ span'),p)
-  });
-  book['Sachgruppe(n)']?.forEach(p => {
-    popUp.call(_('input[name^=Sachgruppe] ~ span'),p)
-  });0
-  book['Schlagwörter']?.forEach(p => {
-    popUp.call(_('input[name=Schlagwörter] ~ span'),p)
-  });
-  book['Sprache(n)']?.forEach(p => {
-    popUp.call(_('input[name^=Sprache] ~ span'), p)
-  });
-}
-const prepareListObjectInput = () => {
-  ['categories','authors','Person','Sachgruppe','Schlagw','Sprache'].forEach(name => {
-    const input = _(`input[name^=${name}]`)
-    const button = input.nextElementSibling
-    input.addEventListener('input', function() {
-      this.nextElementSibling.classList.replace('invisible', 'visible');
-    });
-    button.addEventListener('click',popUp)
-});
-['industryIdentifiers','creators','identifiers','titles'].forEach(name => {
-  const fset = _(`fieldset[name=${name}]`)
-  const cancelButtons = fset.querySelectorAll('div input + span')
-  const addButton = fset.lastElementChild.lastElementChild
-  for( button of cancelButtons) {
-    button.addEventListener('click',function(){
-      this.parentNode.remove()
-      setUpdateBook()
-    })
-  }
-  addButton.addEventListener('click',function() {
-    this.parentNode.insertAdjacentHTML('beforebegin',insertDataset(name))
-    this.parentNode.previousElementSibling.lastElementChild.addEventListener('click',function(){
-      this.parentNode.remove()
-      setUpdateBook()
-    })
-  })
-})
-_('input[name=categories]').addEventListener('input',function(){
-  const term = this.value
-  suggest.call(this,this.parentNode,cats,term)
-  })
-}
-/* helper für suggest */
-const suggest = function(mtPoint, suggestions, term) {
-  if (term.length < 3) return
-  this.parentNode.querySelector('div.options')?.remove()
-  let html = '<div class="options">'
-  html += suggestions.filter(t => t.toLowerCase().includes(term.toLowerCase())).map(t => `<p>${t}</p>`).join('')
-  html +="</div>"
-  mtPoint.insertAdjacentHTML('afterbegin',html)
-  const inp = this
-  mtPoint.querySelectorAll('p').forEach(p =>p.addEventListener('click',function(){
-    inp.value = this.textContent.trim()
-    inp.parentNode.querySelector('div.options').remove()
-    popUp.call(inp.nextElementSibling)
-  }))
-}
 /* intersection observer for infinite scrolling */
 const createEndOfListWatcher = observedElement => {
   const text = observedElement.text
@@ -946,7 +806,12 @@ const createEndOfListWatcher = observedElement => {
   watcher.observe(observedElement)
   return watcher
 }
-
+/* form intersection observer */
+const createFormObserver = observedElement => {
+  const watcher = new IntersectionObserver(observedElement.toggleButtonGroup)
+  watcher.observe(observedElement)
+  return watcher
+}
 /* add books */
 const searchMetaData = evt => {
   evt?.preventDefault()
@@ -974,7 +839,7 @@ const searchGoogle = () => {
   searchMetaData()
 }
 /* und los geht's */
-let endOfListWatcher, selectedBook
+let formWatcher, endOfListWatcher, selectedBook
 let googlePager, dnbPager
 const defaultSearchProvider = {
   searchResultPager: bookManager.searchResultPager,
@@ -1006,8 +871,8 @@ const routes = [
     },
   ];
 
-// goto(homeView,homeTransition('entry'))
+goto(homeView,homeTransition('entry'))
 // searchMetaData()
-bookManager.fetchBook().then(book => {
-  goto(book => new BooxForm(book),'zoom-in',book)
-})
+//bookManager.fetchBook().then(book => {
+// goto(book => new BooxForm(book),'zoom-in',book)
+//})
