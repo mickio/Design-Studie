@@ -609,8 +609,6 @@ const detailsView = async (bookId,bookIndex,catIndex,thumbnail) => {
       currentPage().searchResultPager = bookManager.searchResultPager
       _('#related').insertAdjacentHTML('afterbegin',listViewComponent(bx.result))
     })
-    booxForm.prepareTags(book)
-    booxForm.prepareListObjectInput
     formWatcher = createFormObserver(booxForm.shadowRoot.querySelector('input'))
     const img = new Image()
     img.src = book.image
