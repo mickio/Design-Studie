@@ -6,8 +6,7 @@ const insertIdentifiers = list => {
 
 const objFields = ['categories','authors','Person(en)','Sachgruppe(n)','Schlagwörter','Sprache(n)'];
 
-const formGoogleView = book => `<div class="panel">
-<div class="buttons not-visible"><boox-button icon="save" id="saveBook" minimizable minimized disabled></boox-button><boox-button icon="google" id="searchBook" minimizable minimized></boox-button><boox-button icon="edit" id="updateBook"></boox-button></div>
+const formGoogleView = book => `<div class="buttons not-visible"><boox-button icon="save" id="saveBook" minimizable minimized disabled></boox-button><boox-button icon="google" id="searchBook" minimizable minimized></boox-button><boox-button icon="edit" id="updateBook"></boox-button></div>
 <form>
 <fieldset class="content column" disabled>
 <label>Titel</label><input name="title" class="title" value="${book.title}" >
@@ -39,8 +38,7 @@ const formGoogleView = book => `<div class="panel">
     </div>
 </div>
 </fieldset>
-</form>
-</div>`
+</form>`
 
 class BooxForm extends HTMLElement {
   static get observedAttributes() {
@@ -55,7 +53,9 @@ class BooxForm extends HTMLElement {
     this.attachShadow({mode:'open'})
     const style = document.createElement('style')
     style.textContent = formStyles
-    this.shadowRoot.append(div(formGoogleView(book)),style)
+    const content = div(formGoogleView(book))
+    content.classList.add('panel')
+    this.shadowRoot.append(content,style)
     this.form = this.shadowRoot.querySelector('form')
     this.form.oninput = this.enableSaveButton
     this.button = this.shadowRoot.querySelector("#updateBook")
@@ -95,10 +95,8 @@ class BooxForm extends HTMLElement {
   }
   toggleButtonGroup = ([form]) => {
     const buttonGroupClasses = this.button.parentNode.classList
-    if(form.intersectionRatio > .5) {console.log('in viewport')
-    buttonGroupClasses.replace('not-visible','pop-up')}
-    else if (!form.intersectionRatio <= .5) {console.log('out of viewport')
-    buttonGroupClasses.replace('pop-up','not-visible')}
+    if(form.intersectionRatio > .5) buttonGroupClasses.replace('not-visible','pop-up')
+    else if (!form.intersectionRatio <= .5) buttonGroupClasses.replace('pop-up','not-visible')
   }
   saveBook = async () => {
     this.saveButton.setAttribute('loading','')

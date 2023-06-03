@@ -404,81 +404,7 @@ div.slider a:link {
 label.upload ~ div.panel {
   min-height: calc(100% - 80px);
 }
-/* Form tab */
-textarea {
-	margin: 0 5px 5px 5px;
-}
-input, textarea {
-  width: 100%;
-	margin: 0 5px;
-	border: 1px solid var(--green);
-	padding:5px;
-}
-input:focus {
-	box-shadow: inset 0 0 2px 2px var(--green);
-	outline: none;
-	border-color: var(--orange);
-}
-input:disabled, textarea:disabled  {
-	border: none;
-}
-fieldset label {
-	color: var(--green);
-	font-variant-caps: all-petite-caps;
-	margin: 5px 5px 0 5px;
-}
-fieldset {
-	margin: 5px;
-	padding: 0 0 5px 0;
-	border:none
-}
-legend{
-	font-size: x-small;
-}
-fieldset img {
-	float: left;
-	padding:5px
-}
-.column {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-}
-.group {
-  width: 100%;
-  border: 1px solid var(--green);
-  padding: 0 5px 0 0;
-}
-.group legend {
-  color: var(--green)
-}
-.group div {
-  display: flex;
-  padding-bottom: 5px;
-  justify-content: flex-end;
-}
-fieldset:disabled .group span {
-  display:none
-}
-fieldset:enabled .group span {
-  cursor: pointer;
-}
-fieldset .group div:last-child {
-  width: 100%;
-}
-fieldset .group div:last-child span {
-  background-color: #87B42D;
-  color: white;
-  border-radius: 50%;
-  padding: 0 2px;
-}
 
-.thumbnail,.image {
-	height: 45px;
-	width: 32px;
-	object-fit: cover;
-	object-position: top;
-}
 /* fonts */
 @font-face {
 	font-family: 'Material Icons';
@@ -780,3 +706,4 @@ fieldset .group div:last-child span {
   transition: background-color var(--duration) ease-out;
   background-color: aquamarine;
 }
+

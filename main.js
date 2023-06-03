@@ -680,7 +680,6 @@ function scrollToTab(ind) {
   const scrollStop = ind * scroller.clientWidth 
   let form;
   [form] = formWatcher.takeRecords()
-  console.log('before scroll',formWatcher.takeRecords())
   scroller.scrollTo({left:scrollStop,behavior:'smooth'})
   for ( tab of scrollerTitleBar.children) tab.classList.remove('active-tab')
   scrollerTitleBar.children[ind].classList.add('active-tab')
@@ -728,32 +727,6 @@ const onScrollCard = scroller()
 
 /* helper für details form view */
 
-async function getFormData (book,oBook) {
-  const form = _('form')
-  const formData = new FormData(form)
-  for(entry of formData.entries()) {
-    if (['categories','authors','Person(en)','Sachgruppe(n)','Schlagwörter','Sprache(n)'].includes(entry[0])) {
-        const elems = _(`input[name^=${entry[0].slice(0,6)}]`).parentNode.nextElementSibling.children
-        const a = []
-        for(const el of elems) {
-          a.push(el.textContent.trim())    
-        }
-        if (elems.length && !isEqual(oBook[entry[0]],a)) {
-          book[entry[0]] = a
-        }
-    }
-    else if (entry[1] && oBook[entry[0]] != entry[1]) book[entry[0]] = entry[1]
-  };
-  ['industryIdentifiers','creators','identifiers','titles'].forEach(name => {
-    const a = []
-    const elems = __(`fieldset[name=${name}] div.dataset`)
-    for (const el of elems) {
-      a.push(getDataset(el,name))
-    }
-    if(elems.length && !isEqual(oBook[name],a))  book[name] = a
-  })
-  console.log('update book',book)
-}
 
 const isEqual = (o,p) => typeof o === 'object' ? JSON.stringify(p) === JSON.stringify(o) : o == p
 
