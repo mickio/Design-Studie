@@ -95,9 +95,10 @@ class BooxForm extends HTMLElement {
   }
   toggleButtonGroup = ([form]) => {
     const buttonGroupClasses = this.button.parentNode.classList
-    console.log('observed form',this.button.parentNode)
-    if(form.intersectionRatio > .5 && buttonGroupClasses.contains('not-visible')) buttonGroupClasses.replace('not-visible','pop-up')
-    else if (!form.intersectionRatio <= .5 && buttonGroupClasses.contains('pop-up')) buttonGroupClasses.replace('pop-up','not-visible')
+    if(form.intersectionRatio > .5) {console.log('in viewport')
+    buttonGroupClasses.replace('not-visible','pop-up')}
+    else if (!form.intersectionRatio <= .5) {console.log('out of viewport')
+    buttonGroupClasses.replace('pop-up','not-visible')}
   }
   saveBook = async () => {
     this.saveButton.setAttribute('loading','')
@@ -347,7 +348,7 @@ fieldset:disabled .tags {
   top: -30px;
 }
 .not-visible{
-  transform: scale(0.0)
+  transform: scale(0.0);
   transition: transform .2s cubic-bezier(0.68, 0.55, 0.265, 1.55);
 }
 .pop-up {

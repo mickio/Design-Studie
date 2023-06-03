@@ -611,7 +611,7 @@ const detailsView = async (bookId,bookIndex,catIndex,thumbnail) => {
     })
     booxForm.prepareTags(book)
     booxForm.prepareListObjectInput
-    formWatcher = createFormObserver(booxForm)
+    formWatcher = createFormObserver(booxForm.shadowRoot.querySelector('input'))
     const img = new Image()
     img.src = book.image
     img.addEventListener('load',() => _('div.card-image > img').replaceWith(img))
@@ -678,6 +678,9 @@ function scrollToTab(ind) {
   const scroller = _('div.card-content')
   const scrollerTitleBar = _('div.spacer div')
   const scrollStop = ind * scroller.clientWidth 
+  let form;
+  [form] = formWatcher.takeRecords()
+  console.log('before scroll',formWatcher.takeRecords())
   scroller.scrollTo({left:scrollStop,behavior:'smooth'})
   for ( tab of scrollerTitleBar.children) tab.classList.remove('active-tab')
   scrollerTitleBar.children[ind].classList.add('active-tab')
@@ -804,11 +807,12 @@ const createEndOfListWatcher = observedElement => {
   }
   const watcher = new IntersectionObserver(fetchMoreItems)
   watcher.observe(observedElement)
+  watcher.observe(_('#related'))
   return watcher
 }
 /* form intersection observer */
 const createFormObserver = observedElement => {
-  const watcher = new IntersectionObserver(observedElement.toggleButtonGroup)
+  const watcher = new IntersectionObserver(observedElement.getRootNode().host.toggleButtonGroup,{threshold:.5})
   watcher.observe(observedElement)
   return watcher
 }
