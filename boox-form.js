@@ -11,13 +11,13 @@ const formGoogleView = book => `<div class="buttons not-visible"><boox-button ic
 <fieldset class="content column" disabled>
 <label>Titel</label><input name="title" class="title" value="${book.title}" >
 <label>Untertitel</label><input name="subtitle" class="subtitle" value="${book.subtitle}" >
-<label>Autor(en)</label><div class="tag"><div><input name="authors" class="authors" value="${book.authors}" ><span class="invisible"></span></div><div class="tags"></div></div>
+<label>Autor(en)</label><div class="tag"><div><input name="authors" class="authors" value="${book.authors}" ><span class="check-button disabled"></span></div><div class="tags"></div></div>
 <label>Teaser</label><textarea name="teaser" class="teaser" rows="3">${book.teaser}</textarea>
 <label>Beschreibung</label><textarea name="description" class="description" rows="10">${book.description}</textarea>
 </fieldset>
 <fieldset class="info column"  disabled>
     <legend>Zusatzinfos</legend>
-<label>Kategorien</label><div class="tag"><div><input name="categories" class="categories"><span class="icon invisible"></span></div><div class="tags"></div></div>
+<label>Kategorien</label><div class="tag"><div><input name="categories" class="categories"><span class="check-button disabled"></span></div><div class="tags"></div></div>
 <label>Verlag</label><input name="publisher" class="entry" value="${book.publisher}" >
 <label>Ver&ouml;ffentlichungsdatum</label><input name="publishedDate" class="entry" value="${book.publishedDate}" >
 <label>Anzahl Seiten</label><input name="pageCount" class="entry" value="${book.pageCount}" >
@@ -54,7 +54,6 @@ class BooxForm extends HTMLElement {
     const style = document.createElement('style')
     style.textContent = formStyles
     const content = div(formGoogleView(book))
-    content.classList.add('panel')
     this.shadowRoot.append(content,style)
     this.form = this.shadowRoot.querySelector('form')
     this.form.oninput = this.enableSaveButton
@@ -95,8 +94,8 @@ class BooxForm extends HTMLElement {
   }
   toggleButtonGroup = ([form]) => {
     const buttonGroupClasses = this.button.parentNode.classList
-    if(form.intersectionRatio > .5) buttonGroupClasses.replace('not-visible','pop-up')
-    else if (!form.intersectionRatio <= .5) buttonGroupClasses.replace('pop-up','not-visible')
+    if(form.intersectionRatio > .1) buttonGroupClasses.replace('not-visible','pop-up')
+    else if (!form.intersectionRatio <= .1) buttonGroupClasses.replace('pop-up','not-visible')
   }
   saveBook = async () => {
     this.saveButton.setAttribute('loading','')
@@ -145,12 +144,13 @@ class BooxForm extends HTMLElement {
   /* Helpers für list input */
   popUp = async function (val) {
     const self = this.getRootNode().host
+    if (this.classList.contains('disabled') && !self.shadowRoot.querySelector('fieldset:disabled')) return 
     const input = this.previousElementSibling
     const container = this.parentNode.nextElementSibling
     const text = typeof val === 'string' ? val : input.value
     input.value = ''
-    this.classList.replace('visible','invisible')
-    container.insertAdjacentHTML('beforeend',`<div class="not-visible">${text}</div>`)
+    this.classList.replace('enabled','disabled')
+    container.insertAdjacentHTML('beforeend',`<div class="cancel-button not-visible">${text}</div>`)
     const tag = container.lastElementChild
     tag.addEventListener('click',function(){
       if (this.parentNode.parentNode.parentNode.hasAttribute('disabled')) return
@@ -174,7 +174,7 @@ class BooxForm extends HTMLElement {
       if (input) {
         const button = input.nextElementSibling
         input.addEventListener('input', function() {
-          this.nextElementSibling.classList.replace('invisible', 'visible');
+          this.nextElementSibling.classList.replace('disabled', 'enabled');
         });
         button.addEventListener('click',this.popUp)
       } 
@@ -223,170 +223,4 @@ class BooxForm extends HTMLElement {
 
 customElements.define('boox-form',BooxForm)
 
-const formStyles = `/* Form tab */
-input, textarea {
-  width: calc(100% - 10px);
-	margin: 0 5px;
-	border: 1px solid var(--green);
-	padding: 5px;
-	box-sizing: border-box;
-}
-input:focus {
-	box-shadow: inset 0 0 2px 2px var(--green);
-	outline: none;
-	border-color: var(--orange);
-}
-input:disabled, textarea:disabled  {
-	border-color: white;
-}
-input ~ span:before {
-  font-family: "Material Icons";
-  content: "check";
-}
-fieldset label {
-	color: var(--green);
-	font-variant-caps: all-petite-caps;
-	margin: 5px 5px 0 5px;
-}
-.dataset span:before {
-  content: "cancel";
-  vertical-align: middle;
-  cursor: pointer;
-}
-fieldset {
-	margin: 5px;
-	padding: 0 0 5px 0;
-	border: none;
-}
-legend{
-	font-size: x-small;
-}
-fieldset img {
-	float: left;
-	padding:5px
-}
-.column {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-}
-.group {
-  width: calc(100% - 10px);
-  box-sizing: border-box;
-  border: 1px solid var(--green);
-  padding: 0 5px 0 0;
-}
-.group legend {
-  color: var(--green)
-}
-.group div {
-  display: flex;
-  padding-bottom: 5px;
-  justify-content: flex-end;
-}
-fieldset:disabled .group span {
-  display:none
-}
-fieldset:enabled .group span {
-  cursor: pointer;
-}
-fieldset .group div:last-child {
-  width: 100%;
-  box-sizing: border-box;
-}
-fieldset .group div:last-child span {
-  background-color: #87B42D;
-  color: white;
-  border-radius: 50%;
-  padding: 0 2px;
-}
-
-.thumbnail,.image {
-	height: 45px;
-	width: 32px;
-	object-fit: cover;
-	object-position: top;
-}
-.tag {
-  display: flex;
-  flex-direction: column;
-  align-items: start;
-  justify-items: start;
-  width: 100%
-}
-.tag > div {
-  position: relative;
-  width: 100%;
-}
-.tags {
-  padding: 5px
-}  
-fieldset:enabled .tags > div {
-  display: inline-block;
-  height: 20px;
-  line-height:20px;
-  color: black;
-  font-size: 9pt;
-  background-color: var(--green);
-  padding: 0 5px;
-  border-radius: 10px;
-  margin: 0 10px;
-}
-fieldset:disabled .tags > div {
-  display: inline-block;
-  height: 20px;
-  line-height:20px;
-  font-size: 9pt;
-  padding: 0 5px;
-  margin: 0 10px;
-  box-shadow: none;
-}
-fieldset:disabled .tags {
-  position: relative;
-  top: -30px;
-}
-.not-visible{
-  transform: scale(0.0);
-  transition: transform .2s cubic-bezier(0.68, 0.55, 0.265, 1.55);
-}
-.pop-up {
-  transition: transform .2s cubic-bezier(0.68, 0.55, 0.265, 1.55);
-  transform: scale(1.1);
-  /* box-shadow: 2px 2px 15px grey */
-}
-fieldset:enabled .tags > div:after {
-  font-family: "Material Icons";
-  content: "cancel";
-  line-height: 20px;
-  vertical-align: middle;
-  padding-left: 3px;
-}
-
-.tag span {
-  text-decoration: none;
-  color: var(--green);
-  position: absolute;
-  right: 8px;
-  top: 4px;
-}
-fieldset:enabled .add-identifier:before {
-  font-family: "Material Icons";
-  content: "cancel";
-  transform: rotate(45deg);
-  color: green;
-}
-.buttons {
-	position: fixed;
-  display: flex;
-  bottom: 0;
-  right: 0
-}
-.invisible {
-	opacity: 0;
-	transition: opacity .5s ease;
-}
-.visible {
-	opacity: 1;
-	transition: opacity .5s ease;
-}
-`
+const formStyles = '@import "form-styles.css"'

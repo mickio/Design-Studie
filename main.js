@@ -560,7 +560,7 @@ const detailsFormDNBView = (book = selectedBook) => `<label>Art des Inhalts</lab
 <label>EAN</label><input name="EAN" class="entry" value="${book['EAN']}" >
 <label>Literarische Gattung</label><input name="Literarische Gattung" class="entry" value="${book['Literarische Gattung']}" >
 <label>Organisation(en)</label><input name="Organisation(en)" class="entry" value="${book['Organisation(en)']}" >
-<label>Person(en)</label><div class="tag"><div><input name="Person(en)" class="entry" value="${book['Person(en)']}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
+<label>Person(en)</label><div class="tag"><div><input name="Person(en)" class="entry" value="${book['Person(en)']}" ><span class="icon disabled">check</span></div><div class="tags"></div></div>
 <label>Sachgruppe(n)</label><div class="tag"><div><input name="Sachgruppe(n)" class="entry" value="${book['Sachgruppe(n)']}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
 <label>Schlagwörter</label><div class="tag"><div><input name="Schlagwörter" class="entry" value="${book['Schlagwörter']}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
 <label>Sprache(n)</label><div class="tag"><div><input name="Sprache(n)" class="entry" value="${book['Sprache(n)']}" ><span class="icon invisible">check</span></div><div class="tags"></div></div>
@@ -602,6 +602,7 @@ const detailsView = async (bookId,bookIndex,catIndex,thumbnail) => {
   .then(book => {
     const relatedSearchTerm = book.authors
     const booxForm = new BooxForm(book)
+    const formTab = div(booxForm)
     insertTab(detailsViewComponent(book))
     insertTab(booxForm)
     insertTab('<div id="related" class="column"></div>')
@@ -609,7 +610,7 @@ const detailsView = async (bookId,bookIndex,catIndex,thumbnail) => {
       currentPage().searchResultPager = bookManager.searchResultPager
       _('#related').insertAdjacentHTML('afterbegin',listViewComponent(bx.result))
     })
-    formWatcher = createFormObserver(booxForm.shadowRoot.querySelector('input'))
+    formWatcher = createFormObserver(booxForm)
     const img = new Image()
     img.src = book.image
     img.addEventListener('load',() => _('div.card-image > img').replaceWith(img))
@@ -728,7 +729,7 @@ const onScrollCard = scroller()
 
 const isEqual = (o,p) => typeof o === 'object' ? JSON.stringify(p) === JSON.stringify(o) : o == p
 
-const insertDataset = (name,...params) => name == 'industryIdentifiers' ? `<div class="dataset"><input value="${params[0]??''}"><input value="${params[1]??''}"><span></span></div>` : `<div class="dataset"><input value="${params[0]??''}"><input  value="${params[1]??''}"><input value="${params[2]??''}"><span></span></div>`
+const insertDataset = (name,...params) => name == 'industryIdentifiers' ? `<div class="dataset"><input value="${params[0]??''}"><input value="${params[1]??''}"><span class="cancel-button"></span></div>` : `<div class="dataset"><input value="${params[0]??''}"><input  value="${params[1]??''}"><input value="${params[2]??''}"><span class="cancel-button"></span></div>`
 
 const getDataset = (dataElement,name) => {
   const dataset = []
@@ -783,7 +784,7 @@ const createEndOfListWatcher = observedElement => {
 }
 /* form intersection observer */
 const createFormObserver = observedElement => {
-  const watcher = new IntersectionObserver(observedElement.getRootNode().host.toggleButtonGroup,{threshold:.5})
+  const watcher = new IntersectionObserver(observedElement.toggleButtonGroup,{threshold:.1})
   watcher.observe(observedElement)
   return watcher
 }
