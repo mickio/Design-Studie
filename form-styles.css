@@ -49,23 +49,12 @@ fieldset img {
   padding-bottom: 5px;
   justify-content: flex-end;
 }
-fieldset:disabled .group span, fieldset:disabled .check-button {
+fieldset:disabled .cancel-button, fieldset:disabled .check-button {
   display:none
 }
-fieldset:enabled .group span {
+fieldset:enabled .cancel-button {
   cursor: pointer;
 }
-fieldset .group div:last-child {
-  width: 100%;
-  box-sizing: border-box;
-}
-fieldset .group div:last-child span {
-  background-color: #87B42D;
-  color: white;
-  border-radius: 50%;
-  padding: 0 2px;
-}
-
 .thumbnail,.image {
 	height: 45px;
 	width: 32px;
@@ -144,4 +133,22 @@ fieldset:enabled .add-identifier:before {
 .enabled{
 	opacity: 1;
 	transition: opacity .5s ease;
+}
+.options {
+  position: relative;
+  display: inline-block
+}
+.options div{
+  position: absolute;
+  background-color: white;
+  top: -16px;
+  padding: 0 5px;
+  box-shadow: 2px 2px 25px grey;
+}
+.options div p {
+  margin: 5px 0;
+  font-size: 10pt;
+}
+.options div p:hover {
+  background-color: lightgray;
 }

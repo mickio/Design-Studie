@@ -1,10 +1,4 @@
-const insertIdentifiers = list => {
-  let html = list.map(({type,identifier}) => insertDataset('industryIdentifiers',type,identifier)).join('')
-  html += `<div><span class="icon">add</span></div>`
-  return html
-}
-
-const objFields = ['categories','authors','Person(en)','Sachgruppe(n)','Schlagwörter','Sprache(n)'];
+const formStyles = '@import "form-styles.css"'
 
 const formGoogleView = book => `<div class="buttons not-visible"><boox-button icon="save" id="saveBook" minimizable minimized disabled></boox-button><boox-button icon="google" id="searchBook" minimizable minimized></boox-button><boox-button icon="edit" id="updateBook"></boox-button></div>
 <form>
@@ -147,6 +141,7 @@ class BooxForm extends HTMLElement {
     if (this.classList.contains('disabled') && !self.shadowRoot.querySelector('fieldset:disabled')) return 
     const input = this.previousElementSibling
     const container = this.parentNode.nextElementSibling
+    container.querySelector('span')?.remove()
     const text = typeof val === 'string' ? val : input.value
     input.value = ''
     this.classList.replace('enabled','disabled')
@@ -182,7 +177,7 @@ class BooxForm extends HTMLElement {
     ['industryIdentifiers','creators','identifiers','titles'].forEach(name => {
       const fset = this.shadowRoot.querySelector(`fieldset[name=${name}]`)
       if (fset) {
-        const cancelButtons = fset.querySelectorAll('div input + span')
+        const cancelButtons = fset.querySelectorAll('.cancel-button')
         const addButton = fset.querySelector('.add-identifier')
         for( let button of cancelButtons) {
           button.addEventListener('click',function(){
@@ -201,26 +196,55 @@ class BooxForm extends HTMLElement {
     })
     self.shadowRoot.querySelector('input[name=categories]').addEventListener('input',function(){
       const term = this.value
-      self.suggest.call(this,this.parentNode,cats,term)
+      suggest.call(this,this.parentNode,cats,term)
     })
-  }
-  /* helper für suggest */
-  suggest = function(mtPoint, suggestions, term) {
-      if (term.length < 3) return
-      this.parentNode.querySelector('div.options')?.remove()
-      let html = '<div class="options">'
-      html += suggestions.filter(t => t.toLowerCase().includes(term.toLowerCase())).map(t => `<p>${t}</p>`).join('')
-      html +="</div>"
-      mtPoint.insertAdjacentHTML('afterbegin',html)
-      const inp = this
-      mtPoint.querySelectorAll('p').forEach(p =>p.addEventListener('click',function(){
-        inp.value = this.textContent.trim()
-        inp.parentNode.querySelector('div.options').remove()
-        mtPoint.getRootNode().host.popUp.call(inp.nextElementSibling)
-      }))
   }
 }
 
 customElements.define('boox-form',BooxForm)
 
-const formStyles = '@import "form-styles.css"'
+/* helper für details form view */
+const objFields = ['categories','authors','Person(en)','Sachgruppe(n)','Schlagwörter','Sprache(n)'];
+
+const isEqual = (o,p) => typeof o === 'object' ? JSON.stringify(p) === JSON.stringify(o) : o == p
+
+const insertDataset = (name,...params) => name == 'industryIdentifiers' ? `<div class="dataset"><input value="${params[0]??''}"><input value="${params[1]??''}"><span class="cancel-button"></span></div>` : `<div class="dataset"><input value="${params[0]??''}"><input  value="${params[1]??''}"><input value="${params[2]??''}"><span class="cancel-button"></span></div>`
+
+const getDataset = (dataElement,name) => {
+  const dataset = []
+  for(const inp of dataElement.querySelectorAll('input')) {
+    dataset.push(inp.value)
+  }
+  if (name === 'industryIdentifiers') {
+    return {type:dataset[0],identifier:dataset[1]}
+  }
+  return dataset
+}
+
+const insertObject = list => {
+  let html = list.map( ds => insertDataset('',...ds)).join('')
+  html += `<div class="add-identifier"></div>`
+  return html
+}
+
+const insertIdentifiersObject = list => {
+  let html = list.map(({type,identifier}) => insertDataset('industryIdentifiers',type,identifier)).join('')
+  html += `<div class="add-identifier"></div>`
+  return html
+}
+
+/* helper für suggest */
+suggest = function(mtPoint, suggestions, term) {
+    mtPoint.nextElementSibling.querySelector('span.options')?.remove()
+    if (term.length < 3) return
+    let html = '<span class="options"><div>'
+    html += suggestions.filter(t => t.toLowerCase().includes(term.toLowerCase())).map(t => `<p>${t}</p>`).join('')
+    html +="</div></span>"
+    mtPoint.nextElementSibling.insertAdjacentHTML('beforeend',html)
+    const inp = this
+    mtPoint.nextElementSibling.querySelectorAll('p').forEach(p =>p.addEventListener('click',function(){
+      inp.value = this.textContent.trim()
+      mtPoint.nextElementSibling.querySelector('span.options').remove()
+      mtPoint.getRootNode().host.popUp.call(inp.nextElementSibling)
+    }))
+  }

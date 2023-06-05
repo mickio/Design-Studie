@@ -541,18 +541,6 @@ label.upload ~ div.panel {
   color: var(--orange);
   transition: color var(--duration) ease-in;
 }
-.options{
-  position: absolute;
-  background-color: white;
-  top: 40px;
-  left: 15px;
-  padding: 0 5px;
-  font-size: 12pt;
-  z-index: 10
-}
-.options p:hover {
-  background-color: lightgray
-}
 /* download button */
 .download {
   width: 100%;

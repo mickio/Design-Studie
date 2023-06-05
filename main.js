@@ -724,36 +724,6 @@ function scroller() {
 }
 const onScrollCard = scroller()
 
-/* helper für details form view */
-
-
-const isEqual = (o,p) => typeof o === 'object' ? JSON.stringify(p) === JSON.stringify(o) : o == p
-
-const insertDataset = (name,...params) => name == 'industryIdentifiers' ? `<div class="dataset"><input value="${params[0]??''}"><input value="${params[1]??''}"><span class="cancel-button"></span></div>` : `<div class="dataset"><input value="${params[0]??''}"><input  value="${params[1]??''}"><input value="${params[2]??''}"><span class="cancel-button"></span></div>`
-
-const getDataset = (dataElement,name) => {
-  const dataset = []
-  for(const inp of dataElement.querySelectorAll('input')) {
-    dataset.push(inp.value)
-  }
-  if (name === 'industryIdentifiers') {
-    return {type:dataset[0],identifier:dataset[1]}
-  }
-  return dataset
-}
-
-const insertObject = list => {
-  let html = list.map( ds => insertDataset('',...ds)).join('')
-  html += `<div class="add-identifier"></div>`
-  return html
-}
-
-const insertIdentifiersObject = list => {
-  let html = list.map(({type,identifier}) => insertDataset('industryIdentifiers',type,identifier)).join('')
-  html += `<div class="add-identifier"></div>`
-  return html
-}
-
 /* intersection observer for infinite scrolling */
 const createEndOfListWatcher = observedElement => {
   const text = observedElement.text
