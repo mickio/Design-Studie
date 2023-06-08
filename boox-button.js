@@ -1,14 +1,14 @@
 const buttonComponent = types => {
     const div = document.createElement('button')
     div.classList.add('button', ...types||['disk','floating'])
-    div.insertAdjacentHTML('afterbegin',`<span class="icon"></span><div class="watermark"></div>`)
+    div.insertAdjacentHTML('afterbegin',`<div class="watermark"></div><span class="icon"></span>`)
     return div
 }
 
 class BooxButton extends HTMLElement {
 
     static get observedAttributes() { 
-        return ['icon', 'type','rotated','minimized','loading','disabled']; 
+        return ['icon', 'type','rotated','minimized','loading','disabled','nomargin','flatleft']; 
     }
 
     constructor() {
@@ -35,6 +35,12 @@ class BooxButton extends HTMLElement {
             case 'minimized':
                 this.button.classList.toggle('minimized')
                 break;
+            case 'nomargin':
+                this.button.classList.toggle('no-margin')
+                  break;
+            case 'flatleft':
+                this.button.classList.toggle('flat-left')
+                  break;
             case 'loading':
                 this.toggleLoading()
             case 'disabled':
@@ -56,6 +62,11 @@ class BooxButton extends HTMLElement {
         if(this.hasAttribute(attName)) this.removeAttribute(attName)
         else this.setAttribute(attName,'')
     } 
+    
+    blink = () => {
+      this.button.classList.add('highlight')
+      setTimeout(() => this.button.classList.remove('highlight'),500)
+    }
 
     toggleMinimized = () => {
         if(this.hasAttribute('minimizable')) this.toggleAttribute('minimized')
@@ -74,23 +85,23 @@ class BooxButton extends HTMLElement {
         const icon = this.getAttribute('icon')
         switch(icon) {
             case 'dnb':
-                this.button.firstElementChild.textContent = 'search'
+                this.button.lastElementChild.textContent = 'search'
                 this.button.classList.remove('inverted')
-                this.button.lastElementChild.textContent = icon
+                this.button.firstElementChild.textContent = icon
                 break;
             case 'google':
-                this.button.firstElementChild.textContent = 'search'
+                this.button.lastElementChild.textContent = 'search'
                 this.button.classList.remove('inverted')
-                this.button.lastElementChild.textContent = icon
+                this.button.firstElementChild.textContent = icon
                 break;
             case 'close':
-                this.button.firstElementChild.textContent = 'close'
+                this.button.lastElementChild.textContent = 'close'
                 this.button.classList.add('inverted')
-                this.button.lastElementChild.textContent = ''
+                this.button.firstElementChild.textContent = ''
                 break;
             default:
-                this.button.firstElementChild.textContent = icon
-                this.button.lastElementChild.textContent = ''
+                this.button.lastElementChild.textContent = icon
+                this.button.firstElementChild.textContent = ''
                 this.button.classList.remove('inverted')
             }
         }
@@ -102,7 +113,7 @@ const styles = `
     .button {
         background-color: var(--orange);
         cursor: pointer;
-        margin: 1em;
+        margin: 10px;
         padding: 20px;
         overflow: visible;
         display: flex;
@@ -110,16 +121,28 @@ const styles = `
         justify-content: center;
         transition: background-color var(--duration) ease-out;
     }
+    .highlight {
+      background-color: var(--blueviolet);
+      transition: background-color var(--duration) ease-out;
+
+    }
+    .no-margin {margin: 0}
     .button:disabled {
         background-color: lightsalmon;
         color: grey !important;
         cursor: auto;
     }
     .disk {
-        width: 2em;
-        height: 2em;
+        width: 20px;
+        height: 20px;
         border-radius: 50%;
         transition: border-radius var(--duration) ease-out;
+    }
+    .flat-left {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        transition: border-radius var(--duration) ease-in;
+     
     }
     .fullwidth {
         width: 100%;
@@ -146,6 +169,7 @@ const styles = `
         transition: all var(--duration) ease-in;
     }
     .icon {
+        position: absolute;
         vertical-align: bottom;
         font-family: 'Material Icons';
         font-weight: normal;
@@ -177,10 +201,15 @@ const styles = `
         position: absolute;
     }
     .watermark {
-        position: absolute;
         color: lightsalmon;
         font-size: 9pt;
-        z-index: -1
+        transition: font-size, color var(--duration) ease-in;
+    }
+    .highlight .watermark {
+      transition: font-size, color var(--duration) ease-in;
+      /*color: black;*/
+      font-size: 12pt;
+
     }
     .button:active {
         background-color: lightsalmon;

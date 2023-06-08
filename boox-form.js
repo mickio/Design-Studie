@@ -56,6 +56,7 @@ class BooxForm extends HTMLElement {
     this.saveButton = this.shadowRoot.querySelector("#saveBook")
     this.saveButton.onclick = this.saveBook
     this.searchButton = this.shadowRoot.querySelector("#searchBook")
+    this.searchButton.onclick = this.activateGSearch
   } 
   connectedCallback() {
     this.prepareTags(this.book)
@@ -66,6 +67,11 @@ class BooxForm extends HTMLElement {
       const book = JSON.parse(this.getAttribute('book'))
       book && this.init(book)
     }
+  }
+  activateGSearch () {
+    const searchButton = document.querySelector('.navbar boox-button')
+    searchButton.setAttribute('icon','google')
+    searchButton.blink()
   }
   showEditButtons = () => {
     this.button.setAttribute('icon','close')

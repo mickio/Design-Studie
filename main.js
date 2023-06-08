@@ -528,12 +528,10 @@ const categoriesView = async cat => {
 }
 const searchResultsView = async () => {
   const term = document.querySelector('.navbar input').value
-  const button = document.querySelector('.navbar a')
-  button.classList.add('loading')
-  button.text = ''
+  const button = document.querySelector('.navbar boox-button')
+  button.setAttribute('loading','')
   const r = await searchProvider.search(term)
-  button.classList.remove('loading')
-  button.text = "search"
+  button.removeAttribute('loading')
   if (searchProvider.reset) document.querySelector('.navbar input').value = ""
   return searchProvider.listView(r.numberOfItems,term,searchProvider.listViewComponent(r.result))
 }
@@ -574,24 +572,7 @@ const detailsFormDNBView = (book = selectedBook) => `<label>Art des Inhalts</lab
 </fieldset>
 <fieldset class="info group" name="titles"><legend>Titel aus ePub</legend>${insertObject(book['titles'])}
 </fieldset>
-</fieldset>
-<fieldset class="info column" disabled>
-    <legend>Image URLs</legend>
-    <div>
-        <img class="thumbnail" src="${book.thumbnail}">
-        <div class="column">
-<label>Thumbnail Image</label><input name="thumbnail" class="entry" value="${book.thumbnail}" >
-        </div>
-    </div>
-    <div>
-        <img class="image" src="${book.image}">
-        <div class="column">
-<label>Cover Image</label><input name="image" class="entry" value="${book.image}" >
-        </div>
-    </div>
-</fieldset>
-</form>
-</div>`
+</fieldset>`
 
 const detailsView = async (bookId,bookIndex,catIndex,thumbnail) => {
   const insertTab = html => {
@@ -636,8 +617,7 @@ const detailsView = async (bookId,bookIndex,catIndex,thumbnail) => {
 `
 } 
 
-
-/* noch mehr helpers */
+/* helpers */
 function refreshSample () {
   bookManager.fetchRandomSample()
   .then(()=>goto(homeView,homeTransition('zoom')))
@@ -749,7 +729,6 @@ const createEndOfListWatcher = observedElement => {
   }
   const watcher = new IntersectionObserver(fetchMoreItems)
   watcher.observe(observedElement)
-  watcher.observe(_('#related'))
   return watcher
 }
 /* form intersection observer */

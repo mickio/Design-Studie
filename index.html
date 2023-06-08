@@ -8,18 +8,21 @@
   <!--script src="https://unpkg.com/realm-web/dist/bundle.iife.js"></script-->
   <script src="realm.js"></script>
   <link rel="stylesheet" href="style.css">
+  <script src="boox-button.js"></script>
 </head>
 
 <body>
-  <!--div class="navbar">
-    <div><input><a href="javascript:goto(searchResultsView,searchListTransition('zoom'))" class="icon">search</a></div>
-  </div-->
- <div id="main"><div class="uploading"></div></div>
+  <div class="navbar">
+    <form action="javascript:goto(searchResultsView,searchListTransition('zoom'))">
+      <input type="text">
+      <boox-button icon="search" onclick="document.querySelector('.navbar form').submit()" nomargin flatleft></boox-button>
+    </form>
+  </div>
+  <div id="main"><div class="uploading"></div></div>
   <script src="sample.js"></script>
   <script src="search.js"></script>
   <script src="google-result.js"></script>
   <script src="book.js"></script>
-  <script src="boox-button.js"></script>
   <script src="boox-form.js"></script>
   <script src="categories.js"></script>
   <script src="main.js"></script>
