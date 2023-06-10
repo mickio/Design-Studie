@@ -73,17 +73,17 @@ class BooxButton extends HTMLElement {
     }
 
     toggleRotated = () => {
-        if(this.hasAttribute('rotatable')) this.toggleAttribute('rotated')
+      if(this.hasAttribute('rotatable')) this.toggleAttribute('rotated')
     }
 
     toggleLoading = () => {
-        if (this.hasAttribute('loading')) {
-          this.button.firstElementChild.classList.replace('watermark','loading')
-          this.button.lastElementChild.style.setProperty('display','none')
+      if (this.hasAttribute('loading')) {
+        this.button.firstElementChild.classList.replace('watermark','loading')
+        this.button.lastElementChild.style.setProperty('display','none')
         }
-        else {
-          this.button.firstElementChild.classList.replace('loading','watermark')
-          this.button.lastElementChild.style.removeProperty('display')
+      else {
+        this.button.firstElementChild.classList.replace('loading','watermark')
+        this.button.lastElementChild.style.removeProperty('display')
         }
   }
 

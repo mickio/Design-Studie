@@ -313,7 +313,6 @@ const goto = async (pg,transition,...params) => {
   await new Promise ( resolve => anchor.addEventListener('transitionend',()=>{
       page.classList.remove(transition+'-enter-end')
       prevPage.classList.remove(transition+'-leave-end')
-      console.log("removed all transition classes")
       if (typeof leaveMethod === 'function') leaveMethod(prevPage)
       else prevPage.remove()
       resolve()
@@ -326,6 +325,19 @@ const details2detailsTransition = transition => {
   return {
     transition,
     afterTransition: () => {
+      /* 
+        Füge den Buttons die fehlenden Event
+        Listener hinzu. Der back button führt
+        zurück zur vorherigen Ansicht. Der 
+        previous/next button soll zum 
+        vorherigen/nächsten Element in der
+        Liste führen, aus der heraus die 
+        Einzelansicht erzeugt wurde. Dazu 
+        benötigt die Einzelansicht einen 
+        Verweis zur Liste. Diese ist entweder
+        eine Kategorie aus der Galerie Ansicht
+        oder die Liste einer Listenansicht
+       */
       const listNode = currentPage().previousElementSibling
       const catIndex = Number(_(':first-child').dataset.catIndex)
       const bookIndex = Number(_(':first-child').dataset.bookIndex)
@@ -338,6 +350,7 @@ const details2detailsTransition = transition => {
       currentPage().style.setProperty('background-color','var(--brown)')
       _('#back').addEventListener('click',function() {
         this.setAttribute('loading','')
+        /* Die Suche könnte noch auf Google stehen */
         searchForm.lastElementChild.setAttribute('icon','search')
         searchForm.setAttribute('action',"javascript:goto(searchResultsView,searchListTransition('zoom'))")
         goto('',backTransition('flyaway')).then(() => {
@@ -354,6 +367,7 @@ const list2detailsTransition = transition => {
   }   
 }  
 const homeTransition = transition => {
+  /* zur Galerie Ansicht */
   return {
     transition,
     afterTransition: () => {
@@ -370,6 +384,7 @@ const homeTransition = transition => {
   }}
 }
 const categoriesTransition = transition => {
+  /* zur liste einer Kategorie */
   return {
     transition,
     leaveMethod: prevPage => prevPage.style.setProperty('display','none'),
@@ -382,6 +397,7 @@ const categoriesTransition = transition => {
   }
 }
 const searchListTransition = transition => {
+  /* zu den Suchergebnissen */
   return {
     transition,
     leaveMethod: prevPage => prevPage.style.setProperty('display','none'),
@@ -414,23 +430,9 @@ const addBookTransition = (transition) => {
     }
   }
 }
-const uploadSelectedBookTransition = bookIndex => {
-  return {
-  transition: 'flyaway',
-  viewCreated: currentPage().style.setProperty('background-color','lightyellow'),
-  beforeTransition: () => selectedBook = currentPage().searchResultPager.searchResultItems[bookIndex],
-  afterTransition: () => {
-    _('label').insertAdjacentHTML('afterend', detailsViewComponent(selectedBook))
-    _('p.download a').addEventListener('click',(evt) => {
-      evt.preventDefault()
-      addBook(selectedBook)
-    })
-    _('p.download span.icon').textContent = 'upload'
-    _('p.download span.icon ~ span').textContent = 'E-Book hochladen'
-  }
-}}
 
 const editSelectedBookTransition = (bookIndex) => {
+  /* aus der suchliste zurück in das Formular */
   return {
     transition: 'flyaway',
     enterMethod: () => new Promise ( resolve => {
@@ -449,6 +451,7 @@ const editSelectedBookTransition = (bookIndex) => {
   }
 }
 const backTransition = transition => {
+  /* zurück zur vorherigen Ansicht */
   return {
     transition,
     enterMethod: () => new Promise ( resolve => {
@@ -461,6 +464,7 @@ const backTransition = transition => {
   }
 }
 const googleSearchTransition = transition => {
+  /* zu den Google Suchergebnissen */
   return {
     transition,
     beforeTransition: searchGoogle,
@@ -742,12 +746,6 @@ const createFormObserver = observedElement => {
   const watcher = new IntersectionObserver(observedElement.toggleButtonGroup,{threshold:.1})
   watcher.observe(observedElement)
   return watcher
-}
-
-/* button helpers */
-function toggleButtons () {
-  document.querySelectorAll('boox-button[minimizable]')?.forEach(button => button.toggleMinimized())
-  document.querySelector('boox-button[rotatable]')?.toggleRotated()
 }
 
 const searchGoogle = () => {
