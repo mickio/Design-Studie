@@ -68,19 +68,8 @@ body {
 }
 .navbar boox-button {
   display: inline;
-  /*transform: translate(-20px);*/
 }
-.navbar > div > a {
-  transition: background-color var(--duration) ease-in;
-  height: 28.8px;
-  width: 28.8px;
-  text-decoration: none;
-  background-color: var(--green);
-  padding: 5px;
-  border-bottom-right-radius: 50%;
-  border-top-right-radius: 50%;
-  color:var(--black);
-}
+
 /* helpers */
 .invisible {
 	opacity: 0;

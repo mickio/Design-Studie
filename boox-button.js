@@ -77,9 +77,15 @@ class BooxButton extends HTMLElement {
     }
 
     toggleLoading = () => {
-        if (this.hasAttribute('loading')) this.button.lastElementChild.classList.replace('watermark','loading')
-        else this.button.lastElementChild.classList.replace('loading','watermark')
-    }
+        if (this.hasAttribute('loading')) {
+          this.button.firstElementChild.classList.replace('watermark','loading')
+          this.button.lastElementChild.style.setProperty('display','none')
+        }
+        else {
+          this.button.firstElementChild.classList.replace('loading','watermark')
+          this.button.lastElementChild.style.removeProperty('display')
+        }
+  }
 
     setIcon = () => {
         const icon = this.getAttribute('icon')
