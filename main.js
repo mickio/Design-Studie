@@ -1,6 +1,7 @@
 const apiKey=''
 const PER_PAGE = 12
 const anchor = document.getElementById('main')
+const searchForm = document.querySelector('.navbar form')
 const currentPage = () => document.getElementById('main').lastElementChild
 const filterUndefined = obj =>Object.keys(obj).reduce((n, i) => {
   if (obj[i] !== undefined) n[i] = obj[i]
@@ -263,7 +264,9 @@ class BookManager {
   })
 
   updateBook = async (bookId,book) => this.user.functions.updateBook(bookId,book)
-  
+    
+  addBook = async (book) => this.user.functions.addBook(book)
+
   async loginApiKey(apiKey) {
     // Create an API Key credential
     const credentials = Realm.Credentials.apiKey(apiKey);
@@ -335,6 +338,8 @@ const details2detailsTransition = transition => {
       currentPage().style.setProperty('background-color','var(--brown)')
       _('#back').addEventListener('click',function() {
         this.setAttribute('loading','')
+        searchForm.lastElementChild.setAttribute('icon','search')
+        searchForm.setAttribute('action',"javascript:goto(searchResultsView,searchListTransition('zoom'))")
         goto('',backTransition('flyaway')).then(() => {
           this.removeAttribute('loading')
         })
@@ -396,7 +401,7 @@ const addBookTransition = (transition) => {
     viewCreated: () => currentPage().style.setProperty('background-color','lightyellow'),
     beforeTransition: () => {
       document.querySelector('.navbar').classList.add('navbar-invisible')
-      document.querySelector('.navbar a').addEventListener('click',searchMetaData)
+      document.querySelector('.navbar a').addEventListener('click',() => goto(searchResultsView, googleSearchTransition('zoom')))
     },
     afterTransition: () => {
       const uploadButton = _('.upload')
@@ -425,12 +430,21 @@ const uploadSelectedBookTransition = bookIndex => {
   }
 }}
 
-const editSelectedBookTransition = bookIndex => {
+const editSelectedBookTransition = (bookIndex) => {
   return {
-    ...uploadSelectedBookTransition(bookIndex),
-    transition: 'zoom',
-    afterTransition: () => {
-      
+    transition: 'flyaway',
+    enterMethod: () => new Promise ( resolve => {
+      const page = anchor.lastElementChild.previousElementSibling
+      page.style.removeProperty('display')
+      const form = BooxForm.prototype.isPrototypeOf(page) ? page : page.querySelector('boox-form')
+      form.init(selectedBook)
+      form.showEditButtons()
+      form.enableSaveButton()
+      resolve(page)
+    }),
+    beforeTransition: () => {
+      selectedBook =  currentPage().searchResultPager.searchResultItems[bookIndex]
+      currentPage().endOfListWatcher?.disconnect()
     }
   }
 }
@@ -449,21 +463,13 @@ const backTransition = transition => {
 const googleSearchTransition = transition => {
   return {
     transition,
-    beforeTransition: () => {
-      googlePager = new GoogleBooksPager()
-      searchProvider = {
-        searchResultPager: googlePager,
-        search: googlePager.search,
-        listViewComponent: googleListViewComponent,
-        listView: googleListView
-      }
-    },
+    beforeTransition: searchGoogle,
     afterTransition: () => {
       currentPage().style.setProperty('background-color','lightyellow')
       currentPage().searchResultPager = searchProvider.searchResultPager
       const moreButton = _('.more-button')
       endOfListWatcher = createEndOfListWatcher(moreButton)
-  },
+    },
     leaveMethod: prevPage => prevPage.style.setProperty('display','none')
   }
 }
@@ -546,9 +552,9 @@ const addBookView = () => `<label class="upload">
 const evaluateResultViewComponent = (book,bookIndex) => {
   const missingData = notInMetadata(book)
   if (missingData.some(att => ['authors','title','categories','description','publisher','imageLinks','isbn'].includes(att)))
-    return `<p class="warning" onclick="goto(detailsFormGoogleView, editSelectedBookTransition(${bookIndex}),${bookIndex})">Es fehlen ${notInMetadata(book).join(', ')}`
+    return `<p class="warning" onclick="goto(undefined, editSelectedBookTransition(${bookIndex}))">Es fehlen ${notInMetadata(book).join(', ')}`
   else
-    return `<p class="success" onclick="goto(addBookView, uploadSelectedBookTransition(${bookIndex}))">Alle erforderlichen Attribute vorhanden`
+    return `<p class="success" onclick="goto(undefined, editSelectedBookTransition(${bookIndex}))">Alle erforderlichen Attribute vorhanden`
 }
 
 /* die details Ansicht... */
@@ -737,15 +743,6 @@ const createFormObserver = observedElement => {
   watcher.observe(observedElement)
   return watcher
 }
-/* add books */
-const searchMetaData = evt => {
-  evt?.preventDefault()
-  if (googlePager) {
-    goto(searchResultsView,'zoom').then( () => currentPage().style.setProperty('background-color','white'))
-  } else {
-    goto(searchResultsView, googleSearchTransition('zoom'))
-  }
-}
 
 /* button helpers */
 function toggleButtons () {
@@ -761,7 +758,6 @@ const searchGoogle = () => {
     listViewComponent: googleListViewComponent,
     listView: googleListView
   }
-  searchMetaData()
 }
 /* und los geht's */
 let formWatcher, endOfListWatcher, selectedBook
@@ -797,7 +793,6 @@ const routes = [
   ];
 
 goto(homeView,homeTransition('entry'))
-// searchMetaData()
 //bookManager.fetchBook().then(book => {
 // goto(book => new BooxForm(book),'zoom-in',book)
 //})

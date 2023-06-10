@@ -5,7 +5,7 @@ const formGoogleView = book => `<div class="buttons not-visible"><boox-button ic
 <fieldset class="content column" disabled>
 <label>Titel</label><input name="title" class="title" value="${book.title}" >
 <label>Untertitel</label><input name="subtitle" class="subtitle" value="${book.subtitle}" >
-<label>Autor(en)</label><div class="tag"><div><input name="authors" class="authors" value="${book.authors}" ><span class="check-button disabled"></span></div><div class="tags"></div></div>
+<label>Autor(en)</label><div class="tag"><div><input name="authors" class="authors"><span class="check-button disabled"></span></div><div class="tags"></div></div>
 <label>Teaser</label><textarea name="teaser" class="teaser" rows="3">${book.teaser}</textarea>
 <label>Beschreibung</label><textarea name="description" class="description" rows="10">${book.description}</textarea>
 </fieldset>
@@ -43,12 +43,17 @@ class BooxForm extends HTMLElement {
     book && this.init(book)
   }
   init(book) {
-    this.book=book
-    this.attachShadow({mode:'open'})
-    const style = document.createElement('style')
-    style.textContent = formStyles
     const content = div(formGoogleView(book))
-    this.shadowRoot.append(content,style)
+    if(this.shadowRoot?.firstElementChild) {
+      this.shadowRoot.firstElementChild.replaceWith(content)
+      this.book = {...this.book,...book}
+    } else {
+      this.book=book
+      this.attachShadow({mode:'open'})
+      const style = document.createElement('style')
+      style.textContent = formStyles
+      this.shadowRoot.append(content,style)
+    }
     this.form = this.shadowRoot.querySelector('form')
     this.form.oninput = this.enableSaveButton
     this.button = this.shadowRoot.querySelector("#updateBook")
@@ -56,7 +61,8 @@ class BooxForm extends HTMLElement {
     this.saveButton = this.shadowRoot.querySelector("#saveBook")
     this.saveButton.onclick = this.saveBook
     this.searchButton = this.shadowRoot.querySelector("#searchBook")
-    this.searchButton.onclick = this.activateGSearch
+    this.searchButton.onclick = this.toggleGoogleSearch
+    console.log('shadow root',this.shadowRoot)
   } 
   connectedCallback() {
     this.prepareTags(this.book)
@@ -68,11 +74,19 @@ class BooxForm extends HTMLElement {
       book && this.init(book)
     }
   }
-  activateGSearch () {
+  toggleGoogleSearch = () => {
     const searchButton = document.querySelector('.navbar boox-button')
-    searchButton.setAttribute('icon','google')
+    if (searchButton.getAttribute('icon') == 'search') {
+      searchButton.setAttribute('icon','google')
+      this.searchButton.setAttribute('icon','search')
+      searchForm.setAttribute('action',"javascript:goto(searchResultsView, googleSearchTransition('zoom'))")
+    } else {
+      searchButton.setAttribute('icon','search')
+      this.searchButton.setAttribute('icon','google')
+      searchForm.setAttribute('action',"javascript:goto(searchResultsView,searchListTransition('zoom'))") 
+    }
     searchButton.blink()
-  }
+}
   showEditButtons = () => {
     this.button.setAttribute('icon','close')
     this.searchButton.setAttribute('minimized','')
