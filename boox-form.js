@@ -3,32 +3,32 @@ const formStyles = '@import "form-styles.css"'
 const formGoogleView = book => `<div class="buttons not-visible"><boox-button icon="save" id="saveBook" minimizable minimized disabled></boox-button><boox-button icon="google" id="searchBook" minimizable minimized></boox-button><boox-button icon="edit" id="updateBook"></boox-button></div>
 <form>
 <fieldset class="content column" disabled>
-<label>Titel</label><input name="title" class="title" value="${book.title}" >
-<label>Untertitel</label><input name="subtitle" class="subtitle" value="${book.subtitle}" >
+<label>Titel</label><input name="title" class="title" value="${book?.title || ''}" >
+<label>Untertitel</label><input name="subtitle" class="subtitle" value="${book?.subtitle || ''}" >
 <label>Autor(en)</label><div class="tag"><div><input name="authors" class="authors"><span class="check-button disabled"></span></div><div class="tags"></div></div>
-<label>Teaser</label><textarea name="teaser" class="teaser" rows="3">${book.teaser}</textarea>
-<label>Beschreibung</label><textarea name="description" class="description" rows="10">${book.description}</textarea>
+<label>Teaser</label><textarea name="teaser" class="teaser" rows="3">${book?.teaser || ''}</textarea>
+<label>Beschreibung</label><textarea name="description" class="description" rows="10">${book.description || ''}</textarea>
 </fieldset>
 <fieldset class="info column"  disabled>
     <legend>Zusatzinfos</legend>
 <label>Kategorien</label><div class="tag"><div><input name="categories" class="categories"><span class="check-button disabled"></span></div><div class="tags"></div></div>
-<label>Verlag</label><input name="publisher" class="entry" value="${book.publisher}" >
-<label>Ver&ouml;ffentlichungsdatum</label><input name="publishedDate" class="entry" value="${book.publishedDate}" >
-<label>Anzahl Seiten</label><input name="pageCount" class="entry" value="${book.pageCount}" >
-<label>ISBN</label><input name="isbn" class="entry" value="${book.isbn}" >
-<fieldset class="info group" name="industryIdentifiers"><legend>Identifiers aus Google search books</legend>${insertIdentifiersObject(book['industryIdentifiers'])}
+<label>Verlag</label><input name="publisher" class="entry" value="${book.publisher || ''}" >
+<label>Ver&ouml;ffentlichungsdatum</label><input name="publishedDate" class="entry" value="${book.publishedDate || ''}" >
+<label>Anzahl Seiten</label><input name="pageCount" class="entry" value="${book.pageCount || ''}" >
+<label>ISBN</label><input name="isbn" class="entry" value="${book.isbn || ''}" >
+<fieldset class="info group" name="industryIdentifiers"><legend>Identifiers aus Google search books</legend>${insertIdentifiersObject(book.industryIdentifiers || [])}
 </fieldset><fieldset class="info column" disabled>
 <legend>Image URLs</legend>
 <div>
-    <img class="thumbnail" src="${book.thumbnail}">
+    <img class="thumbnail" src="${book.thumbnail || ''}">
     <div class="column">
-<label>Thumbnail Image</label><input name="thumbnail" class="entry" value="${book.thumbnail}" >
+<label>Thumbnail Image</label><input name="thumbnail" class="entry" value="${book.thumbnail || ''}" >
     </div>
 </div>
 <div>
-    <img class="image" src="${book.image}">
+    <img class="image" src="${book.image || ''}">
     <div class="column">
-<label>Cover Image</label><input name="image" class="entry" value="${book.image}" >
+<label>Cover Image</label><input name="image" class="entry" value="${book.image || ''}" >
     </div>
 </div>
 </fieldset>
@@ -38,9 +38,9 @@ class BooxForm extends HTMLElement {
   static get observedAttributes() {
     return ['book']
   }
-  constructor(book,buttonHandler) {
+  constructor(book = {},buttonHandler) {
     super()
-    book && this.init(book)
+    this.init(book)
   }
   init(book) {
     const content = div(formGoogleView(book))
@@ -62,7 +62,6 @@ class BooxForm extends HTMLElement {
     this.saveButton.onclick = this.saveBook
     this.searchButton = this.shadowRoot.querySelector("#searchBook")
     this.searchButton.onclick = this.toggleGoogleSearch
-    console.log('shadow root',this.shadowRoot)
   } 
   connectedCallback() {
     this.prepareTags(this.book)
@@ -107,9 +106,16 @@ class BooxForm extends HTMLElement {
     this.button.onclick = this.showEditButtons
   }
   toggleButtonGroup = ([form]) => {
+    if(form.intersectionRatio > .1) this.showButtons()
+    else if (!form.intersectionRatio <= .1) this. hideButtons()
+  }
+  showButtons = () => {
     const buttonGroupClasses = this.button.parentNode.classList
-    if(form.intersectionRatio > .1) buttonGroupClasses.replace('not-visible','pop-up')
-    else if (!form.intersectionRatio <= .1) buttonGroupClasses.replace('pop-up','not-visible')
+    buttonGroupClasses.replace('not-visible','pop-up')
+  }
+  hideButtons = () => {
+    const buttonGroupClasses = this.button.parentNode.classList
+    buttonGroupClasses.replace('pop-up','not-visible')
   }
   saveBook = async () => {
     this.saveButton.setAttribute('loading','')
@@ -118,6 +124,7 @@ class BooxForm extends HTMLElement {
   }
   addBook = async () => {
     this.syncFormData(this.book)
+    console.log('adding book')
     bookManager.addBook(this.book)
     .then(bookId => this.book.bookId = bookId)
     .then(this.disableSaveButton)
@@ -152,7 +159,7 @@ class BooxForm extends HTMLElement {
       }
       if(elems.length)  book[name] = a
     })
-    console.log('update book',book)
+    console.log('synced book',book)
   }
     
   /* Helpers für list input */

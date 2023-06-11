@@ -413,19 +413,18 @@ const searchListTransition = transition => {
 const addBookTransition = (transition) => {
   return {
     transition,
+    beforeTransition: () => document.querySelector('.navbar').classList.add('navbar-invisible'),
+
     leaveMethod: prevPage => prevPage.style.setProperty('display','none'),
     viewCreated: () => currentPage().style.setProperty('background-color','lightyellow'),
-    beforeTransition: () => {
-      document.querySelector('.navbar').classList.add('navbar-invisible')
-      document.querySelector('.navbar a').addEventListener('click',() => goto(searchResultsView, googleSearchTransition('zoom')))
-    },
     afterTransition: () => {
       const uploadButton = _('.upload')
       uploadButton.addEventListener('change',() => {
         document.querySelector('.navbar').classList.remove('navbar-invisible')
-        document.querySelector('.navbar').classList.add('search-google')
         document.querySelector('.navbar input').focus()
         document.querySelector('.navbar input').value = _('input').files[0].name
+        bookManager.bookFile = _('input').files[0]
+        _('boox-form').toggleGoogleSearch()
       })
     }
   }
@@ -440,6 +439,9 @@ const editSelectedBookTransition = (bookIndex) => {
       page.style.removeProperty('display')
       const form = BooxForm.prototype.isPrototypeOf(page) ? page : page.querySelector('boox-form')
       form.init(selectedBook)
+      form.prepareTags(selectedBook)
+      form.prepareListObjectInput(selectedBook)
+      form.showButtons()
       form.showEditButtons()
       form.enableSaveButton()
       resolve(page)
@@ -460,7 +462,13 @@ const backTransition = transition => {
       //anchor.append(page)
       resolve(page)
     }),
-    beforeTransition: () => currentPage().endOfListWatcher?.disconnect()
+    beforeTransition: () => {
+      currentPage().endOfListWatcher?.disconnect()
+      if(! _('.nots')) { // die Suchliste
+        searchForm.lastElementChild.setAttribute('icon', 'search')
+        searchForm.setAttribute('action', "javascript:goto(searchResultsView,searchListTransition('zoom'))")
+      }  
+    }
   }
 }
 const googleSearchTransition = transition => {
@@ -508,8 +516,6 @@ const listViewComponent = books => books.map( (book,bookIndex) => `<div class="c
 </div>
 `).join('')
 
-//const listView = (noi,title,str) => `<div class="buttons"><boox-button onclick="goto('',backTransition('flyaway'))" icon="west"></boox-button></div><div class="buttons right bottom"><boox-button icon="add" onclick="goto(addBookView,addBookTransition('slide'))"></boox-button></div><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
-
 const listView = (noi,title,str) => `<div class="buttons"><boox-button onclick="goto('',backTransition('flyaway'))" icon="west"></boox-button></div><div class="buttons right bottom"><boox-button icon="add" onclick="goto(addBookView,addBookTransition('slide'))"></boox-button></div><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
 
 const googleListViewComponent = books => books.map( (book,index) => `<div class="card-entry">
@@ -528,14 +534,11 @@ const googleListViewComponent = books => books.map( (book,index) => `<div class=
 <div class="nots">${evaluateResultViewComponent(book,index)}</div>
 `).join('')
 
-//const googleListView = (noi,title,str) => `<div class="buttons"><boox-button onclick="goto('',backTransition('flyaway'))" icon="west"></boox-button></div><div class="buttons right bottom"><boox-button icon="add" onclick="goto(addBookView,addBookTransition('slide'))"></boox-button></div><div style="text-align:center"><h2 class="${getColor()}">${title}</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
-
-const googleListView = (noi,title,str) => `<div class="buttons"><boox-button onclick="goto('',backTransition('flyaway'))" icon="west"></boox-button></div><div class="buttons right bottom"><boox-button icon="add" onclick="goto(addBookView,addBookTransition('slide'))"></boox-button></div><div style="text-align:center"><h2 class="${getColor()}">Ian McEwan - Zwischen den Laken</h2><p style="font-size:small">${noi} Ergebnisse gefunden</p></div>${str}<div class="more-button"></div>`
-
 const categoriesView = async cat => {
   const r = await bookManager.search(cat)
   return searchProvider.listView(r.numberOfItems,cat,searchProvider.listViewComponent(r.result))
 }
+
 const searchResultsView = async () => {
   const term = document.querySelector('.navbar input').value
   const button = document.querySelector('.navbar boox-button')
@@ -545,13 +548,14 @@ const searchResultsView = async () => {
   if (searchProvider.reset) document.querySelector('.navbar input').value = ""
   return searchProvider.listView(r.numberOfItems,term,searchProvider.listViewComponent(r.result))
 }
-const addBookView = () => `<label class="upload">
+const addBookView = () => `<div class="buttons"><boox-button onclick="goto('',backTransition('flyaway'))" icon="west"></boox-button></div><label class="upload">
     <input name="upload" type="file">
     <div>
       <span class="icon">upload_file</span>
       <span>E-Book auswählen</span>
     </div>
   </label>
+  <boox-form></boox-form>
 `
 const evaluateResultViewComponent = (book,bookIndex) => {
   const missingData = notInMetadata(book)
@@ -754,7 +758,7 @@ const searchGoogle = () => {
     searchResultPager: googlePager,
     search: googlePager.search,
     listViewComponent: googleListViewComponent,
-    listView: googleListView
+    listView: listView
   }
 }
 /* und los geht's */

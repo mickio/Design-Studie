@@ -29,14 +29,14 @@ body {
   left: 0;
   right: 0;
   width: min-content;
-  /*transition: transform,width var(--duration) ease-out;
-  transform: translateY(0);*/
+  transition: transform var(--duration) ease-out;
+  transform: translateY(0);
   padding:0.3em;
   z-index: 1;
 }
 .navbar-invisible {
-  transform: translateY(-38px);
-  transition: transform,width var(--duration) ease-in;
+  transform: translateY(-45px);
+  transition: transform var(--duration) ease-in;
 }
 .navbar > form {
   display: flex;
