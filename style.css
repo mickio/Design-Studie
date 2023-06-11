@@ -85,7 +85,7 @@ body {
 /* functional elements */
 .buttons {
 	position: fixed;
-  display: flex;  
+  display: flex;
 }
 .button {
 	background-color: var(--orange);
@@ -236,14 +236,30 @@ body {
   transition: opacity var(--duration) ease-in;
   opacity: 0;
 }
-.toast-start {
-  opacity: 1;
+.toast {
+  width: max-content;
+  height: 50px;
+  line-height: 50px;
+  margin: auto;
+  padding: 0 15px;
+  border-radius: 25px;
+  border: solid 1px var(--brown);
+  box-shadow: 2px 2px 20px grey;
+  position: absolute;
+  z-index: 12;
+  top: 80px;
+  left: 0;
+  right: 0;
+  color: white;
   background-color: var(--orange);
 }
 .toast-end {
+  opacity: 1;
+  transition: opacity 1s ease-in;
+}
+.toast-start {
   opacity: 0;
-  background-color: white;
-  transition: color,opacity var(--duration) ease-out
+  transition: opacity 2s ease-out;
 }
 /* gallery styles */
 h1 {

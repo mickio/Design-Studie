@@ -128,6 +128,7 @@ class BooxForm extends HTMLElement {
     bookManager.addBook(this.book)
     .then(bookId => this.book.bookId = bookId)
     .then(this.disableSaveButton)
+    .then(() => toast('Das eBook wurde hochgeladen'))
   }
     
   updateBook = async () => {

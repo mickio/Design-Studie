@@ -345,14 +345,12 @@ const details2detailsTransition = transition => {
       const next = list[bookIndex+1]
       const previous = list[bookIndex-1]
       console.log(next,previous,list,catIndex,bookIndex)
-      if(previous) _('#back').insertAdjacentHTML('afterend',  previous.bookId ? `<div class="buttons v-centered"><boox-button onclick="goto(detailsView,details2detailsTransition('slide-right'),'${previous.bookId}','${bookIndex-1}','${catIndex}','${previous.imageLinks?.thumbnail}')" class="ease-enter-end" icon="arrow_back_ios"></boox-button></div>` : '')
-      if(next) _('#back').insertAdjacentHTML('afterend',  next.bookId ? `<div class="classes v-centered right"><boox-button onclick="goto(detailsView,details2detailsTransition('slide-left'),'${next.bookId}','${bookIndex+1}','${catIndex}','${next.imageLinks?.thumbnail}')" class="button ease-enter-end" icon="arrow_forward_ios"></boox-button></div>` : '')
+      if(previous) _('#back').parentNode.insertAdjacentHTML('afterend',  previous.bookId ? `<div class="buttons v-centered ease-enter-end"><boox-button onclick="goto(detailsView,details2detailsTransition('slide-right'),'${previous.bookId}','${bookIndex-1}','${catIndex}','${previous.imageLinks?.thumbnail}')"  icon="arrow_back_ios"></boox-button></div>` : '')
+      if(next) _('#back').parentNode.insertAdjacentHTML('afterend',  next.bookId ? `<div class="buttons v-centered right ease-enter-end"><boox-button onclick="goto(detailsView,details2detailsTransition('slide-left'),'${next.bookId}','${bookIndex+1}','${catIndex}','${next.imageLinks?.thumbnail}')" icon="arrow_forward_ios"></boox-button></div>` : '')
       currentPage().style.setProperty('background-color','var(--brown)')
       _('#back').addEventListener('click',function() {
         this.setAttribute('loading','')
-        /* Die Suche könnte noch auf Google stehen */
-        searchForm.lastElementChild.setAttribute('icon','search')
-        searchForm.setAttribute('action',"javascript:goto(searchResultsView,searchListTransition('zoom'))")
+        formWatcher.disconnect()
         goto('',backTransition('flyaway')).then(() => {
           this.removeAttribute('loading')
         })
@@ -402,7 +400,6 @@ const searchListTransition = transition => {
     transition,
     leaveMethod: prevPage => prevPage.style.setProperty('display','none'),
     afterTransition: () => {
-      searchProvider = defaultSearchProvider
       currentPage().searchResultPager = searchProvider.searchResultPager
       currentPage().style.setProperty('background-color','white')
       const moreButton = _('.more-button')
@@ -464,7 +461,7 @@ const backTransition = transition => {
     }),
     beforeTransition: () => {
       currentPage().endOfListWatcher?.disconnect()
-      if(! _('.nots')) { // die Suchliste
+      if(! _('.nots')) { // kennzeichnet die Suchliste
         searchForm.lastElementChild.setAttribute('icon', 'search')
         searchForm.setAttribute('action', "javascript:goto(searchResultsView,searchListTransition('zoom'))")
         searchProvider = defaultSearchProvider
@@ -662,18 +659,30 @@ const setBoundingBox = clickEvent => {
     rootStyles.setProperty("--box-positionY",`${box.y}px`)
     rootStyles.setProperty("--scrollX", `${posX}px`)
     rootStyles.setProperty("--scrollY", `${posY}px`)
-    //console.debug(`[Transition][setBoundingBox] Set coordinates ${box.x}, ${box.y}, ${box.width}, ${box.height} for zoom transitions and ${posX} resp. ${posY}`)
 }
 
 anchor.addEventListener("click",setBoundingBox)
+
+const toast = async (text,icon) => {
+  const tpl = `<div class="toast toast-start">${text}</div>`
+  anchor.parentNode.insertAdjacentHTML('afterbegin',tpl)
+  const t = anchor.parentElement.firstElementChild
+  console.log('toast',text,t)
+  await nextFrame()
+  t.classList.replace('toast-start','toast-end')
+  await new Promise( resolve => setTimeout(() => {
+    t.classList.replace('toast-end','toast-start')
+    resolve()
+    },2000)
+  )
+  setTimeout(() => t.remove(),2500)
+}
 
 /* helper für details view */
 function scrollToTab(ind) {
   const scroller = _('div.card-content')
   const scrollerTitleBar = _('div.spacer div')
   const scrollStop = ind * scroller.clientWidth 
-  let form;
-  [form] = formWatcher.takeRecords()
   scroller.scrollTo({left:scrollStop,behavior:'smooth'})
   for ( tab of scrollerTitleBar.children) tab.classList.remove('active-tab')
   scrollerTitleBar.children[ind].classList.add('active-tab')
