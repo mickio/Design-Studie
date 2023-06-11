@@ -467,6 +467,7 @@ const backTransition = transition => {
       if(! _('.nots')) { // die Suchliste
         searchForm.lastElementChild.setAttribute('icon', 'search')
         searchForm.setAttribute('action', "javascript:goto(searchResultsView,searchListTransition('zoom'))")
+        searchProvider = defaultSearchProvider
       }  
     }
   }
