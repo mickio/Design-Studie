@@ -18,10 +18,10 @@ body {
     margin: 0;
     height: 100vh;
     width: 100vw;
-    /* background-image:url(buecherhaufen.jpg); */
-    /* background-color: var(--brown); */
-    /* background-size: cover;
-    background-repeat: no-repeat; */
+    background-image:url(buecherhaufen.jpg); 
+    background-color: var(--brown);
+    background-size: cover;
+    background-repeat: no-repeat;
 }
 .navbar {
   position: fixed;
